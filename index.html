@@ -367,7 +367,7 @@
           <div class="flex items-center gap-1.5 whitespace-nowrap leading-none">
             <span class="font-heading font-black text-[17px] sm:text-xl tracking-tight text-white">SEE</span>
             <span class="font-heading font-black text-[17px] sm:text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#38e1e8] via-indigo-400 to-pink-400">LAD</span>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-400/30 text-[#38e1e8] text-[9px] font-extrabold tracking-wider uppercase">v3.8 PRO</span>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-400/30 text-[#38e1e8] text-[9px] font-extrabold tracking-wider uppercase">v4.3 CYBER</span>
           </div>
           <div class="flex items-center gap-1.5 mt-1 whitespace-nowrap">
             <span class="w-1.5 h-1.5 rounded-full bg-[#38e1e8] shadow-[0_0_6px_#38e1e8]"></span>
@@ -535,8 +535,8 @@
 
         <!-- Bottom Quick Info (Desktop only) -->
         <div class="hidden lg:block p-3 rounded-2xl bg-black/20 border border-[var(--border-color)]">
-          <p class="text-[11px] font-bold text-indigo-400">SEE LAD v3.8 PRO</p>
-          <p class="text-[10px] text-[var(--text-muted)] mt-0.5">Chuỗi Lửa 48h • Lọc Âm Studio</p>
+          <p class="text-[11px] font-bold text-[#38e1e8]">SEE LAD v4.3 CYBER</p>
+          <p class="text-[10px] text-[var(--text-muted)] mt-0.5">Nhật ký • Chuỗi Đôi • Radar Maps</p>
         </div>
       </nav>
 
@@ -2340,10 +2340,10 @@
     // Force register & update latest Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?v=4.2')
+        navigator.serviceWorker.register('/sw.js?v=4.3')
           .then(reg => {
             reg.update();
-            console.log('SEE LAD PWA Service Worker Registered & Updated:', reg.scope);
+            console.log('SEE LAD PWA Service Worker Registered & Updated v4.3:', reg.scope);
           })
           .catch(err => console.log('Service Worker registration failed:', err));
       });
