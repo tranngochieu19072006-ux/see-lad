@@ -881,15 +881,15 @@
         <!-- ===================================================================
              TAB: NHẬT KÝ & TRANG CÁ NHÂN (SOCIAL FEED & PROFILE)
              =================================================================== -->
-        <section id="tab-view-feed" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
-          <div class="max-w-3xl mx-auto space-y-6 pb-16">
+        <section id="tab-view-feed" class="hidden flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 custom-scrollbar">
+          <div class="max-w-2xl mx-auto space-y-4 pb-16">
 
             <!-- 1. Profile Header Showcase Card -->
-            <div class="glass rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative">
+            <div class="glass rounded-2xl overflow-hidden border border-white/10 shadow-xl relative">
               <!-- Cover Photo with change button -->
-              <div id="profile-card-cover" class="h-44 sm:h-52 w-full bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 bg-cover bg-center relative transition-all duration-300">
+              <div id="profile-card-cover" class="h-40 sm:h-48 w-full bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 bg-cover bg-center relative transition-all duration-300">
                 <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
-                <button type="button" id="btn-change-cover-photo" class="absolute top-3.5 right-3.5 px-3 py-1.5 rounded-xl glass hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-lg">
+                <button type="button" id="btn-change-cover-photo" class="absolute top-3 right-3 px-2.5 py-1.5 rounded-xl glass hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md">
                   <i data-lucide="camera" class="w-3.5 h-3.5 text-cyan-400"></i>
                   <span>Đổi ảnh bìa</span>
                 </button>
@@ -897,35 +897,35 @@
               </div>
 
               <!-- Profile Details Row -->
-              <div class="px-5 sm:px-7 pb-6 pt-0 relative">
-                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-16 sm:-mt-14 mb-4">
+              <div class="px-4 sm:px-6 pb-5 pt-0 relative">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 -mt-14 sm:-mt-12 mb-3">
                   <!-- Avatar + Basic Info -->
-                  <div class="flex items-end gap-4">
+                  <div class="flex items-end gap-3.5">
                     <div class="relative">
-                      <img id="profile-card-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900" />
-                      <span class="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-900 shadow" title="Đang trực tuyến"></span>
+                      <img id="profile-card-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900" />
+                      <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-900 shadow" title="Đang trực tuyến"></span>
                     </div>
                     <div class="mb-1 min-w-0">
-                      <h2 id="profile-card-name" class="font-heading font-extrabold text-xl sm:text-2xl text-white tracking-tight truncate">Trần Ngọc Hiếu</h2>
-                      <p id="profile-card-handle" class="text-xs text-indigo-400 font-semibold">@ngochieu.dev</p>
+                      <h2 id="profile-card-name" class="font-heading font-extrabold text-lg sm:text-xl text-white tracking-tight truncate">Lifetime Sin</h2>
+                      <p id="profile-card-handle" class="text-xs text-indigo-400 font-semibold">@125001110</p>
                     </div>
                   </div>
 
                   <!-- Action Buttons -->
                   <div class="flex items-center gap-2">
-                    <button type="button" id="btn-edit-profile-modal" class="px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-white/10 shadow-md">
+                    <button type="button" id="btn-edit-profile-modal" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-white/10 shadow-sm">
                       <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-400"></i>
-                      <span>Chỉnh sửa hồ sơ</span>
+                      <span>Chỉnh sửa</span>
                     </button>
                   </div>
                 </div>
 
                 <!-- Bio & Location -->
                 <p id="profile-card-bio" class="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-xl">
-                  Nhà sáng lập & Lập trình viên SEE LAD 🌟
+                  Thành viên kết nối chính thức qua Facebook 🌟
                 </p>
 
-                <div class="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-400">
+                <div class="flex flex-wrap items-center gap-3 mt-2.5 text-xs text-slate-400">
                   <span class="flex items-center gap-1">
                     <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i>
                     <span id="profile-card-location">TP. Hồ Chí Minh</span>
@@ -933,31 +933,31 @@
                   <span>•</span>
                   <span class="flex items-center gap-1">
                     <i data-lucide="book-open" class="w-3.5 h-3.5 text-pink-400"></i>
-                    <span><b id="profile-stat-posts" class="text-white font-mono">0</b> bài viết nhật ký</span>
+                    <span><b id="profile-stat-posts" class="text-white font-mono">0</b> bài viết</span>
                   </span>
                 </div>
               </div>
             </div>
 
-            <!-- 2. Status Composer Card ("Bạn đang nghĩ gì thế?") -->
-            <div class="glass rounded-3xl p-5 border border-white/10 shadow-xl space-y-3.5">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-pink-500 to-indigo-500 flex items-center justify-center text-white text-sm shadow-md">
+            <!-- 2. Status Composer Card (Gọn gàng & Tinh tế) -->
+            <div class="glass rounded-2xl p-4 sm:p-4.5 border border-white/10 shadow-lg space-y-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 to-indigo-500 flex items-center justify-center text-white text-xs shadow-md">
                   ✨
                 </div>
                 <div>
-                  <h3 class="font-heading font-extrabold text-sm sm:text-base text-white">Đăng Nhật Ký & Trạng Thái Mới</h3>
-                  <p class="text-[11px] text-slate-400">Chia sẻ khoảnh khắc, cảm xúc hoặc hình ảnh đến bạn bè</p>
+                  <h3 class="font-heading font-extrabold text-xs sm:text-sm text-white">Đăng Nhật Ký & Trạng Thái Mới</h3>
+                  <p class="text-[10.5px] text-slate-400">Chia sẻ khoảnh khắc, cảm xúc và hình ảnh sắc nét Full HD</p>
                 </div>
               </div>
 
-              <form id="feed-composer-form" class="space-y-3">
-                <textarea id="feed-post-content" rows="3" placeholder="Bạn đang nghĩ gì thế? Chia sẻ cảm xúc của bạn hôm nay..." class="glass-input w-full p-3.5 rounded-2xl text-xs sm:text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-white/10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 custom-scrollbar resize-none"></textarea>
+              <form id="feed-composer-form" class="space-y-2.5">
+                <textarea id="feed-post-content" rows="2" placeholder="Bạn đang nghĩ gì thế? Chia sẻ cảm xúc hôm nay..." class="glass-input w-full p-3 rounded-xl text-xs sm:text-sm bg-slate-900/90 text-white placeholder-slate-500 border border-white/10 focus:border-indigo-500 custom-scrollbar resize-none"></textarea>
 
-                <!-- Image Preview Box (if chosen) -->
-                <div id="feed-image-preview-box" class="hidden relative rounded-2xl overflow-hidden border border-white/15 bg-black/40 max-h-60 flex items-center justify-center">
-                  <img id="feed-image-preview-img" src="" class="max-h-60 w-auto object-contain rounded-xl" />
-                  <button type="button" id="btn-remove-feed-image" class="absolute top-2 right-2 p-1.5 rounded-full bg-black/70 text-white hover:bg-rose-600 transition-colors" title="Xóa ảnh">
+                <!-- Image Preview Box (Khớp khít với ảnh, không khoảng trống) -->
+                <div id="feed-image-preview-box" class="hidden relative rounded-xl overflow-hidden border border-white/15 bg-black/40 max-h-64 flex justify-center items-center w-fit mx-auto p-1 shadow-md">
+                  <img id="feed-image-preview-img" src="" class="max-h-64 w-auto object-contain rounded-lg block" />
+                  <button type="button" id="btn-remove-feed-image" class="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 text-white hover:bg-rose-600 transition-colors shadow-md" title="Xóa ảnh">
                     <i data-lucide="x" class="w-4 h-4"></i>
                   </button>
                 </div>
@@ -2289,22 +2289,22 @@
   <!-- Real ISO/IEC 18004 QRCode Matrix Generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
-  <!-- Application Scripts (Versioned v4.5 for instant cross-device cache-busting) -->
-  <script src="js/config.js?v=4.5"></script>
-  <script src="js/sounds.js?v=4.5"></script>
-  <script src="js/intro.js?v=4.5"></script>
-  <script src="js/auth.js?v=4.5"></script>
-  <script src="js/chat.js?v=4.5"></script>
-  <script src="js/call.js?v=4.5"></script>
-  <script src="js/recorder.js?v=4.5"></script>
-  <script src="js/feed.js?v=4.5"></script>
-  <script src="js/streak.js?v=4.5"></script>
-  <script src="js/radar.js?v=4.5"></script>
-  <script src="js/qr-studio.js?v=4.5"></script>
-  <script src="js/file-hub.js?v=4.5"></script>
-  <script src="js/bubble.js?v=4.5"></script>
-  <script src="js/scheduler.js?v=4.5"></script>
-  <script src="js/app.js?v=4.5"></script>
+  <!-- Application Scripts (Versioned v4.7 for instant cross-device cache-busting) -->
+  <script src="js/config.js?v=4.7"></script>
+  <script src="js/sounds.js?v=4.7"></script>
+  <script src="js/intro.js?v=4.7"></script>
+  <script src="js/auth.js?v=4.7"></script>
+  <script src="js/chat.js?v=4.7"></script>
+  <script src="js/call.js?v=4.7"></script>
+  <script src="js/recorder.js?v=4.7"></script>
+  <script src="js/feed.js?v=4.7"></script>
+  <script src="js/streak.js?v=4.7"></script>
+  <script src="js/radar.js?v=4.7"></script>
+  <script src="js/qr-studio.js?v=4.7"></script>
+  <script src="js/file-hub.js?v=4.7"></script>
+  <script src="js/bubble.js?v=4.7"></script>
+  <script src="js/scheduler.js?v=4.7"></script>
+  <script src="js/app.js?v=4.7"></script>
   <!-- Service Worker & PWA Install Manager -->
   <script>
     let deferredPrompt = null;
@@ -2340,10 +2340,10 @@
     // Force register & update latest Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?v=4.5')
+        navigator.serviceWorker.register('/sw.js?v=4.7')
           .then(reg => {
             reg.update();
-            console.log('SEE LAD PWA Service Worker Registered & Updated v4.5:', reg.scope);
+            console.log('SEE LAD PWA Service Worker Registered & Updated v4.7:', reg.scope);
           })
           .catch(err => console.log('Service Worker registration failed:', err));
       });

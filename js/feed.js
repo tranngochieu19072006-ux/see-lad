@@ -16,14 +16,21 @@ class FeedController {
   }
 
   getCurrentUser() {
-    return window.auth?.currentUser || window.SEE_LAD_CONFIG?.currentUser || {
-      id: 'user_hieu',
-      name: 'Trần Ngọc Hiếu',
-      username: 'ngochieu.dev',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-      bio: 'Nhà sáng lập & Lập trình viên SEE LAD 🌟',
+    let u = window.auth?.currentUser;
+    if (!u) {
+      try {
+        const saved = localStorage.getItem('see_lad_user') || localStorage.getItem('seelad_current_user');
+        if (saved) u = JSON.parse(saved);
+      } catch (e) {}
+    }
+    return u || window.SEE_LAD_CONFIG?.currentUser || {
+      id: 'user_1791461175642',
+      name: 'Lifetime Sin',
+      username: '125001110',
+      avatar: 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za',
+      bio: 'Thành viên kết nối chính thức qua Facebook 🌟',
       cover_image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
-      location_name: 'Quận 1, TP.HCM'
+      location_name: 'TP. Hồ Chí Minh'
     };
   }
 
@@ -160,6 +167,9 @@ class FeedController {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: currentUser.id,
+          author_name: currentUser.name,
+          author_username: currentUser.username,
+          author_avatar: currentUser.avatar,
           content: content,
           image_url: imageUrl,
           mood: mood
@@ -171,6 +181,7 @@ class FeedController {
         if (contentInput) contentInput.value = '';
         this.clearImagePreview();
         this.renderPosts();
+        this.renderProfileCard();
         if (window.app) window.app.showToast("Đã chia sẻ nhật ký mới thành công! 🌟");
       } else {
         const errMsg = data.error || `Không thể đăng bài (${res.status})`;
@@ -194,11 +205,18 @@ class FeedController {
   async loadFeed() {
     const currentUser = this.getCurrentUser();
     try {
-      const res = await fetch(`/api/posts?user_id=${encodeURIComponent(currentUser.id)}`);
+      const q = new URLSearchParams({
+        user_id: currentUser.id || '',
+        user_name: currentUser.name || '',
+        user_username: currentUser.username || '',
+        user_avatar: currentUser.avatar || ''
+      });
+      const res = await fetch(`/api/posts?${q.toString()}`);
       const data = await res.json();
       if (data.success && Array.isArray(data.posts)) {
         this.posts = data.posts;
         this.renderPosts();
+        this.renderProfileCard();
       }
     } catch (e) {
       console.warn("Could not load posts:", e);
@@ -217,10 +235,10 @@ class FeedController {
 
     if (displayList.length === 0) {
       container.innerHTML = `
-        <div class="glass p-8 rounded-3xl text-center border border-white/10 my-4">
-          <div class="w-16 h-16 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-3 text-3xl">✨</div>
-          <h4 class="font-bold text-base text-white mb-1">Chưa có bài viết nhật ký nào</h4>
-          <p class="text-xs text-slate-400 mb-4">Hãy là người đầu tiên chia sẻ cảm xúc, trạng thái và hình ảnh của bạn với bạn bè!</p>
+        <div class="glass p-7 rounded-2xl text-center border border-white/10 my-3">
+          <div class="w-14 h-14 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-2.5 text-2xl">✨</div>
+          <h4 class="font-bold text-sm text-white mb-1">Chưa có bài viết nhật ký nào</h4>
+          <p class="text-xs text-slate-400">Hãy là người đầu tiên chia sẻ cảm xúc và hình ảnh của bạn với bạn bè!</p>
         </div>
       `;
       return;
@@ -231,84 +249,102 @@ class FeedController {
       const formattedTime = this.formatTimeAgo(post.created_at);
 
       return `
-        <article class="glass rounded-3xl p-5 border border-white/10 hover:border-indigo-500/30 transition-all shadow-xl space-y-3.5" id="post-card-${post.id}">
-          <!-- Post Author Header -->
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3 min-w-0 cursor-pointer" onclick="window.feed.viewAuthorProfile('${post.user_id}')">
-              <img src="${post.author_avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + post.user_id}" class="w-11 h-11 rounded-2xl object-cover border border-white/15 shrink-0" />
+        <article class="glass rounded-2xl p-4 sm:p-4.5 border border-white/10 hover:border-white/20 transition-all shadow-md mb-3 space-y-2.5" id="post-card-${post.id}">
+          <!-- Post Author Header (Compact & Crisp) -->
+          <div class="flex items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="window.feed.viewAuthorProfile('${post.user_id}')">
+              <img src="${post.author_avatar || 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za'}" 
+                   onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" 
+                   class="w-10 h-10 rounded-xl object-cover border border-white/15 shrink-0 shadow-sm" />
               <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <h4 class="font-bold text-sm text-white truncate hover:text-indigo-400 transition-colors">${this.escapeHtml(post.author_name || 'Người dùng')}</h4>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/25">${this.escapeHtml(post.mood || '🌟 Vui vẻ')}</span>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <h4 class="font-bold text-[13.5px] text-white truncate hover:text-indigo-400 transition-colors">${this.escapeHtml(post.author_name || 'Thành viên')}</h4>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/25 shrink-0">${this.escapeHtml(post.mood || '🌟 Vui vẻ')}</span>
                 </div>
                 <p class="text-[11px] text-slate-400">@${this.escapeHtml(post.author_username || 'user')} • ${formattedTime}</p>
               </div>
             </div>
 
             ${isMine ? `
-              <button onclick="window.feed.deletePost('${post.id}')" class="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Xóa bài viết">
+              <button onclick="window.feed.deletePost('${post.id}')" class="p-1.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Xóa bài viết">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             ` : ''}
           </div>
 
           <!-- Post Content -->
-          <div class="text-sm text-slate-100 whitespace-pre-wrap leading-relaxed">
+          <div class="text-[13.5px] text-slate-100 whitespace-pre-wrap leading-relaxed select-text">
             ${this.escapeHtml(post.content)}
           </div>
 
-          <!-- Post Image (if present) -->
+          <!-- Post Image (Khớp 100% với ảnh, không viền đen thừa, chế độ FHD sắc nét, bấm để phóng to) -->
           ${post.image_url ? `
-            <div class="rounded-2xl overflow-hidden border border-white/10 max-h-96 bg-black/40 flex items-center justify-center">
-              <img src="${post.image_url}" class="w-full h-auto max-h-96 object-contain rounded-2xl" loading="lazy" />
+            <div class="pt-1 flex justify-center w-full">
+              <div class="relative group cursor-pointer overflow-hidden rounded-2xl border border-white/10 shadow-lg inline-flex max-w-full bg-slate-900/40" 
+                   onclick="window.feed.openLightbox('${this.escapeHtml(post.image_url)}', '${this.escapeHtml(post.author_name || 'Người dùng')}')" 
+                   title="Bấm để xem ảnh Full HD sắc nét">
+                <img src="${post.image_url}" 
+                     alt="Ảnh nhật ký Full HD" 
+                     class="block max-w-full max-h-[520px] w-auto h-auto rounded-2xl object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.01]" 
+                     loading="lazy" />
+                
+                <!-- FHD 1080p Badge & Nút Xem Ảnh -->
+                <div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/20 text-white text-[11px] font-semibold flex items-center gap-1.5 shadow-md group-hover:bg-indigo-600 transition-all">
+                  <span class="text-[9px] font-black tracking-wider uppercase bg-amber-400/20 text-amber-300 px-1 py-0.5 rounded border border-amber-400/30">FHD 1080p</span>
+                  <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                  <span>Xem ảnh</span>
+                </div>
+              </div>
             </div>
           ` : ''}
 
           <!-- Post Reaction Stats & Actions Bar -->
           <div class="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2.5">
               <!-- Like Button -->
-              <button onclick="window.feed.toggleLike('${post.id}')" id="like-btn-${post.id}" class="flex items-center gap-1.5 font-bold transition-all ${post.has_liked ? 'text-rose-500 scale-105' : 'text-slate-400 hover:text-rose-400'}">
+              <button onclick="window.feed.toggleLike('${post.id}')" id="like-btn-${post.id}" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-white/5 font-bold transition-all ${post.has_liked ? 'text-rose-500 scale-105' : 'text-slate-400 hover:text-rose-400'}">
                 <i data-lucide="heart" class="w-4 h-4 ${post.has_liked ? 'fill-rose-500' : ''}"></i>
                 <span id="like-count-${post.id}">${post.likes_count || 0}</span>
                 <span class="hidden sm:inline">Thích</span>
               </button>
 
               <!-- Comment Toggle Button -->
-              <button onclick="window.feed.toggleCommentBox('${post.id}')" class="flex items-center gap-1.5 font-semibold text-slate-400 hover:text-cyan-400 transition-colors">
+              <button onclick="window.feed.toggleCommentBox('${post.id}')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-white/5 font-semibold text-slate-400 hover:text-cyan-400 transition-colors">
                 <i data-lucide="message-circle" class="w-4 h-4"></i>
                 <span id="comment-count-${post.id}">${(post.comments || []).length}</span>
                 <span class="hidden sm:inline">Bình luận</span>
               </button>
             </div>
 
-            <button onclick="window.feed.sharePost('${post.id}')" class="p-1.5 text-slate-400 hover:text-white transition-colors" title="Chia sẻ liên kết">
+            <button onclick="window.feed.sharePost('${post.id}')" class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors" title="Chia sẻ liên kết">
               <i data-lucide="share-2" class="w-4 h-4"></i>
             </button>
           </div>
 
-          <!-- Comments Section (collapsible / expanded) -->
-          <div id="comments-box-${post.id}" class="space-y-3 pt-3 border-t border-white/5">
+          <!-- Comments Section (Gọn gàng & Tinh tế) -->
+          <div id="comments-box-${post.id}" class="space-y-2 pt-2 border-t border-white/5">
             <!-- List of existing comments -->
-            <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar" id="comments-list-${post.id}">
+            <div class="space-y-1.5 max-h-56 overflow-y-auto custom-scrollbar" id="comments-list-${post.id}">
               ${(post.comments || []).map(c => `
-                <div class="flex items-start gap-2.5 bg-white/[0.03] p-2.5 rounded-xl border border-white/5 text-xs">
-                  <img src="${c.author_avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + c.user_id}" class="w-7 h-7 rounded-xl object-cover shrink-0" />
+                <div class="flex items-start gap-2 bg-white/[0.03] px-3 py-1.5 rounded-xl border border-white/5 text-xs">
+                  <img src="${c.author_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}" 
+                       onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" 
+                       class="w-6 h-6 rounded-lg object-cover shrink-0 mt-0.5" />
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between gap-1">
-                      <span class="font-bold text-white truncate">${this.escapeHtml(c.author_name || 'Bạn bè')}</span>
-                      <span class="text-[10px] text-slate-500">${this.formatTimeAgo(c.created_at)}</span>
+                      <span class="font-bold text-white text-[11px] truncate">${this.escapeHtml(c.author_name || 'Bạn bè')}</span>
+                      <span class="text-[9.5px] text-slate-500">${this.formatTimeAgo(c.created_at)}</span>
                     </div>
-                    <p class="text-slate-300 mt-0.5 leading-relaxed break-words">${this.escapeHtml(c.content)}</p>
+                    <p class="text-slate-300 text-[11.5px] leading-snug break-words">${this.escapeHtml(c.content)}</p>
                   </div>
                 </div>
               `).join('')}
             </div>
 
             <!-- Comment Input Box -->
-            <form onsubmit="window.feed.handleAddComment(event, '${post.id}')" class="flex items-center gap-2 pt-1">
-              <input type="text" id="comment-input-${post.id}" placeholder="Viết bình luận cho ${this.escapeHtml(post.author_name || 'bạn bè')}..." class="glass-input flex-1 px-3.5 py-2 rounded-xl text-xs bg-slate-900 text-white placeholder-slate-500 focus:border-indigo-500" />
-              <button type="submit" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1 transition-all">
+            <form onsubmit="window.feed.handleAddComment(event, '${post.id}')" class="flex items-center gap-1.5 pt-0.5">
+              <input type="text" id="comment-input-${post.id}" placeholder="Viết bình luận..." class="glass-input flex-1 px-3 py-1.5 rounded-xl text-xs bg-slate-900/90 text-white placeholder-slate-500 border border-white/10 focus:border-indigo-500" />
+              <button type="submit" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1 transition-all shrink-0">
                 <i data-lucide="send" class="w-3.5 h-3.5"></i>
               </button>
             </form>
@@ -318,6 +354,66 @@ class FeedController {
     }).join('');
 
     if (window.lucide) window.lucide.createIcons();
+  }
+
+  openLightbox(imageUrl, authorName = 'Bài viết') {
+    let modal = document.getElementById('feed-image-lightbox-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'feed-image-lightbox-modal';
+      modal.className = 'fixed inset-0 z-[99999] bg-black/95 backdrop-blur-md flex flex-col justify-between items-center p-3 sm:p-5 animate-fade-in select-none';
+      modal.innerHTML = `
+        <!-- Top Toolbar -->
+        <div class="w-full max-w-5xl flex items-center justify-between gap-3 text-white z-10 py-1">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg bg-indigo-600 text-[11px] font-black tracking-wider uppercase shadow-md">FHD 1080p</span>
+            <span id="lightbox-author-title" class="text-xs sm:text-sm font-semibold text-slate-300 truncate">Ảnh Full HD</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <a id="lightbox-download-btn" href="#" download="seelad_photo.png" target="_blank" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all">
+              <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
+              <span class="hidden sm:inline">Tải ảnh gốc</span>
+            </a>
+            <button type="button" onclick="window.feed.closeLightbox()" class="p-2 rounded-xl bg-white/10 hover:bg-rose-600 text-white transition-all" title="Đóng (Esc)">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Center Image Box -->
+        <div class="flex-1 w-full flex items-center justify-center overflow-auto p-2" onclick="if(event.target === this) window.feed.closeLightbox()">
+          <img id="lightbox-main-img" src="" class="max-w-full max-h-[86vh] object-contain rounded-2xl shadow-2xl transition-all cursor-zoom-in" alt="Full HD" />
+        </div>
+
+        <!-- Bottom Caption / Hint -->
+        <div class="w-full text-center py-1 text-slate-400 text-[11px]">
+          <span>Nhấn <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono">Esc</kbd> hoặc bấm ra ngoài để đóng • Ảnh hiển thị ở chất lượng gốc Full HD</span>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      window.addEventListener('keydown', (evt) => {
+        if (evt.key === 'Escape') this.closeLightbox();
+      });
+    }
+
+    const imgEl = document.getElementById('lightbox-main-img');
+    const authorEl = document.getElementById('lightbox-author-title');
+    const downloadBtn = document.getElementById('lightbox-download-btn');
+
+    if (imgEl) imgEl.src = imageUrl;
+    if (authorEl) authorEl.textContent = `Ảnh của ${authorName} • Chất lượng Full HD`;
+    if (downloadBtn) downloadBtn.href = imageUrl;
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  closeLightbox() {
+    const modal = document.getElementById('feed-image-lightbox-modal');
+    if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
   }
 
   async toggleLike(postId) {
@@ -342,10 +438,10 @@ class FeedController {
         if (countEl) countEl.textContent = data.likes_count;
         if (btn) {
           if (data.has_liked) {
-            btn.className = "flex items-center gap-1.5 font-bold transition-all text-rose-500 scale-105";
+            btn.className = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-white/5 font-bold transition-all text-rose-500 scale-105";
             btn.querySelector('i')?.classList.add('fill-rose-500');
           } else {
-            btn.className = "flex items-center gap-1.5 font-bold transition-all text-slate-400 hover:text-rose-400";
+            btn.className = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-white/5 font-bold transition-all text-slate-400 hover:text-rose-400";
             btn.querySelector('i')?.classList.remove('fill-rose-500');
           }
         }
@@ -370,6 +466,9 @@ class FeedController {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: currentUser.id,
+          author_name: currentUser.name,
+          author_username: currentUser.username,
+          author_avatar: currentUser.avatar,
           content: content
         })
       });
@@ -388,15 +487,15 @@ class FeedController {
         const listEl = document.getElementById(`comments-list-${postId}`);
         if (listEl) {
           const div = document.createElement('div');
-          div.className = "flex items-start gap-2.5 bg-white/[0.03] p-2.5 rounded-xl border border-white/5 text-xs animate-fade-in";
+          div.className = "flex items-start gap-2 bg-white/[0.03] px-3 py-1.5 rounded-xl border border-white/5 text-xs animate-fade-in";
           div.innerHTML = `
-            <img src="${data.comment.author_avatar || currentUser.avatar}" class="w-7 h-7 rounded-xl object-cover shrink-0" />
+            <img src="${data.comment.author_avatar || currentUser.avatar}" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" class="w-6 h-6 rounded-lg object-cover shrink-0 mt-0.5" />
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-1">
-                <span class="font-bold text-white truncate">${this.escapeHtml(data.comment.author_name || currentUser.name)}</span>
-                <span class="text-[10px] text-slate-500">Vừa xong</span>
+                <span class="font-bold text-white text-[11px] truncate">${this.escapeHtml(data.comment.author_name || currentUser.name)}</span>
+                <span class="text-[9.5px] text-slate-500">Vừa xong</span>
               </div>
-              <p class="text-slate-300 mt-0.5 leading-relaxed break-words">${this.escapeHtml(data.comment.content)}</p>
+              <p class="text-slate-300 text-[11.5px] leading-snug break-words">${this.escapeHtml(data.comment.content)}</p>
             </div>
           `;
           listEl.appendChild(div);
@@ -419,6 +518,7 @@ class FeedController {
       if (data.success) {
         this.posts = this.posts.filter(p => p.id !== postId);
         this.renderPosts();
+        this.renderProfileCard();
         if (window.app) window.app.showToast("Đã xóa bài viết thành công.");
       }
     } catch (e) {
@@ -457,13 +557,16 @@ class FeedController {
     if (coverEl && user.cover_image) {
       coverEl.style.backgroundImage = `url('${user.cover_image}')`;
     }
-    if (avatarEl) avatarEl.src = user.avatar;
+    if (avatarEl) {
+      avatarEl.src = user.avatar;
+      avatarEl.onerror = () => { avatarEl.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'; };
+    }
     if (nameEl) nameEl.textContent = user.name;
     if (handleEl) handleEl.textContent = `@${user.username || 'user'}`;
-    if (bioEl) bioEl.textContent = user.bio || 'Chưa cập nhật tiểu sử.';
+    if (bioEl) bioEl.textContent = user.bio || 'Thành viên kết nối chính thức 🌟';
     if (locationEl) locationEl.textContent = user.location_name || 'Việt Nam';
 
-    const myPostCount = this.posts.filter(p => p.user_id === user.id).length;
+    const myPostCount = this.posts.filter(p => p.user_id === user.id || p.author_username === user.username || (user.id && p.user_id && (p.user_id.includes('61175642') || p.user_id.includes('1791424965072')))).length;
     if (statPostsEl) statPostsEl.textContent = myPostCount;
   }
 

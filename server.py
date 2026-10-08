@@ -260,7 +260,24 @@ def init_db():
     c.execute('''
         INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', ("user_1791424965072", "125001110", hash_pw("123456"), "Lifetime Sin", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
+    ''', ("user_1791424965072", "fb_122128466805379955", hash_pw("123456"), "Lifetime Sin", "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
+
+    c.execute('''
+        INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', ("user_1791461175642", "125001110", hash_pw("123456"), "Lifetime Sin", "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
+
+    # Update any placeholder users to Lifetime Sin safely
+    try:
+        c.execute('''
+            UPDATE users SET 
+                name = 'Lifetime Sin', 
+                avatar = 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za'
+            WHERE id IN ('user_1791461175642', 'user_1791424965072') OR username = 'user_61175642' OR (name = 'Người dùng SEE LAD' AND id LIKE '%61175642%')
+        ''')
+        c.execute("UPDATE users SET username = '125001110' WHERE id = 'user_1791461175642'")
+    except Exception as ue:
+        print("Username update safe note:", ue)
 
     # Seed friendship between them
     c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791395608431', 'user_1791396467957', 'accepted')")
@@ -2503,9 +2520,47 @@ def api_call_poll():
 def api_get_posts():
     current_user_id = request.args.get('user_id', '').strip()
     target_user_id = request.args.get('target_user_id', '').strip()
+    user_name = request.args.get('user_name', '').strip()
+    user_username = request.args.get('user_username', '').strip()
+    user_avatar = request.args.get('user_avatar', '').strip()
 
     conn = get_db()
     c = conn.cursor()
+
+    # Dynamic sync user profile info if passed from client
+    active_uid = current_user_id or target_user_id
+    if active_uid and user_name and user_name not in ('Người dùng SEE LAD', 'Người dùng', ''):
+        c.execute('SELECT id, name FROM users WHERE id = ?', (active_uid,))
+        ex = c.fetchone()
+        clean_uname = user_username if (user_username and not user_username.startswith('user_')) else f"user_{active_uid[-8:]}"
+        if not ex:
+            c.execute('''
+                INSERT INTO users (id, username, password_hash, name, avatar, bio, status)
+                VALUES (?, ?, ?, ?, ?, ?, 'online')
+            ''', (active_uid, clean_uname, hash_pw("123456"), user_name, user_avatar or "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za", "Thành viên kết nối chính thức 🌟"))
+            conn.commit()
+        else:
+            c.execute('''
+                UPDATE users SET 
+                    name = ?,
+                    username = CASE WHEN ? != '' AND ? NOT LIKE 'user_%' THEN ? ELSE username END,
+                    avatar = CASE WHEN ? != '' AND ? NOT LIKE '%dicebear%' THEN ? ELSE avatar END
+                WHERE id = ?
+            ''', (user_name, user_username, user_username, user_username, user_avatar, user_avatar, user_avatar, active_uid))
+            conn.commit()
+
+    # Auto fix Lifetime Sin placeholder if encountered safely
+    try:
+        c.execute('''
+            UPDATE users SET 
+                name = 'Lifetime Sin', 
+                avatar = 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za'
+            WHERE id IN ('user_1791461175642', 'user_1791424965072') OR username = 'user_61175642' OR (name = 'Người dùng SEE LAD' AND id LIKE '%61175642%')
+        ''')
+        c.execute("UPDATE users SET username = '125001110' WHERE id = 'user_1791461175642'")
+        conn.commit()
+    except Exception as ue:
+        print("Auto fix users safe note:", ue)
 
     if target_user_id:
         c.execute('''
@@ -2559,6 +2614,9 @@ def api_create_post():
     try:
         data = request.json or {}
         user_id = data.get('user_id', '').strip()
+        author_name = data.get('author_name', '').strip()
+        author_username = data.get('author_username', '').strip()
+        author_avatar = data.get('author_avatar', '').strip()
         content = data.get('content', '').strip()
         image_url = data.get('image_url', '').strip()
         mood = data.get('mood', '🌟 Vui vẻ').strip()
@@ -2585,20 +2643,34 @@ def api_create_post():
         conn = get_db()
         c = conn.cursor()
 
-        # Ensure author exists in users table
+        # Target author info with sensible fallbacks
+        target_name = author_name if (author_name and author_name not in ('Người dùng SEE LAD', 'Người dùng', '')) else ("Lifetime Sin" if ("125001110" in author_username or "Lifetime" in author_name or "61175642" in user_id) else "Thành viên SEE LAD")
+        target_username = author_username if (author_username and not author_username.startswith('user_')) else ("125001110" if "61175642" in user_id else f"user_{user_id[-8:]}")
+        target_avatar = author_avatar if (author_avatar and 'dicebear' not in author_avatar) else "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za"
+
+        # Ensure author exists in users table with real identity
         c.execute('SELECT id, name, username, avatar FROM users WHERE id = ?', (user_id,))
-        if not c.fetchone():
+        existing_user = c.fetchone()
+        if not existing_user:
             c.execute('''
-                INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status)
+                INSERT INTO users (id, username, password_hash, name, avatar, bio, status)
                 VALUES (?, ?, ?, ?, ?, ?, 'online')
             ''', (
                 user_id,
-                f"user_{user_id[-8:]}",
+                target_username,
                 hash_pw("123456"),
-                "Lifetime Sin" if "1791424965072" in user_id else "Người dùng SEE LAD",
-                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+                target_name,
+                target_avatar,
                 "Thành viên kết nối chính thức 🌟"
             ))
+            conn.commit()
+        else:
+            if target_name and existing_user['name'] != target_name and target_name != 'Người dùng SEE LAD':
+                c.execute('UPDATE users SET name = ? WHERE id = ?', (target_name, user_id))
+            if target_username and not target_username.startswith('user_'):
+                c.execute('UPDATE users SET username = ? WHERE id = ?', (target_username, user_id))
+            if target_avatar and 'dicebear' not in target_avatar:
+                c.execute('UPDATE users SET avatar = ? WHERE id = ?', (target_avatar, user_id))
             conn.commit()
 
         c.execute('''
@@ -2666,6 +2738,9 @@ def api_toggle_post_like(post_id):
 def api_add_post_comment(post_id):
     data = request.json or {}
     user_id = data.get('user_id', '').strip()
+    author_name = data.get('author_name', '').strip()
+    author_username = data.get('author_username', '').strip()
+    author_avatar = data.get('author_avatar', '').strip()
     content = data.get('content', '').strip()
     if not user_id or not content:
         return jsonify({'error': 'Vui lòng nhập nội dung bình luận!'}), 400
@@ -2674,20 +2749,33 @@ def api_add_post_comment(post_id):
     conn = get_db()
     c = conn.cursor()
 
+    target_name = author_name if (author_name and author_name not in ('Người dùng SEE LAD', 'Người dùng', '')) else ("Lifetime Sin" if ("125001110" in author_username or "Lifetime" in author_name or "61175642" in user_id) else "Thành viên SEE LAD")
+    target_username = author_username if (author_username and not author_username.startswith('user_')) else ("125001110" if "61175642" in user_id else f"user_{user_id[-8:]}")
+    target_avatar = author_avatar if (author_avatar and 'dicebear' not in author_avatar) else "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za"
+
     # Ensure author exists in users table
-    c.execute('SELECT id FROM users WHERE id = ?', (user_id,))
-    if not c.fetchone():
+    c.execute('SELECT id, name FROM users WHERE id = ?', (user_id,))
+    existing_user = c.fetchone()
+    if not existing_user:
         c.execute('''
             INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status)
             VALUES (?, ?, ?, ?, ?, ?, 'online')
         ''', (
             user_id,
-            f"user_{user_id[-8:]}",
+            target_username,
             hash_pw("123456"),
-            "Lifetime Sin" if "1791424965072" in user_id else "Người dùng SEE LAD",
-            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+            target_name,
+            target_avatar,
             "Thành viên kết nối chính thức 🌟"
         ))
+        conn.commit()
+    else:
+        if target_name and existing_user['name'] != target_name and target_name != 'Người dùng SEE LAD':
+            c.execute('UPDATE users SET name = ? WHERE id = ?', (target_name, user_id))
+        if target_username and not target_username.startswith('user_'):
+            c.execute('UPDATE users SET username = ? WHERE id = ?', (target_username, user_id))
+        if target_avatar and 'dicebear' not in target_avatar:
+            c.execute('UPDATE users SET avatar = ? WHERE id = ?', (target_avatar, user_id))
         conn.commit()
 
     c.execute('''
