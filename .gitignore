@@ -1,0 +1,23 @@
+# Secrets & Credentials
+oauth_config.json
+.env
+
+# Databases & Uploads
+*.db
+uploads/*
+!uploads/.gitkeep
+
+# Cloudflare & Temp
+cloudflared.exe
+*.log
+tunnel_url.txt
+public_url.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db

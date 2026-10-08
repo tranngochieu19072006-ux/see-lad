@@ -1,0 +1,119 @@
+/* ==========================================================================
+   SEE LAD - Chat Themes & Multi-Interface Color Presets
+   Supports: Dark Mode, Light Mode, & 6 Signature Chat Themes across PC/Tablet/Mobile
+   ========================================================================== */
+
+/* 1. Cyber Indigo (Default) */
+.theme-cyber-indigo {
+  --chat-bubble-self: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+  --chat-glow: rgba(99, 102, 241, 0.38);
+  --chat-accent: #818cf8;
+  --chat-tint: radial-gradient(circle at 85% 15%, rgba(99, 102, 241, 0.10) 0%, transparent 55%);
+}
+
+/* 2. Sunset Blaze */
+.theme-sunset-blaze {
+  --chat-bubble-self: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  --chat-glow: rgba(249, 115, 22, 0.38);
+  --chat-accent: #fb923c;
+  --chat-tint: radial-gradient(circle at 85% 15%, rgba(249, 115, 22, 0.10) 0%, transparent 55%);
+}
+
+/* 3. Emerald Matrix */
+.theme-emerald-matrix {
+  --chat-bubble-self: linear-gradient(135deg, #059669 0%, #0891b2 100%);
+  --chat-glow: rgba(16, 185, 129, 0.38);
+  --chat-accent: #34d399;
+  --chat-tint: radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.10) 0%, transparent 55%);
+}
+
+/* 4. Midnight Neon */
+.theme-midnight-neon {
+  --chat-bubble-self: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+  --chat-glow: rgba(59, 130, 246, 0.38);
+  --chat-accent: #38bdf8;
+  --chat-tint: radial-gradient(circle at 85% 15%, rgba(56, 189, 248, 0.10) 0%, transparent 55%);
+}
+
+/* 5. Cotton Candy */
+.theme-cotton-candy {
+  --chat-bubble-self: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  --chat-glow: rgba(236, 72, 153, 0.38);
+  --chat-accent: #f472b6;
+  --chat-tint: radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.10) 0%, transparent 55%);
+}
+
+/* 6. Royal Gold */
+.theme-royal-gold {
+  --chat-bubble-self: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  --chat-glow: rgba(217, 119, 6, 0.38);
+  --chat-accent: #fbbf24;
+  --chat-tint: radial-gradient(circle at 85% 15%, rgba(245, 158, 11, 0.10) 0%, transparent 55%);
+}
+
+/* Legacy Theme Aliases for backwards compatibility */
+.theme-neon-purple {
+  --chat-bubble-self: linear-gradient(135deg, #7c3aed 0%, #c026d3 100%);
+  --chat-glow: rgba(124, 58, 237, 0.38);
+}
+.theme-sunset-glow {
+  --chat-bubble-self: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  --chat-glow: rgba(249, 115, 22, 0.38);
+}
+
+/* Chat Wallpaper Overlays & Ambient Theme Tint */
+.chat-bg-pattern-default {
+  background-image:
+    var(--chat-tint, radial-gradient(circle at 85% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 55%)),
+    radial-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 100% 100%, 24px 24px;
+}
+
+[data-theme="light"] .chat-bg-pattern-default {
+  background-image:
+    var(--chat-tint, radial-gradient(circle at 85% 15%, rgba(99, 102, 241, 0.06) 0%, transparent 55%)),
+    radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 24px 24px;
+}
+
+.chat-bg-pattern-stars {
+  background-image: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.12) 0%, transparent 60%);
+}
+
+.chat-bg-pattern-grid {
+  background-size: 30px 30px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+[data-theme="light"] .chat-bg-pattern-grid {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+
+/* Pinned Message Bar */
+.pinned-banner {
+  background: rgba(99, 102, 241, 0.12);
+  border-left: 3px solid #6366f1;
+  backdrop-filter: blur(10px);
+}
+
+/* Audio Player Bubble */
+.audio-msg-track {
+  background: rgba(255, 255, 255, 0.18);
+  height: 4px;
+  border-radius: 9999px;
+  cursor: pointer;
+  position: relative;
+}
+
+[data-theme="light"] .audio-msg-track {
+  background: rgba(15, 23, 42, 0.15);
+}
+
+.audio-msg-progress {
+  background: #ffffff;
+  height: 100%;
+  border-radius: 9999px;
+  width: 0%;
+  transition: width 0.1s linear;
+}

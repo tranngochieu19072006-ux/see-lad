@@ -1,0 +1,597 @@
+/* ==========================================================================
+   SEE LAD - Modern Premium Multi-Device & Multi-Theme CSS
+   Tác giả: Trần Ngọc Hiếu
+   Supports: PC (Desktop), Tablet (iPad/Android Tab), Mobile (iOS/Android)
+   Supports: Dark Mode, Light Mode, & 6 Signature Chat Themes
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --font-main: 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Be Vietnam Pro', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Dark Theme Tokens (Default) */
+  --bg-primary: #090d16;
+  --bg-secondary: #0f172a;
+  --bg-tertiary: #1e293b;
+  --bg-card: rgba(15, 23, 42, 0.78);
+  --bg-card-hover: rgba(30, 41, 59, 0.88);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(99, 102, 241, 0.55);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #4f46e5;
+  --accent-glow: rgba(99, 102, 241, 0.35);
+
+  --status-online: #10b981;
+  --status-online-glow: rgba(16, 185, 129, 0.4);
+  --status-busy: #f59e0b;
+  --status-busy-glow: rgba(245, 158, 11, 0.4);
+  --status-offline: #ef4444;
+  --status-offline-glow: rgba(239, 68, 68, 0.4);
+
+  --chat-bubble-self: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --chat-bubble-other: rgba(30, 41, 59, 0.88);
+
+  --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.25);
+
+  --transition-theme: background-color 0.3s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* ==========================================================================
+   LIGHT MODE THEME TOKENS & CONTRAST HARMONIZATION
+   ========================================================================== */
+[data-theme="light"] {
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e2e8f0;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --bg-card-hover: rgba(241, 245, 249, 0.98);
+  --border-color: rgba(15, 23, 42, 0.10);
+  --border-focus: rgba(79, 70, 229, 0.45);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --accent-primary: #4f46e5;
+  --accent-primary-hover: #4338ca;
+  --accent-glow: rgba(79, 70, 229, 0.2);
+
+  --chat-bubble-self: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --chat-bubble-other: #ffffff;
+
+  --shadow-card: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
+  --shadow-glow: 0 0 25px rgba(79, 70, 229, 0.15);
+}
+
+[data-theme="light"] body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Adapt hardcoded dark utility classes inside main app when in Light Mode */
+[data-theme="light"] #main-app h1,
+[data-theme="light"] #main-app h2,
+[data-theme="light"] #main-app h3,
+[data-theme="light"] #main-app h4:not(#qr-vip-card-preview h4) {
+  color: #0f172a;
+}
+
+[data-theme="light"] #chat-sidebar h4,
+[data-theme="light"] #active-chat-name,
+[data-theme="light"] header .user-display-name,
+[data-theme="light"] #tab-view-radar h3,
+[data-theme="light"] #tab-view-hub h2,
+[data-theme="light"] #tab-view-hub h3,
+[data-theme="light"] #tab-view-hub h4,
+[data-theme="light"] #tab-view-qr h2,
+[data-theme="light"] #tab-view-qr label span,
+[data-theme="light"] #tab-view-qr .qr-color-preset p.text-white,
+[data-theme="light"] #tab-view-schedule h2,
+[data-theme="light"] #tab-view-schedule h4 {
+  color: #0f172a !important;
+}
+
+/* Incoming chat bubbles in Light Mode */
+[data-theme="light"] #chat-messages-container .bg-slate-800\/90 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.10) !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Conversation list items in Light Mode */
+[data-theme="light"] #conversation-list > div:not(.bg-indigo-600\/15) {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(15, 23, 42, 0.07) !important;
+}
+[data-theme="light"] #conversation-list > div:hover {
+  background-color: rgba(79, 70, 229, 0.08) !important;
+}
+
+/* Form inputs & dark containers in Light Mode */
+[data-theme="light"] #tab-view-schedule select,
+[data-theme="light"] #tab-view-schedule input[type="datetime-local"] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] #tab-view-qr .bg-black\/30 {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+[data-theme="light"] #tab-view-qr .bg-black\/30 p.text-white {
+  color: #0f172a !important;
+}
+
+/* Keep VIP QR Card Preview & Video Call Modal dark-styled for optical contrast */
+[data-theme="light"] #qr-vip-card-preview,
+[data-theme="light"] #call-modal-overlay {
+  color: #f8fafc;
+}
+[data-theme="light"] #qr-vip-card-preview h4 {
+  color: #ffffff !important;
+}
+
+/* ==========================================================================
+   BASE RESET & LAYOUT CONTAINERS
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  font-family: var(--font-main);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth momentum scrolling on all scrollable panels */
+#conversation-list,
+#chat-messages-container,
+#tab-view-hub,
+#tab-view-qr,
+#tab-view-schedule,
+#radar-friends-list {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Custom Scrollbar for smooth scrolling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* Call Record Cards */
+.call-record-missed {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(159, 18, 57, 0.25) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+.call-record-success {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+[data-theme="light"] .call-record-missed {
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.95) 0%, rgba(254, 205, 211, 0.95) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+[data-theme="light"] .call-record-missed h5,
+[data-theme="light"] .call-record-success h5 {
+  color: #0f172a !important;
+}
+[data-theme="light"] .call-record-success {
+  background: linear-gradient(135deg, rgba(224, 231, 255, 0.95) 0%, rgba(209, 250, 229, 0.95) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+/* Glassmorphism Classes */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  transition: var(--transition-theme);
+}
+
+.glass-dropdown {
+  background: var(--bg-secondary);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+[data-theme="light"] .glass-input {
+  background: rgba(15, 23, 42, 0.04);
+  color: #0f172a;
+}
+
+.glass-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Glowing Status Rings */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.status-online {
+  background-color: var(--status-online);
+  box-shadow: 0 0 6px var(--status-online);
+}
+.status-online.pulse::after {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 50%;
+  background: var(--status-online);
+  opacity: 0.4;
+  animation: ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.status-busy {
+  background-color: var(--status-busy);
+  box-shadow: 0 0 10px var(--status-busy);
+}
+
+.status-offline {
+  background-color: var(--status-offline);
+  box-shadow: 0 0 8px var(--status-offline);
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* Typewriter Cursor */
+.typewriter-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1.1em;
+  background-color: var(--accent-primary);
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Floating Chat Bubble (Chat Head) */
+.chat-head-bubble {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.35), 0 0 20px var(--accent-glow);
+  cursor: grab;
+  z-index: 9990;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  user-select: none;
+}
+
+.chat-head-bubble:active {
+  cursor: grabbing;
+  transform: scale(1.08);
+}
+
+/* Audio Waveform Canvas */
+.waveform-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+/* Call Ripple Animation */
+.call-ripple {
+  position: relative;
+}
+.call-ripple::before,
+.call-ripple::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-primary);
+  animation: callPulse 2s infinite ease-out;
+  opacity: 0;
+}
+.call-ripple::after {
+  animation-delay: 1s;
+}
+
+@keyframes callPulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Radar Scan Line */
+.radar-sweep {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(99,102,241,0.8), transparent);
+  transform-origin: 0% 0%;
+  animation: sweep 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Custom Gradient Button */
+.btn-gradient {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 6s ease infinite;
+  color: #ffffff !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Modal Transitions */
+.modal-enter {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+}
+.modal-enter-active {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Leaflet Map Dark/Light styling overrides */
+.leaflet-container {
+  background-color: var(--bg-primary) !important;
+  font-family: var(--font-main) !important;
+}
+
+[data-theme="dark"] .leaflet-tile {
+  filter: brightness(0.6) invert(1) contrast(2.5) hue-rotate(200deg) saturate(0.4) brightness(0.75) !important;
+}
+
+[data-theme="light"] .leaflet-tile {
+  filter: none !important;
+}
+
+/* Theme switch slider */
+.theme-toggle-slider {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Slim professional chat borders */
+.chat-bubble-thin {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+[data-theme="light"] .chat-bubble-thin {
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+/* ==========================================================================
+   RESPONSIVE BREAKPOINTS FOR MOBILE, TABLET, AND PC
+   ========================================================================== */
+
+/* 1. MOBILE (< 768px): Smartphones in Portrait & Compact Landscape */
+@media (max-width: 767px) {
+  /* Bottom Navigation Bar Safe-Area Support */
+  #main-app nav {
+    padding-bottom: max(0.4rem, env(safe-area-inset-bottom, 0px));
+    height: auto;
+    min-height: calc(3.4rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Full Screen Mobile Chat: chat-input-area safe area */
+  #chat-active-window #chat-input-area {
+    padding-bottom: max(0.6rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Keep floating chat bubble above the mobile bottom tab bar */
+  .chat-head-bubble {
+    bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    right: 14px;
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Prevent iOS Safari auto-zoom on input focus while keeping compact visual look */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  #search-chat-input,
+  #chat-text-input {
+    font-size: 14px !important;
+  }
+
+  /* Optimize message bubble max-width on narrow phone screens */
+  #chat-messages-container .max-w-\[75\%\] {
+    max-width: 88% !important;
+  }
+
+  /* Ensure modals fit perfectly without overflowing small mobile screens */
+  .glass.max-w-md,
+  .glass.max-w-lg,
+  .glass.max-w-xl {
+    max-height: calc(90dvh - 20px) !important;
+    overflow-y: auto !important;
+    margin: auto 12px !important;
+  }
+}
+
+/* 2. TABLET (768px – 1023px): iPad Mini, iPad Air, Android Tablets */
+@media (min-width: 768px) and (max-width: 1023px) {
+  #chat-messages-container .max-w-\[75\%\] {
+    max-width: 80% !important;
+  }
+}
+
+/* 3. PC / DESKTOP (>= 1024px): Laptops, Widescreen Monitors */
+@media (min-width: 1024px) {
+  #chat-messages-container .max-w-\[75\%\] {
+    max-width: 68% !important;
+  }
+}
+
+/* ==========================================================================
+   AUDIO-REACTIVE VOICE MESSAGE EQUALIZER & SONIC WAVE ANIMATIONS
+   ========================================================================== */
+.voice-eq-bar {
+  background: rgba(148, 163, 184, 0.35);
+  transition: height 55ms ease-out, background 120ms ease, box-shadow 120ms ease;
+}
+
+.voice-eq-bar.voice-bar-played {
+  background: linear-gradient(180deg, #22d3ee 0%, #6366f1 100%);
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.45);
+}
+
+.voice-eq-bar.voice-bar-active {
+  background: linear-gradient(180deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+}
+
+.voice-card-playing {
+  border-color: rgba(34, 211, 238, 0.55) !important;
+  box-shadow: 0 0 22px rgba(34, 211, 238, 0.18), inset 0 0 12px rgba(99, 102, 241, 0.12) !important;
+}
+
+/* ==========================================================================
+   AUTH SCREEN & MULTI-DEVICE STABLE LOGIN CONTAINER
+   Cố định giao diện đăng nhập 1 chỗ, chống trôi trượt kéo giật trên mọi thiết bị
+   ========================================================================== */
+#auth-screen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+#auth-screen.hidden {
+  display: none !important;
+}
+
+#auth-card-container {
+  width: 100%;
+  max-width: 440px;
+  margin: auto;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+#auth-card-container::-webkit-scrollbar {
+  width: 4px;
+}
+#auth-card-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+}
+
+
+

@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.seelad.app",
+        "sha256_cert_fingerprints": ["E8:D9:BF:09:75:9C:6C:0C:39:83:11:7E:97:12:2D:5B:D7:B1:C8:6E:6C:3E:01:0E:01:DD:F8:82:FE:AF:73:A9"]
+      }
+    }]

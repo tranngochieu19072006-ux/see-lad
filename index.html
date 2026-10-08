@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SEE LAD - Nền tảng nhắn tin & kết nối đa phương tiện</title>
+  
+  <!-- PWA Manifest & Android / Mobile Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SEE LAD">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+
+  <!-- Google Fonts: Be Vietnam Pro (Gold standard for Vietnamese UI) + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/main.css?v=3.9">
+  <link rel="stylesheet" href="css/themes.css?v=3.9">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: ['selector', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Be Vietnam Pro"', '"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+            heading: ['"Be Vietnam Pro"', '"Inter"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Instant Auth State Detector -->
+  <script>
+    try {
+      if (localStorage.getItem('see_lad_user')) {
+        document.documentElement.classList.add('user-logged-in');
+      }
+    } catch(e) {}
+  </script>
+  <style>
+    html, body {
+      height: 100% !important;
+      height: 100dvh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+    }
+    html.user-logged-in #intro-screen,
+    html.user-logged-in #auth-screen {
+      display: none !important;
+    }
+    html.user-logged-in #main-app {
+      display: flex !important;
+      height: 100% !important;
+      height: 100dvh !important;
+      max-height: 100dvh !important;
+      overflow: hidden !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  </style>
+</head>
+<body class="bg-[#090d16] text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- =========================================================================
+       1. MÀN HÌNH INTRO (Ẩn mặc định để vào thẳng ứng dụng / đăng nhập)
+       ========================================================================= -->
+  <div id="intro-screen" class="hidden fixed inset-0 z-50 flex flex-col justify-between p-6 sm:p-12 md:p-16 bg-[#090d16] overflow-hidden select-none">
+    <!-- Ambient Neon Glowing Blobs -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-indigo-600/30 rounded-full blur-[130px] pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-pink-600/25 rounded-full blur-[130px] pointer-events-none"></div>
+
+    <!-- Top Bar with Skip Button -->
+    <div class="relative z-10 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+          <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+        </div>
+        <span class="font-heading font-extrabold text-2xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-indigo-400">SEE LAD</span>
+      </div>
+      <button id="btn-skip-intro" class="px-5 py-2.5 rounded-full glass hover:bg-white/10 text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
+        <span>Bỏ qua</span>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Center Typewriter Hero Block -->
+    <div class="relative z-10 max-w-4xl my-auto">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold uppercase tracking-widest mb-6">
+        <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+        Nhà phát triển & Sáng tạo ứng dụng
+      </div>
+
+      <!-- Tên: Trần Ngọc Hiếu với hiệu ứng gõ phím -->
+      <h1 class="font-heading text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
+        <span id="intro-name" class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400"></span>
+      </h1>
+
+      <!-- Dòng mô tả tự động xóa và gõ lại -->
+      <div class="mt-6 text-lg sm:text-2xl md:text-3xl text-slate-300 font-mono min-h-[70px] flex items-center flex-wrap leading-relaxed">
+        <span id="intro-desc" class="text-indigo-200"></span>
+        <span class="typewriter-cursor"></span>
+      </div>
+
+      <!-- Lời cảm ơn -->
+      <div id="intro-thanks" class="hidden mt-6 text-base sm:text-xl text-pink-400 font-semibold leading-relaxed"></div>
+
+      <!-- Nút khám phá ngay -->
+      <div id="intro-action" class="mt-10 opacity-0 pointer-events-none translate-y-4 transition-all duration-700">
+        <button id="btn-enter-app" class="btn-gradient px-8 py-4 rounded-2xl shadow-xl flex items-center gap-3 text-base sm:text-lg font-bold">
+          <span>Khám phá SEE LAD ngay</span>
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom credits -->
+    <div class="relative z-10 flex items-center justify-between text-xs text-slate-500">
+      <p>© 2026 SEE LAD • Thiết kế & Lập trình bởi Trần Ngọc Hiếu</p>
+      <div class="flex items-center gap-2 text-indigo-400 font-medium">
+        <i data-lucide="volume-2" class="w-4 h-4"></i>
+        <span>Âm thanh gõ phím chân thực</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       2. MÀN HÌNH ĐĂNG NHẬP / ĐĂNG KÝ (AUTH) - CỐ ĐỊNH 1 CHỖ, RESPONSIVE MỌI THIẾT BỊ
+       ========================================================================= -->
+  <div id="auth-screen" class="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-5 bg-[#080c14] overflow-hidden select-none">
+    <!-- Subtle Ambient Glow (Locked in place) -->
+    <div class="absolute w-[450px] h-[450px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none"></div>
+
+    <div id="auth-card-container" class="relative z-10 w-full max-w-[400px] bg-[#0c1017] p-5 sm:p-6 rounded-[24px] border border-[#1a2333] shadow-2xl shadow-black/80">
+      
+      <!-- ================= LOGIN FORM ================= -->
+      <form id="form-login" class="space-y-4">
+        <!-- Brand Title & Subtitle -->
+        <div class="mb-4">
+          <h1 class="text-3xl font-black text-white tracking-tight">Đăng nhập<span class="text-[#38e1e8]">.</span></h1>
+          <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Đăng nhập để tiếp tục sử dụng hệ thống. Giao diện tối giản, dễ nhìn và được thiết kế cho trải nghiệm mượt mà.</p>
+        </div>
+
+        <!-- Input: Địa chỉ email -->
+        <div class="relative">
+          <input type="text" id="login-email" placeholder="Địa chỉ email" required
+            class="w-full bg-[#121824] border border-[#1f293d] focus:border-[#38e1e8] text-white placeholder-slate-500 px-4 py-3 pr-11 rounded-xl text-sm transition-all focus:outline-none focus:ring-1 focus:ring-[#38e1e8]" />
+          <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+            <i data-lucide="mail" class="w-4 h-4"></i>
+          </div>
+        </div>
+
+        <!-- Input: Mật khẩu -->
+        <div class="relative">
+          <input type="password" id="login-password" placeholder="Mật khẩu"
+            class="w-full bg-[#121824] border border-[#1f293d] focus:border-[#38e1e8] text-white placeholder-slate-500 px-4 py-3 pr-11 rounded-xl text-sm transition-all focus:outline-none focus:ring-1 focus:ring-[#38e1e8]" />
+          <button type="button" id="login-toggle-pw" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white transition-colors" tabindex="-1">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Row: Ghi nhớ đăng nhập + Quên mật khẩu? -->
+        <div class="flex items-center justify-between text-xs text-slate-400 pt-0.5">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="login-remember" checked class="w-4 h-4 rounded bg-[#121824] border-[#1f293d] text-[#38e1e8] accent-[#38e1e8]" />
+            <span>Ghi nhớ đăng nhập</span>
+          </label>
+          <a href="#" id="btn-forgot-pw" class="text-[#38e1e8] hover:underline font-medium">Quên mật khẩu?</a>
+        </div>
+
+        <!-- Button: Đăng nhập -->
+        <button type="submit" id="btn-submit-login" class="w-full py-3 px-4 bg-[#38e1e8] hover:bg-[#2ed0d7] active:scale-[0.99] text-black font-bold rounded-xl text-sm transition-all shadow-lg shadow-[#38e1e8]/25 flex items-center justify-center gap-2 cursor-pointer">
+          <span id="btn-login-text">Đăng nhập</span>
+        </button>
+
+        <!-- Divider -->
+        <div class="relative flex items-center justify-center my-4">
+          <div class="border-t border-[#1a2333] w-full"></div>
+          <span class="bg-[#0c1017] px-3 text-xs text-slate-400 absolute">hoặc tiếp tục với</span>
+        </div>
+
+        <!-- Social Buttons: Google, Facebook, GitHub -->
+        <div class="grid grid-cols-3 gap-2.5">
+          <!-- 1. Google -->
+          <a href="/api/oauth/login/google" class="btn-social-auth flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-[#121824] hover:bg-[#1a2333] border border-[#1f293d] hover:border-blue-500/50 text-white text-xs font-semibold transition-all group cursor-pointer" data-provider="google">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3h3.88c2.27-2.09 3.66-5.17 3.66-9.09z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.09C3.27 21.36 7.34 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.28 14.32c-.25-.72-.38-1.49-.38-2.32s.13-1.6.38-2.32V6.59H1.26C.46 8.18 0 9.99 0 12s.46 3.82 1.26 5.41l4.02-3.09z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.27 2.64 1.26 6.59l4.02 3.09c.95-2.83 3.6-4.93 6.72-4.93z"/>
+            </svg>
+            <span class="truncate">Google</span>
+          </a>
+
+          <!-- 2. Facebook -->
+          <a href="/api/oauth/login/facebook" class="btn-social-auth flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-[#121824] hover:bg-[#1a2333] border border-[#1f293d] hover:border-blue-600/50 text-white text-xs font-semibold transition-all group cursor-pointer" data-provider="facebook">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="#1877F2">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <span class="truncate">Facebook</span>
+          </a>
+
+          <!-- 3. GitHub -->
+          <a href="/api/oauth/login/github" class="btn-social-auth flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-[#121824] hover:bg-[#1a2333] border border-[#1f293d] hover:border-slate-400/50 text-white text-xs font-semibold transition-all group cursor-pointer" data-provider="github">
+            <svg class="w-4 h-4 fill-white shrink-0" viewBox="0 0 24 24">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            <span class="truncate">GitHub</span>
+          </a>
+        </div>
+
+        <!-- Mẹo đăng nhập nhanh -->
+        <p class="text-[11px] text-center text-slate-500 leading-normal pt-1">
+          💡 Mẹo: Bấm nút <span class="text-[#38e1e8] font-semibold">Đăng nhập</span> màu xanh ở trên để vào app ngay tức khắc 100%, hoặc mở <a href="http://localhost:3000" class="text-indigo-400 hover:underline font-medium">localhost:3000</a> nếu dùng OAuth trên máy tính.
+        </p>
+
+        <!-- Switch Link to Register -->
+        <div class="text-center pt-1 text-xs text-slate-400">
+          <span>Chưa có tài khoản?</span>
+          <button type="button" id="link-to-register" class="text-[#38e1e8] font-bold hover:underline ml-1 cursor-pointer">Đăng ký ngay</button>
+        </div>
+      </form>
+
+      <!-- ================= REGISTER FORM ================= -->
+      <form id="form-register" class="space-y-4 hidden">
+        <!-- Title & Subtitle -->
+        <div class="mb-4">
+          <h1 class="text-3xl font-black text-white tracking-tight">Đăng ký<span class="text-[#38e1e8]">.</span></h1>
+          <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Tạo tài khoản mới để kết nối ngay trên SEE LAD.</p>
+        </div>
+
+        <!-- 1. Họ và tên (Icon User right) -->
+        <div class="relative">
+          <input type="text" id="reg-name" placeholder="Họ và tên của bạn" required
+            class="w-full bg-[#121824] border border-[#1f293d] focus:border-[#38e1e8] text-white placeholder-slate-500 px-4 py-2.5 pr-11 rounded-xl text-sm transition-all focus:outline-none focus:ring-1 focus:ring-[#38e1e8]" />
+          <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+            <i data-lucide="user" class="w-4 h-4"></i>
+          </div>
+        </div>
+
+        <!-- 2. Địa chỉ email (Icon Mail right) -->
+        <div class="relative">
+          <input type="email" id="reg-email" placeholder="Địa chỉ email" required
+            class="w-full bg-[#121824] border border-[#1f293d] focus:border-[#38e1e8] text-white placeholder-slate-500 px-4 py-2.5 pr-11 rounded-xl text-sm transition-all focus:outline-none focus:ring-1 focus:ring-[#38e1e8]" />
+          <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+            <i data-lucide="mail" class="w-4 h-4"></i>
+          </div>
+        </div>
+
+        <!-- 3. Tạo mật khẩu (Icon Eye right) -->
+        <div class="relative">
+          <input type="password" id="reg-password" placeholder="Tạo mật khẩu đăng nhập" required
+            class="w-full bg-[#121824] border border-[#1f293d] focus:border-[#38e1e8] text-white placeholder-slate-500 px-4 py-2.5 pr-11 rounded-xl text-sm transition-all focus:outline-none focus:ring-1 focus:ring-[#38e1e8]" />
+          <button type="button" id="reg-toggle-pw" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white transition-colors" tabindex="-1">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- 4. Checkbox Điều khoản sử dụng và Chính sách bảo mật -->
+        <div class="pt-0.5">
+          <label class="flex items-start gap-2 cursor-pointer select-none text-[11px] text-slate-400">
+            <input type="checkbox" id="reg-terms" required checked class="w-3.5 h-3.5 mt-0.5 rounded bg-[#121824] border-[#1f293d] text-[#38e1e8] accent-[#38e1e8]" />
+            <span class="leading-tight">Tôi đồng ý với <a href="#" class="text-[#38e1e8] hover:underline font-medium">Điều khoản sử dụng</a> và <a href="#" class="text-[#38e1e8] hover:underline font-medium">Chính sách</a></span>
+          </label>
+        </div>
+
+        <!-- Button: Đăng ký tài khoản -->
+        <button type="submit" class="w-full py-2.5 px-4 bg-[#38e1e8] hover:bg-[#2ed0d7] active:scale-[0.99] text-black font-bold rounded-xl text-sm transition-all shadow-lg shadow-[#38e1e8]/20 flex items-center justify-center gap-2">
+          <span>Đăng ký tài khoản</span>
+        </button>
+
+        <!-- Divider -->
+        <div class="relative flex items-center justify-center my-3">
+          <div class="border-t border-[#1a2333] w-full"></div>
+          <span class="bg-[#0c1017] px-3 text-xs text-slate-400 absolute">hoặc tiếp tục với</span>
+        </div>
+
+        <!-- Social Buttons: Google, Facebook, GitHub -->
+        <div class="grid grid-cols-3 gap-2">
+          <a href="/api/oauth/login/google" class="btn-social-auth flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-[#121824] hover:bg-[#1a2333] border border-[#1f293d] text-white text-xs font-semibold transition-all group cursor-pointer" data-provider="google">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3h3.88c2.27-2.09 3.66-5.17 3.66-9.09z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.09C3.27 21.36 7.34 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.28 14.32c-.25-.72-.38-1.49-.38-2.32s.13-1.6.38-2.32V6.59H1.26C.46 8.18 0 9.99 0 12s.46 3.82 1.26 5.41l4.02-3.09z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.27 2.64 1.26 6.59l4.02 3.09c.95-2.83 3.6-4.93 6.72-4.93z"/>
+            </svg>
+            <span class="truncate">Google</span>
+          </a>
+
+          <a href="/api/oauth/login/facebook" class="btn-social-auth flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-[#121824] hover:bg-[#1a2333] border border-[#1f293d] text-white text-xs font-semibold transition-all group cursor-pointer" data-provider="facebook">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="#1877F2">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <span class="truncate">Facebook</span>
+          </a>
+
+          <a href="/api/oauth/login/github" class="btn-social-auth flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-[#121824] hover:bg-[#1a2333] border border-[#1f293d] text-white text-xs font-semibold transition-all group cursor-pointer" data-provider="github">
+            <svg class="w-4 h-4 fill-white shrink-0" viewBox="0 0 24 24">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            <span class="truncate">GitHub</span>
+          </a>
+        </div>
+
+        <!-- Switch Link to Login -->
+        <div class="text-center pt-1.5 text-xs text-slate-400">
+          <span>Đã có tài khoản?</span>
+          <button type="button" id="link-to-login" class="text-[#38e1e8] font-bold hover:underline ml-1">Đăng nhập</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       3. GIAO DIỆN CHÍNH (MAIN APP INTERFACE)
+       ========================================================================= -->
+  <div id="main-app" class="hidden h-screen h-[100dvh] max-h-[100dvh] flex flex-col bg-[var(--bg-primary)] overflow-hidden w-full">
+    
+    <!-- Top Global Header -->
+    <header class="glass sticky top-0 z-30 px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-[var(--border-color)] flex items-center justify-between gap-2 shrink-0">
+      <!-- App Brand Logo & Modern Wordmark -->
+      <div class="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0">
+        <!-- High-Clarity Custom SVG Emblem (Never squished) -->
+        <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-gradient-to-br from-[#1e1b4b] via-indigo-600 to-[#06b6d4] p-[1px] shadow-lg shadow-indigo-500/25">
+          <div class="w-full h-full rounded-[11px] bg-[#0b1021]/90 flex items-center justify-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-tr from-indigo-500/25 via-transparent to-cyan-400/25"></div>
+            <svg class="w-5 h-5 sm:w-5.5 sm:h-5.5 relative z-10" viewBox="0 0 24 24" fill="none">
+              <path d="M4 12C4 7.58172 7.58172 4 12 4H15C18.3137 4 21 6.68629 21 10C21 13.3137 18.3137 16 15 16H11L7 19.5V16C5.20507 15.0604 4 13.635 4 12Z" stroke="url(#seelad_grad1)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M13 7.5L10.5 11.5H14L11.5 15.5" stroke="#38e1e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <defs>
+                <linearGradient id="seelad_grad1" x1="4" y1="4" x2="21" y2="19.5" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#38e1e8"/>
+                  <stop offset="0.5" stop-color="#818cf8"/>
+                  <stop offset="1" stop-color="#ec4899"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Crisp Single-Line Brand Typography -->
+        <div class="flex flex-col justify-center min-w-0">
+          <div class="flex items-center gap-1.5 whitespace-nowrap leading-none">
+            <span class="font-heading font-black text-[17px] sm:text-xl tracking-tight text-white">SEE</span>
+            <span class="font-heading font-black text-[17px] sm:text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#38e1e8] via-indigo-400 to-pink-400">LAD</span>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-400/30 text-[#38e1e8] text-[9px] font-extrabold tracking-wider uppercase">v3.8 PRO</span>
+          </div>
+          <div class="flex items-center gap-1.5 mt-1 whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#38e1e8] shadow-[0_0_6px_#38e1e8]"></span>
+            <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 leading-none">Realtime Nexus</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle Search / Status Info (Desktop) -->
+      <div class="hidden md:flex items-center gap-4 shrink-0">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/20 border border-[var(--border-color)]">
+          <span class="status-dot user-status-dot status-online pulse"></span>
+          <span class="text-xs font-semibold user-status-text">Trực tuyến</span>
+        </div>
+      </div>
+
+      <!-- Right Header Controls (Well-spaced, shrink-0 so nothing gets squished) -->
+      <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <!-- Install PWA App Button (Cài đặt về điện thoại / máy tính) -->
+        <button id="btn-install-pwa" class="hidden shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white text-[11px] font-bold shadow-md shadow-indigo-500/20 transition-all whitespace-nowrap" title="Cài đặt ứng dụng về máy">
+          <i data-lucide="download" class="w-3.5 h-3.5 shrink-0"></i>
+          <span>Tải App</span>
+        </button>
+
+        <!-- Theme Toggle (Light / Dark) -->
+        <button id="btn-toggle-theme" class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center rounded-xl glass hover:bg-white/10 text-[var(--text-secondary)] hover:text-white transition-all" title="Chuyển chế độ Sáng / Tối">
+          <i id="theme-toggle-icon" data-lucide="sun" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"></i>
+        </button>
+
+        <!-- Nút Lời mời kết bạn trên Header với Badge -->
+        <button id="btn-header-friend-requests" class="relative w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center rounded-xl glass hover:bg-white/10 text-[var(--text-secondary)] hover:text-white transition-all" title="Lời mời kết bạn">
+          <i data-lucide="user-plus" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"></i>
+          <span id="badge-header-requests" class="hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-rose-500 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center">0</span>
+        </button>
+
+        <!-- Scheduler Alert Bell -->
+        <button onclick="window.app.switchTab('schedule')" class="relative w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center rounded-xl glass hover:bg-white/10 text-[var(--text-secondary)] hover:text-white transition-all" title="Lên lịch & Nhắc hẹn">
+          <i data-lucide="bell" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"></i>
+          <span id="scheduler-badge-count" class="hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-pink-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">2</span>
+        </button>
+
+        <!-- Current User Profile & Status Pill -->
+        <div class="relative shrink-0">
+          <button id="current-status-btn" class="flex items-center gap-2 p-1 sm:p-1.5 sm:pr-3 rounded-xl glass hover:bg-white/10 border border-[var(--border-color)] transition-all shrink-0">
+            <div class="relative w-7 h-7 sm:w-8 sm:h-8 shrink-0">
+              <img src="" class="w-7 h-7 sm:w-8 sm:h-8 min-w-[28px] rounded-lg object-cover user-display-avatar shrink-0" alt="Avatar" />
+              <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[var(--bg-secondary)] user-status-dot status-online"></span>
+            </div>
+            <div class="text-left hidden sm:block whitespace-nowrap">
+              <p class="text-xs font-bold leading-tight user-display-name text-[var(--text-primary)]">Trần Ngọc Hiếu</p>
+              <p class="text-[10px] text-[var(--text-muted)] user-status-text">Trực tuyến</p>
+            </div>
+            <i data-lucide="chevron-down" class="hidden sm:block w-3.5 h-3.5 text-[var(--text-muted)] shrink-0"></i>
+          </button>
+
+          <!-- Status Dropdown Menu -->
+          <div id="status-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 glass-dropdown rounded-2xl p-2 z-50 animate-fade-in">
+            <div class="px-3 py-2 border-b border-[var(--border-color)] mb-1">
+              <p class="text-xs font-bold user-display-name">Người dùng SEE LAD</p>
+              <p class="text-[11px] text-[var(--text-muted)] user-display-username">@seelad_user</p>
+            </div>
+
+            <!-- Status Options: Online (Green), Busy (Yellow), Offline (Red) -->
+            <button class="status-option w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left transition-colors" data-status="online">
+              <span class="status-dot status-online pulse"></span>
+              <div>
+                <p class="font-semibold text-emerald-400">Trực tuyến (Online)</p>
+                <p class="text-[10px] text-[var(--text-muted)]">Sẵn sàng nhận cuộc gọi & tin nhắn</p>
+              </div>
+            </button>
+            <button class="status-option w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left transition-colors" data-status="busy">
+              <span class="status-dot status-busy"></span>
+              <div>
+                <p class="font-semibold text-amber-400">Đang bận (Busy)</p>
+                <p class="text-[10px] text-[var(--text-muted)]">Đang họp hoặc tập trung làm việc</p>
+              </div>
+            </button>
+            <button class="status-option w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left transition-colors" data-status="offline">
+              <span class="status-dot status-offline"></span>
+              <div>
+                <p class="font-semibold text-red-400">Ngoại tuyến (Offline)</p>
+                <p class="text-[10px] text-[var(--text-muted)]">Tự động nhận lịch hẹn & nhắc lại</p>
+              </div>
+            </button>
+
+            <div class="border-t border-[var(--border-color)] mt-1 pt-1 space-y-0.5">
+              <button id="btn-open-user-profile" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-[var(--text-primary)] transition-colors">
+                <i data-lucide="user-cog" class="w-4 h-4 text-indigo-400"></i>
+                <span>Cài đặt trang cá nhân</span>
+              </button>
+              <button onclick="window.auth.logout()" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs hover:bg-red-500/20 text-red-400 transition-colors">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>Đăng xuất</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nút Đăng xuất nhanh ra màn hình đăng nhập (Quick Logout) -->
+        <button onclick="window.auth.logout()" class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center rounded-xl glass hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-all cursor-pointer" title="Đăng xuất tài khoản">
+          <i data-lucide="log-out" class="w-4 h-4 shrink-0"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Navigation & Workspace Layout -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden w-full min-h-0 relative">
+
+      <!-- Navigation Bar (Mobile Bottom Bar / Tablet Icon+Label Rail / Desktop Sidebar) -->
+      <nav class="order-last md:order-first w-full md:w-[84px] lg:w-60 xl:w-64 glass border-t md:border-t-0 md:border-r border-[var(--border-color)] px-1 py-1 sm:px-1.5 sm:py-1.5 md:p-2.5 lg:p-3 flex md:flex-col justify-between shrink-0 z-20 overflow-x-hidden md:overflow-y-auto">
+        <div class="flex md:flex-col gap-0.5 sm:gap-1 md:gap-1.5 w-full justify-around md:justify-start items-center">
+          <!-- 1. Tin nhắn -->
+          <button class="app-nav-btn flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 transition-all min-w-0" data-tab="chat">
+            <i data-lucide="message-circle" class="w-4 h-4 md:w-5 md:h-5 shrink-0"></i>
+            <span class="text-[8.5px] sm:text-[10px] font-bold lg:hidden leading-none truncate max-w-full text-center mt-0.5">Tin nhắn</span>
+            <span class="hidden lg:inline whitespace-nowrap">Đoạn chat & Nhóm</span>
+          </button>
+
+          <!-- 2. Cày Chuỗi Lửa Vô Hạn (48h) -->
+          <button class="app-nav-btn relative flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="streak" title="Cày Chuỗi Vô Hạn & Khôi Phục Chuỗi 48h">
+            <div class="relative flex items-center justify-center shrink-0">
+              <i data-lucide="flame" class="w-4 h-4 md:w-5 md:h-5 text-orange-400 shrink-0"></i>
+              <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-ping absolute -top-0.5 -right-0.5"></span>
+            </div>
+            <span class="text-[8.5px] sm:text-[10px] font-bold lg:hidden leading-none truncate max-w-full text-center text-orange-300 mt-0.5">Cày Chuỗi</span>
+            <span class="hidden lg:inline whitespace-nowrap">Cày Chuỗi Vô Hạn 🔥</span>
+            <span id="nav-streak-total-badge" class="hidden lg:inline-flex ml-auto px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-400/40 text-amber-300 text-[10px] font-extrabold">🔥</span>
+          </button>
+
+          <!-- 3. Bản đồ Radar vị trí -->
+          <button class="app-nav-btn flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="radar">
+            <i data-lucide="radar" class="w-4 h-4 md:w-5 md:h-5 shrink-0"></i>
+            <span class="text-[8.5px] sm:text-[10px] font-bold lg:hidden leading-none truncate max-w-full text-center mt-0.5">Radar</span>
+            <span class="hidden lg:inline whitespace-nowrap">Radar vị trí</span>
+          </button>
+
+          <!-- 4. Hub truyền file siêu tốc -->
+          <button class="app-nav-btn flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="hub">
+            <i data-lucide="send-to-back" class="w-4 h-4 md:w-5 md:h-5 shrink-0"></i>
+            <span class="text-[8.5px] sm:text-[10px] font-bold lg:hidden leading-none truncate max-w-full text-center mt-0.5">Truyền file</span>
+            <span class="hidden lg:inline whitespace-nowrap">Truyền file siêu tốc</span>
+          </button>
+
+          <!-- 5. QR Studio -->
+          <button class="app-nav-btn flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="qr">
+            <i data-lucide="qr-code" class="w-4 h-4 md:w-5 md:h-5 shrink-0"></i>
+            <span class="text-[8.5px] sm:text-[10px] font-bold lg:hidden leading-none truncate max-w-full text-center mt-0.5">Mã QR</span>
+            <span class="hidden lg:inline whitespace-nowrap">Mã QR Studio</span>
+          </button>
+
+          <!-- 6. Lên lịch & Nhắc hẹn -->
+          <button class="app-nav-btn flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="schedule">
+            <i data-lucide="calendar-clock" class="w-4 h-4 md:w-5 md:h-5 shrink-0"></i>
+            <span class="text-[8.5px] sm:text-[10px] font-bold lg:hidden leading-none truncate max-w-full text-center mt-0.5">Lịch hẹn</span>
+            <span class="hidden lg:inline whitespace-nowrap">Lên lịch & Nhắc hẹn</span>
+          </button>
+        </div>
+
+        <!-- Bottom Quick Info (Desktop only) -->
+        <div class="hidden lg:block p-3 rounded-2xl bg-black/20 border border-[var(--border-color)]">
+          <p class="text-[11px] font-bold text-indigo-400">SEE LAD v3.8 PRO</p>
+          <p class="text-[10px] text-[var(--text-muted)] mt-0.5">Chuỗi Lửa 48h • Lọc Âm Studio</p>
+        </div>
+      </nav>
+
+      <!-- Main Content Area -->
+      <main class="flex-1 flex overflow-hidden relative min-h-0 w-full">
+
+        <!-- ===================================================================
+             TAB 1: CHAT & CONVERSATIONS
+             =================================================================== -->
+        <section id="tab-view-chat" class="flex-1 flex overflow-hidden w-full h-full min-h-0 relative">
+          <!-- Conversation List (Sidebar: Full width on Mobile, 285px on Tablet, 320-384px on PC) -->
+          <div id="chat-sidebar" class="w-full md:w-[285px] lg:w-80 xl:w-96 glass border-r border-[var(--border-color)] flex flex-col shrink-0 h-full min-h-0">
+            <!-- Header & Search -->
+            <div class="p-2.5 sm:p-4 border-b border-[var(--border-color)] space-y-2 sm:space-y-3">
+              <!-- Thẻ tài khoản & Nút Đổi ảnh đại diện trực tiếp (Tối ưu gọn gàng trên mobile) -->
+              <input type="file" id="quick-avatar-upload-input" class="hidden" accept="image/*" />
+              <div class="flex p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-pink-900/30 border border-indigo-500/30 items-center justify-between gap-2 shadow-md">
+                <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                  <div class="relative shrink-0 cursor-pointer group" onclick="document.getElementById('quick-avatar-upload-input').click()" title="Bấm để đổi ảnh đại diện">
+                    <img src="" class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl object-cover border-2 border-indigo-500/80 user-display-avatar shadow-md" alt="Avatar" />
+                    <div class="absolute inset-0 rounded-lg sm:rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                      <i data-lucide="camera" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                    </div>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-white truncate user-display-name">Trần Ngọc Hiếu</p>
+                    <p class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span class="user-status-text">Trực tuyến</span>
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button type="button" onclick="document.getElementById('quick-avatar-upload-input').click()" class="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg sm:rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-[11px] font-bold flex items-center gap-1 shadow-sm transition-all shrink-0" title="Đổi ảnh đại diện">
+                    <i data-lucide="camera" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
+                    <span>Đổi ảnh</span>
+                  </button>
+                  <button type="button" onclick="window.auth.logout()" class="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 hover:text-rose-300 transition-all flex items-center justify-center shrink-0 cursor-pointer" title="Đăng xuất tài khoản ra màn hình đăng nhập">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between pt-0.5 gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <h3 class="font-heading font-extrabold text-base sm:text-lg lg:text-xl tracking-tight text-[var(--text-primary)] truncate">Hộp thư</h3>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button id="btn-open-friend-requests" class="relative px-2.5 py-1.5 rounded-xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-300 hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-1 text-[11px] font-semibold" title="Thêm bạn & Lời mời kết bạn">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5 shrink-0"></i>
+                    <span>Kết bạn</span>
+                    <span id="badge-friend-requests-count" class="hidden px-1.5 py-0.5 bg-rose-500 text-white text-[10px] font-extrabold rounded-full">0</span>
+                  </button>
+                  <button id="btn-open-create-group" class="px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-indigo-600 hover:border-indigo-500 hover:text-white transition-all flex items-center gap-1 text-[11px] font-semibold" title="Tạo nhóm chat mới">
+                    <i data-lucide="users" class="w-3.5 h-3.5 shrink-0"></i>
+                    <span>Tạo nhóm</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"></i>
+                <input type="text" id="search-chat-input" class="glass-input w-full pl-10 pr-4 py-2 sm:py-2.5 rounded-xl text-xs" placeholder="Tìm kiếm bạn bè, nhóm..." />
+              </div>
+
+              <!-- Filter Tabs (All / Direct / Groups) -->
+              <div class="flex rounded-xl bg-black/30 p-1 border border-white/5 gap-1">
+                <button class="chat-filter-tab flex-1 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white" data-filter="all">Tất cả</button>
+                <button class="chat-filter-tab flex-1 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white" data-filter="direct">Cá nhân</button>
+                <button class="chat-filter-tab flex-1 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white" data-filter="group">Nhóm</button>
+              </div>
+            </div>
+
+            <!-- Friend Requests Notification Banner -->
+            <div id="friend-requests-banner" class="hidden px-2.5 pt-2"></div>
+
+            <!-- Conversations Scroll List -->
+            <div id="conversation-list" class="flex-1 overflow-y-auto px-2.5 py-2 space-y-1.5 min-h-0 custom-scrollbar">
+              <!-- Rendered via js/chat.js -->
+            </div>
+          </div>
+
+          <!-- Active Chat Window -->
+          <div id="chat-active-window" class="hidden md:flex flex-1 flex-col bg-[var(--bg-secondary)] relative overflow-hidden theme-cyber-indigo h-full w-full min-w-0 min-h-0">
+            
+            <!-- Chat Header -->
+            <div class="p-2.5 sm:p-3.5 px-3 sm:px-5 glass border-b border-[var(--border-color)] flex items-center justify-between z-10 shrink-0">
+              <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                <!-- Nút quay lại danh bạ trên mobile (< 768px) -->
+                <button id="btn-back-to-chat-list" type="button" onclick="window.chat?.closeMobileChat()" class="md:hidden px-2.5 py-1.5 -ml-1 text-slate-200 hover:text-white rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 flex items-center gap-1 text-xs font-bold shrink-0" title="Quay lại danh sách Hộp thư">
+                  <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                  <span>Hộp thư</span>
+                </button>
+                <div class="relative shrink-0">
+                  <img id="active-chat-avatar" src="" class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl object-cover border border-white/10" />
+                  <span id="active-chat-status-dot" class="status-dot absolute -bottom-0.5 -right-0.5 status-online"></span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h4 id="active-chat-name" class="font-bold text-xs sm:text-sm text-[var(--text-primary)] truncate">Đức Kiệt</h4>
+                  <p id="active-chat-status-text" class="text-[10px] sm:text-xs text-[var(--text-muted)] truncate">Đang hoạt động (Online)</p>
+                </div>
+              </div>
+
+              <!-- Call & Options Action Buttons -->
+              <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <!-- Voice Call -->
+                <button id="btn-start-voice-call" class="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-600/15 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-sm" title="Gọi thoại HD">
+                  <i data-lucide="phone" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Video Call -->
+                <button id="btn-start-video-call" class="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-600/15 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-sm" title="Gọi Video HD">
+                  <i data-lucide="video" class="w-4 h-4"></i>
+                </button>
+
+                <!-- More Options Menu -->
+                <div class="relative">
+                  <button id="btn-chat-options-menu" class="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl glass hover:bg-white/10 text-[var(--text-secondary)] hover:text-white transition-all">
+                    <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                  </button>
+
+                  <!-- Chat Options Dropdown -->
+                  <div id="chat-options-dropdown" class="hidden absolute right-0 mt-2 w-64 glass-dropdown rounded-2xl p-2.5 z-50 animate-fade-in shadow-2xl">
+                    <!-- Pop out as floating chat bubble -->
+                    <button id="btn-action-bubble" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left transition-colors">
+                      <i data-lucide="circle-dot" class="w-4 h-4 text-indigo-400"></i>
+                      <span>Hiện bong bóng chat nổi</span>
+                    </button>
+
+                    <!-- Invite link -->
+                    <button id="btn-action-invite" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left transition-colors">
+                      <i data-lucide="link" class="w-4 h-4 text-indigo-400"></i>
+                      <span>Liên kết mời & Đổi link</span>
+                    </button>
+
+                    <!-- Change theme -->
+                    <div class="px-3 py-1.5 text-[11px] font-semibold text-slate-400">Chủ đề giao diện đoạn chat:</div>
+                    <div class="flex flex-wrap items-center gap-2 px-3 py-1 mb-1">
+                      <button class="btn-set-chat-theme w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 hover:scale-110 transition-transform ring-2 ring-white/20" data-theme="theme-cyber-indigo" title="Cyber Indigo"></button>
+                      <button class="btn-set-chat-theme w-6 h-6 rounded-full bg-gradient-to-tr from-orange-500 to-pink-500 hover:scale-110 transition-transform ring-2 ring-white/20" data-theme="theme-sunset-blaze" title="Sunset Blaze"></button>
+                      <button class="btn-set-chat-theme w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 hover:scale-110 transition-transform ring-2 ring-white/20" data-theme="theme-emerald-matrix" title="Emerald Matrix"></button>
+                      <button class="btn-set-chat-theme w-6 h-6 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-700 hover:scale-110 transition-transform ring-2 ring-white/20" data-theme="theme-midnight-neon" title="Midnight Neon"></button>
+                      <button class="btn-set-chat-theme w-6 h-6 rounded-full bg-gradient-to-tr from-pink-500 to-purple-500 hover:scale-110 transition-transform ring-2 ring-white/20" data-theme="theme-cotton-candy" title="Cotton Candy"></button>
+                      <button class="btn-set-chat-theme w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-600 hover:scale-110 transition-transform ring-2 ring-white/20" data-theme="theme-royal-gold" title="Royal Gold"></button>
+                    </div>
+
+                    <div class="border-t border-[var(--border-color)] my-1"></div>
+
+                    <!-- Block user -->
+                    <button id="btn-action-block" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-red-500/20 text-red-400 text-left transition-colors">
+                      <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                      <span>Chặn người dùng</span>
+                    </button>
+
+                    <!-- Report user -->
+                    <button id="btn-action-report" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-amber-500/20 text-amber-400 text-left transition-colors">
+                      <i data-lucide="flag" class="w-4 h-4"></i>
+                      <span>Báo cáo vi phạm</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pinned Message Banner -->
+            <div id="chat-pinned-banner" class="hidden pinned-banner px-4 py-2.5 flex items-center justify-between z-10">
+              <div class="flex items-center gap-2 min-w-0">
+                <i data-lucide="pin" class="w-4 h-4 text-indigo-400 shrink-0"></i>
+                <span class="text-xs font-semibold text-indigo-300">Đã ghim:</span>
+                <p id="chat-pinned-text" class="text-xs text-slate-200 truncate"></p>
+              </div>
+              <button onclick="window.chat.unpinMessage()" class="text-slate-400 hover:text-white p-1" title="Bỏ ghim">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+
+            <!-- Blocked Banner -->
+            <div id="chat-blocked-banner" class="hidden bg-red-500/15 border-b border-red-500/30 px-4 py-2 text-center text-xs text-red-300 font-medium z-10">
+              Bạn đang chặn người này. Bấm vào menu ba chấm để Mở chặn nếu muốn tiếp tục trò chuyện.
+            </div>
+
+            <!-- Messages Stream Area -->
+            <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 sm:p-6 chat-bg-pattern-default space-y-2 min-h-0 custom-scrollbar">
+              <!-- Rendered via js/chat.js -->
+            </div>
+
+            <!-- HD Voice Recorder Live Visualizer Bar (Popup when recording) -->
+            <div id="voice-recorder-bar" class="hidden p-3 sm:p-3.5 glass border-t border-cyan-500/30 bg-[#0b1322]/95 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 z-20 animate-fade-in">
+              <div class="flex items-center gap-2.5 shrink-0">
+                <div class="relative flex items-center justify-center w-8 h-8">
+                  <span id="record-mic-pulse-ring" class="absolute inset-0 rounded-full bg-red-500/30 transition-transform duration-75"></span>
+                  <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-extrabold text-white">Ghi âm Studio HD</span>
+                    <span id="record-duration-timer" class="text-xs font-mono font-extrabold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20">00:00</span>
+                  </div>
+                  <p id="record-noise-gate-status" class="text-[10px] font-bold text-emerald-400 mt-0.5">🛡️ Khử 100% tạp âm nền • Sẵn sàng thu giọng nói</p>
+                </div>
+              </div>
+
+              <!-- Dynamic Audio-Reactive Symmetric Soundwave Canvas -->
+              <div class="flex-1 min-w-[160px] max-w-xs mx-auto">
+                <canvas id="record-waveform-canvas" width="240" height="42" class="w-full h-[42px] rounded-xl bg-slate-950/80 border border-cyan-500/20 shadow-inner"></canvas>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0 ml-auto sm:ml-0">
+                <button type="button" id="btn-cancel-recording" class="px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-red-500/20 text-slate-300 hover:text-red-300 border border-white/10 text-xs font-bold transition-all">
+                  Hủy
+                </button>
+                <button type="button" id="btn-send-recording" class="btn-gradient px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-lg shadow-indigo-500/25 active:scale-95 transition-all">
+                  <span>Gửi thoại HD</span>
+                  <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Message Input Area -->
+            <div id="chat-input-area" class="p-2 sm:p-3.5 glass border-t border-[var(--border-color)] z-10 relative">
+              
+              <!-- Emoji Picker Popup -->
+              <div id="emoji-picker-popup" class="hidden absolute bottom-16 sm:bottom-20 left-2 sm:left-4 w-72 glass-dropdown rounded-3xl p-3 shadow-2xl border border-white/10 z-30">
+                <p class="text-[11px] font-bold text-slate-400 mb-2 px-1">Biểu tượng & Icon cảm xúc:</p>
+                <div class="grid grid-cols-6 gap-2 text-xl text-center">
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">🔥</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">❤️</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">🚀</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">✨</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">👍</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">🎉</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">😍</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">😎</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">⚡</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">🌟</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">💎</button>
+                  <button type="button" class="emoji-item hover:scale-125 transition-transform">🏆</button>
+                </div>
+              </div>
+
+              <!-- Media / Image Attachment Preview Bar -->
+              <div id="chat-media-preview-bar" class="hidden mb-2 p-2.5 sm:p-3 rounded-2xl bg-[#0c121e] border border-cyan-500/30 flex items-center justify-between shadow-2xl">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="relative shrink-0">
+                    <img id="chat-preview-img" src="" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover border border-white/20 shadow-md" />
+                    <div id="chat-preview-icon" class="hidden w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                      <i data-lucide="file" class="w-5 h-5"></i>
+                    </div>
+                  </div>
+                  <div class="min-w-0">
+                    <p id="chat-preview-filename" class="text-xs font-bold text-white truncate max-w-[150px] sm:max-w-xs">photo.jpg</p>
+                    <p id="chat-preview-filesize" class="text-[10px] text-cyan-400 font-semibold flex items-center gap-1.5 mt-0.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                      <span id="chat-preview-status-text">Đã chọn ảnh • Sẵn sàng gửi</span>
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button type="button" id="btn-send-preview-media" class="px-3 py-1.5 rounded-xl bg-[#38e1e8] hover:bg-[#28d0d7] active:scale-95 text-black text-xs font-bold shadow-md shadow-cyan-500/20 transition-all flex items-center gap-1">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    <span>Gửi</span>
+                  </button>
+                  <button type="button" id="btn-cancel-media-preview" class="p-1.5 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors" title="Hủy bỏ">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Input Form -->
+              <form id="chat-input-form" class="flex items-center gap-1.5 sm:gap-2 w-full max-w-full overflow-hidden">
+                <!-- Dedicated Image / Photo Attachment Button (Luôn hiện) -->
+                <input type="file" id="chat-image-attach-input" accept="image/*,video/*" class="sr-only" />
+                <label for="chat-image-attach-input" id="btn-attach-image" class="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl glass hover:bg-cyan-500/20 text-cyan-400 hover:text-cyan-300 transition-all cursor-pointer flex items-center justify-center shrink-0" title="Gửi ảnh hoặc video">
+                  <i data-lucide="image" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                </label>
+
+                <!-- Voice Recording Button (Luôn hiện) -->
+                <button type="button" id="btn-open-voice-recorder" class="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl glass hover:bg-white/10 text-indigo-400 hover:text-indigo-300 transition-all shrink-0" title="Ghi âm giọng nói HD">
+                  <i data-lucide="mic" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                </button>
+
+                <!-- Desktop only quick buttons -->
+                <button type="button" id="btn-open-emoji" class="hidden sm:flex p-2.5 rounded-2xl glass hover:bg-white/10 text-[var(--text-secondary)] hover:text-white transition-all shrink-0" title="Chèn biểu tượng cảm xúc">
+                  <i data-lucide="smile" class="w-5 h-5"></i>
+                </button>
+
+                <input type="file" id="chat-file-attach-input" accept="*/*" class="sr-only" />
+                <label for="chat-file-attach-input" id="btn-attach-file" class="hidden sm:flex p-2.5 rounded-2xl glass hover:bg-indigo-500/20 text-[var(--text-secondary)] hover:text-white transition-all cursor-pointer items-center justify-center shrink-0" title="Gửi tệp tài liệu">
+                  <i data-lucide="paperclip" class="w-5 h-5"></i>
+                </label>
+
+                <button type="button" id="btn-share-location-chat" class="hidden sm:flex p-2.5 rounded-2xl glass hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 transition-all shrink-0" title="Chia sẻ vị trí">
+                  <i data-lucide="map-pin" class="w-5 h-5"></i>
+                </button>
+
+                <!-- Mobile Quick More Tools (+) Menu -->
+                <div class="relative sm:hidden">
+                  <button type="button" id="btn-mobile-more-tools" onclick="document.getElementById('mobile-more-tools-menu')?.classList.toggle('hidden')" class="p-2 rounded-xl glass hover:bg-white/10 text-slate-300 hover:text-white transition-all shrink-0" title="Thêm công cụ">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                  </button>
+                  <div id="mobile-more-tools-menu" class="hidden absolute bottom-12 left-0 w-44 glass-dropdown rounded-2xl p-2 z-40 shadow-2xl border border-white/10 space-y-1">
+                    <button type="button" onclick="document.getElementById('chat-file-attach-input').click(); document.getElementById('mobile-more-tools-menu').classList.add('hidden');" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left text-slate-200">
+                      <i data-lucide="paperclip" class="w-4 h-4 text-indigo-400"></i>
+                      <span>Gửi tệp tài liệu</span>
+                    </button>
+                    <button type="button" onclick="document.getElementById('btn-share-location-chat').click(); document.getElementById('mobile-more-tools-menu').classList.add('hidden');" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left text-slate-200">
+                      <i data-lucide="map-pin" class="w-4 h-4 text-emerald-400"></i>
+                      <span>Gửi vị trí GPS</span>
+                    </button>
+                    <button type="button" onclick="document.getElementById('emoji-picker-popup').classList.toggle('hidden'); document.getElementById('mobile-more-tools-menu').classList.add('hidden');" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left text-slate-200">
+                      <i data-lucide="smile" class="w-4 h-4 text-amber-400"></i>
+                      <span>Icon cảm xúc</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Text Input (min-w-0 prevents flex blowout) -->
+                <input type="text" id="chat-text-input" autocomplete="off" class="glass-input flex-1 min-w-0 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm" placeholder="Nhập tin nhắn..." />
+
+                <!-- Send Button -->
+                <button type="submit" class="btn-gradient p-2.5 sm:p-3 rounded-xl sm:rounded-2xl shadow-md hover:scale-105 transition-transform shrink-0" title="Gửi tin nhắn">
+                  <i data-lucide="send" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB: CÀY CHUỖI VÔ HẠN 🔥 (48H EXPIRATION & NAMED STREAK RESTORE)
+             =================================================================== -->
+        <section id="tab-view-streak" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+          <div class="max-w-5xl mx-auto space-y-6 pb-12">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl p-5 sm:p-7 bg-gradient-to-r from-orange-600/25 via-rose-600/20 to-indigo-600/25 border border-orange-500/30 shadow-2xl">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                <div>
+                  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-300 text-xs font-extrabold mb-2.5">
+                    <span>🔥 HỆ THỐNG CÀY CHUỖI VÔ HẠN</span>
+                    <span>•</span>
+                    <span>CHU KỲ 48 GIỜ</span>
+                  </div>
+                  <h2 class="font-heading font-extrabold text-xl sm:text-3xl text-white tracking-tight">
+                    Cày Chuỗi Tương Tác & Khôi Phục Chuỗi
+                  </h2>
+                  <p class="text-xs sm:text-sm text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
+                    Nhắn tin hoặc bấm <strong class="text-orange-400">Cày Chuỗi (+1 🔥)</strong> không giới hạn với bạn bè. Chuỗi sẽ tự động mất nếu không tương tác trong vòng <strong class="text-amber-300">48 tiếng</strong> — nhưng bạn luôn có thể <strong class="text-cyan-300">Khôi phục chuỗi với đúng tên người đó</strong> bất cứ lúc nào!
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button type="button" id="btn-refresh-streaks" class="px-4 py-2.5 rounded-2xl glass hover:bg-white/10 text-xs font-extrabold text-white flex items-center gap-2 border border-white/15 transition-all active:scale-95">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 text-orange-400"></i>
+                    <span>Làm mới BXH</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stats Summary Row -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 relative z-10">
+                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-orange-500/25 flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-xl shrink-0">🔥</div>
+                  <div>
+                    <p class="text-[11px] text-slate-400 font-semibold">Tổng điểm chuỗi đang cháy</p>
+                    <p id="streak-stat-total" class="text-lg sm:text-xl font-extrabold text-orange-400 font-mono">0 🔥</p>
+                  </div>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-indigo-500/25 flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-xl shrink-0">👑</div>
+                  <div class="min-w-0">
+                    <p class="text-[11px] text-slate-400 font-semibold">Top 1 Nhắn tin & Cày chuỗi</p>
+                    <p id="streak-stat-top-friend" class="text-sm sm:text-base font-extrabold text-white truncate">Chưa có</p>
+                  </div>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-xl shrink-0">♻️</div>
+                  <div>
+                    <p class="text-[11px] text-slate-400 font-semibold">Chuỗi chờ khôi phục (Quá 48h)</p>
+                    <p id="streak-stat-lost-count" class="text-sm sm:text-base font-extrabold text-cyan-400">0 người</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- KHU VỰC 1: KHÔI PHỤC CHUỖI VỚI [TÊN NGƯỜI ĐÓ] -->
+            <div class="glass rounded-3xl p-4 sm:p-6 border border-rose-500/25 shadow-xl">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-base">❄️</span>
+                  <div>
+                    <h3 class="font-heading font-extrabold text-base sm:text-lg text-white">Khôi Phục Chuỗi Đã Mất (Sau 48 Tiếng)</h3>
+                    <p class="text-xs text-slate-400">Hiển thị danh sách bạn bè bị đứt chuỗi quá 48h — Bấm để <strong class="text-rose-300">Khôi phục chuỗi với [Tên người đó]</strong> ngay lập tức</p>
+                  </div>
+                </div>
+              </div>
+              <div id="streak-restore-list" class="space-y-2.5">
+                <!-- Populated by js/streak.js -->
+              </div>
+            </div>
+
+            <!-- KHU VỰC 2: BẢNG XẾP HẠNG CÀY CHUỖI VÔ HẠN -->
+            <div class="glass rounded-3xl p-4 sm:p-6 border border-orange-500/25 shadow-xl">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-base">🏆</span>
+                  <div>
+                    <h3 class="font-heading font-extrabold text-base sm:text-lg text-white">Bảng Xếp Hạng Nhắn Tin Nhiều Nhất & Cày Chuỗi Vô Hạn</h3>
+                    <p class="text-xs text-slate-400">Chuỗi không giới hạn cấp độ — Cày bao nhiêu cũng được! Có nút <span class="text-amber-300 font-semibold">Thử quá 48h</span> để kiểm tra tính năng mất & khôi phục chuỗi.</p>
+                  </div>
+                </div>
+              </div>
+              <div id="streak-leaderboard-list" class="space-y-3">
+                <!-- Populated by js/streak.js -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 2: RADAR & LOCATION TRACKER
+             =================================================================== -->
+        <section id="tab-view-radar" class="hidden flex-1 flex flex-col md:flex-row overflow-hidden w-full min-h-0">
+          <!-- Interactive Leaflet Map -->
+          <div class="flex-1 relative h-full min-h-[260px] sm:min-h-[320px]">
+            <div id="leaflet-map" class="w-full h-full"></div>
+
+            <!-- Radar Sweep Line Animation Overlay -->
+            <div id="radar-sweep-effect" class="hidden absolute inset-0 pointer-events-none overflow-hidden">
+              <div class="radar-sweep"></div>
+            </div>
+
+            <!-- Radar Control Overlay Floating Bar -->
+            <div class="absolute top-3 left-3 sm:top-4 sm:left-4 z-[1000] flex flex-wrap items-center gap-2">
+              <button id="btn-scan-radar" class="btn-gradient px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-xl text-[11px] sm:text-xs font-bold flex items-center gap-2">
+                <i data-lucide="radar" class="w-4 h-4"></i>
+                <span>Quét Radar tìm bạn bè</span>
+              </button>
+              <button id="btn-locate-me" class="glass px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-2xl text-[11px] sm:text-xs font-semibold text-white hover:bg-white/10 flex items-center gap-1.5" title="Định vị tôi">
+                <i data-lucide="crosshair" class="w-4 h-4 text-indigo-400"></i>
+                <span>Vị trí của tôi</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Radar Friends List Sidebar -->
+          <div class="w-full md:w-80 lg:w-96 max-h-[42vh] md:max-h-full glass border-t md:border-t-0 md:border-l border-[var(--border-color)] p-4 sm:p-5 flex flex-col shrink-0 overflow-y-auto">
+            <div class="mb-3 sm:mb-4">
+              <h3 class="font-heading font-extrabold text-lg sm:text-xl text-white">Bạn bè quanh đây</h3>
+              <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">Cập nhật vị trí thời gian thực khi ở cách xa nhau</p>
+            </div>
+
+            <div id="radar-friends-list" class="space-y-2.5 flex-1">
+              <!-- Rendered via js/radar.js -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 3: UNLIMITED FILE HUB & INSTANT QR
+             =================================================================== -->
+        <section id="tab-view-hub" class="hidden flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8 pb-8 w-full max-w-6xl mx-auto">
+          <!-- Hub Header -->
+          <div class="text-center max-w-2xl mx-auto mb-5 sm:mb-8">
+            <h2 class="font-heading font-extrabold text-2xl sm:text-3xl lg:text-4xl text-white">Hub truyền file không giới hạn</h2>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1.5 sm:mt-2">Gửi bất kỳ tệp tin nào (ảnh, video, zip) và tự động tạo mã QR quét xem tức thì cho người khác!</p>
+          </div>
+
+          <!-- Drag and Drop Area -->
+          <div id="file-drop-zone" class="glass p-6 sm:p-10 lg:p-12 rounded-3xl border-2 border-dashed border-white/15 text-center cursor-pointer hover:border-indigo-500/60 transition-all mb-5 sm:mb-8 group">
+            <input type="file" id="hub-file-input" multiple class="hidden" />
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl bg-indigo-500/20 text-indigo-400 mx-auto flex items-center justify-center group-hover:scale-110 transition-transform mb-3 sm:mb-4">
+              <i data-lucide="cloud-upload" class="w-7 h-7 sm:w-8 sm:h-8"></i>
+            </div>
+            <h4 class="font-bold text-base sm:text-lg text-white mb-1">Kéo thả tập tin vào đây hoặc bấm để chọn</h4>
+            <p class="text-[11px] sm:text-xs text-slate-400 max-w-md mx-auto">Hỗ trợ đầy đủ: MP4, MOV, ZIP, RAR, PNG, PDF... Không giới hạn dung lượng với công nghệ truyền tải của SEE LAD</p>
+          </div>
+
+          <!-- Quick Text/Note to QR Content Box -->
+          <div class="glass p-4 sm:p-6 rounded-3xl border border-white/10 mb-6 sm:mb-8">
+            <h4 class="font-bold text-xs sm:text-sm text-white mb-2.5 flex items-center gap-2">
+              <i data-lucide="file-text" class="w-4 h-4 text-indigo-400 shrink-0"></i>
+              <span>Hoặc tạo mã QR cho nội dung văn bản / ghi chú muốn gửi người khác xem:</span>
+            </h4>
+            <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+              <input type="text" id="hub-text-content" class="glass-input flex-1 px-4 py-2.5 sm:py-3 rounded-2xl text-xs sm:text-sm" placeholder="Nhập lời nhắn, thông điệp bí mật, ghi chú hay liên kết..." />
+              <button id="btn-gen-content-qr" class="btn-gradient px-5 py-2.5 sm:px-6 sm:py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shrink-0">
+                <i data-lucide="qr-code" class="w-4 h-4"></i>
+                <span>Tạo mã QR xem ngay</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Uploaded Files Grid -->
+          <h3 class="font-heading font-extrabold text-lg sm:text-xl text-white mb-3.5 sm:mb-4">Danh sách tệp & Mã QR đã tạo</h3>
+          <div id="hub-files-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+            <!-- Rendered via js/file-hub.js -->
+          </div>
+        </section>
+
+        <!-- ===================================================================
+              TAB 4: QR STUDIO (BỘ CÔNG CỤ TÙY BIẾN MÃ QR & TRANG CÁ NHÂN)
+             =================================================================== -->
+        <section id="tab-view-qr" class="hidden flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8 pb-8 w-full max-w-6xl mx-auto">
+          <div class="text-center max-w-2xl mx-auto mb-5 sm:mb-8">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mb-2">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span>Optical QR Studio • Chuẩn Quét Siêu Tốc</span>
+            </div>
+            <h2 class="font-heading font-extrabold text-xl sm:text-2xl lg:text-3xl text-white tracking-tight">QR Studio & Thẻ Định Danh Cá Nhân</h2>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1.5">Tùy biến bảng màu Gradient, kiểu hạt QR và mắt định vị. Khi quét mã hoặc chia sẻ link sẽ dẫn thẳng tới <b class="text-cyan-300">Trang Giao Diện Cá Nhân</b> của bạn.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-start">
+            <!-- Customizer Controls (Left 7 cols on Tablet & PC) -->
+            <div class="md:col-span-7 glass p-4 sm:p-6 lg:p-7 rounded-3xl border border-white/10 space-y-5 sm:space-y-6 shadow-2xl">
+              
+              <!-- 1. BẢNG PHỐI MÀU & CHỦ ĐỀ GRADIENT -->
+              <div>
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <label class="flex items-center gap-2 text-xs font-extrabold text-white uppercase tracking-wider">
+                    <span class="w-6 h-6 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                      <i data-lucide="palette" class="w-3.5 h-3.5"></i>
+                    </span>
+                    <span>1. Bảng phối màu mã QR</span>
+                  </label>
+                  <label class="inline-flex items-center gap-2 cursor-pointer select-none bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full border border-white/10 transition-colors">
+                    <input type="checkbox" id="qr-use-gradient-cb" checked class="sr-only peer" />
+                    <div class="w-7 h-4 bg-slate-700 peer-checked:bg-gradient-to-r peer-checked:from-cyan-400 peer-checked:to-indigo-500 rounded-full relative transition-all after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3 after:h-3 after:bg-white after:rounded-full after:transition-all peer-checked:after:translate-x-3"></div>
+                    <span class="text-[11px] font-semibold text-slate-200">Hiệu ứng Gradient 2 màu</span>
+                  </label>
+                </div>
+
+                <!-- Preset Swatch Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-4">
+                  <button type="button" class="qr-color-preset group flex items-center gap-2 p-2 sm:p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-indigo-500 bg-indigo-500/15 transition-all text-left" data-color="#4f46e5" data-color2="#9333ea" data-name="Cyber Indigo">
+                    <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 shadow-md ring-2 ring-white/20 group-hover:scale-110 transition-transform" style="background: linear-gradient(135deg, #4f46e5, #9333ea)"></span>
+                    <div class="min-w-0">
+                      <p class="text-[11px] sm:text-xs font-bold text-white truncate">Indigo</p>
+                      <p class="text-[10px] text-slate-400 truncate">Tím vũ trụ</p>
+                    </div>
+                  </button>
+
+                  <button type="button" class="qr-color-preset group flex items-center gap-2 p-2 sm:p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-all text-left" data-color="#0284c7" data-color2="#0d9488" data-name="Ocean Cyan">
+                    <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 shadow-md ring-2 ring-white/20 group-hover:scale-110 transition-transform" style="background: linear-gradient(135deg, #0284c7, #0d9488)"></span>
+                    <div class="min-w-0">
+                      <p class="text-[11px] sm:text-xs font-bold text-white truncate">Ocean</p>
+                      <p class="text-[10px] text-slate-400 truncate">Xanh đại dương</p>
+                    </div>
+                  </button>
+
+                  <button type="button" class="qr-color-preset group flex items-center gap-2 p-2 sm:p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-all text-left" data-color="#059669" data-color2="#047857" data-name="Emerald Luxe">
+                    <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 shadow-md ring-2 ring-white/20 group-hover:scale-110 transition-transform" style="background: linear-gradient(135deg, #059669, #047857)"></span>
+                    <div class="min-w-0">
+                      <p class="text-[11px] sm:text-xs font-bold text-white truncate">Emerald</p>
+                      <p class="text-[10px] text-slate-400 truncate">Ngọc lục bảo</p>
+                    </div>
+                  </button>
+
+                  <button type="button" class="qr-color-preset group flex items-center gap-2 p-2 sm:p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-all text-left" data-color="#e11d48" data-color2="#ea580c" data-name="Sunset Blaze">
+                    <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 shadow-md ring-2 ring-white/20 group-hover:scale-110 transition-transform" style="background: linear-gradient(135deg, #e11d48, #ea580c)"></span>
+                    <div class="min-w-0">
+                      <p class="text-[11px] sm:text-xs font-bold text-white truncate">Sunset</p>
+                      <p class="text-[10px] text-slate-400 truncate">Hoàng hôn rực</p>
+                    </div>
+                  </button>
+
+                  <button type="button" class="qr-color-preset group flex items-center gap-2 p-2 sm:p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-all text-left" data-color="#b45309" data-color2="#d97706" data-name="Royal Gold">
+                    <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 shadow-md ring-2 ring-white/20 group-hover:scale-110 transition-transform" style="background: linear-gradient(135deg, #b45309, #d97706)"></span>
+                    <div class="min-w-0">
+                      <p class="text-[11px] sm:text-xs font-bold text-white truncate">Royal Gold</p>
+                      <p class="text-[10px] text-slate-400 truncate">Vàng hoàng gia</p>
+                    </div>
+                  </button>
+
+                  <button type="button" class="qr-color-preset group flex items-center gap-2 p-2 sm:p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-all text-left" data-color="#7c3aed" data-color2="#db2777" data-name="Neon Cyber">
+                    <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 shadow-md ring-2 ring-white/20 group-hover:scale-110 transition-transform" style="background: linear-gradient(135deg, #7c3aed, #db2777)"></span>
+                    <div class="min-w-0">
+                      <p class="text-[11px] sm:text-xs font-bold text-white truncate">Neon Pink</p>
+                      <p class="text-[10px] text-slate-400 truncate">Tím hồng ánh xạ</p>
+                    </div>
+                  </button>
+
+                  <button type="button" class="qr-color-preset group flex items-center gap-2 p-2 sm:p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-all text-left" data-color="#9f1239" data-color2="#e11d48" data-name="Ruby Crimson">
+                    <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 shadow-md ring-2 ring-white/20 group-hover:scale-110 transition-transform" style="background: linear-gradient(135deg, #9f1239, #e11d48)"></span>
+                    <div class="min-w-0">
+                      <p class="text-[11px] sm:text-xs font-bold text-white truncate">Ruby</p>
+                      <p class="text-[10px] text-slate-400 truncate">Đỏ hồng ngọc</p>
+                    </div>
+                  </button>
+
+                  <button type="button" class="qr-color-preset group flex items-center gap-2 p-2 sm:p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 transition-all text-left" data-color="#0f172a" data-color2="#334155" data-name="Midnight Onyx">
+                    <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 shadow-md ring-2 ring-white/20 group-hover:scale-110 transition-transform" style="background: linear-gradient(135deg, #0f172a, #334155)"></span>
+                    <div class="min-w-0">
+                      <p class="text-[11px] sm:text-xs font-bold text-white truncate">Onyx</p>
+                      <p class="text-[10px] text-slate-400 truncate">Đen nguyên bản</p>
+                    </div>
+                  </button>
+                </div>
+
+                <!-- Custom Dual Color Picker Bar -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 p-3 rounded-2xl bg-black/30 border border-white/10">
+                  <label class="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 cursor-pointer transition-colors">
+                    <div class="flex items-center gap-2.5">
+                      <div class="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/25 shadow-inner shrink-0">
+                        <input type="color" id="qr-fg-color" value="#4f46e5" class="absolute -inset-2 w-12 h-12 cursor-pointer border-0 bg-transparent p-0" />
+                      </div>
+                      <div>
+                        <p class="text-[11px] font-bold text-white">Màu chính (Primary)</p>
+                        <p id="qr-fg-hex" class="text-[10px] font-mono text-cyan-400 uppercase">#4F46E5</p>
+                      </div>
+                    </div>
+                    <i data-lucide="pipette" class="w-4 h-4 text-slate-400"></i>
+                  </label>
+
+                  <label class="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 cursor-pointer transition-colors">
+                    <div class="flex items-center gap-2.5">
+                      <div class="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/25 shadow-inner shrink-0">
+                        <input type="color" id="qr-fg-color-2" value="#9333ea" class="absolute -inset-2 w-12 h-12 cursor-pointer border-0 bg-transparent p-0" />
+                      </div>
+                      <div>
+                        <p class="text-[11px] font-bold text-white">Màu phối (Gradient)</p>
+                        <p id="qr-fg2-hex" class="text-[10px] font-mono text-purple-400 uppercase">#9333EA</p>
+                      </div>
+                    </div>
+                    <i data-lucide="sparkles" class="w-4 h-4 text-slate-400"></i>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 2. KIỂU DÁNG HẠT QR & KHUNG MẮT ĐỊNH VỊ -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                  <label class="flex items-center gap-2 text-xs font-extrabold text-white uppercase tracking-wider mb-2.5">
+                    <span class="w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                      <i data-lucide="grid" class="w-3.5 h-3.5"></i>
+                    </span>
+                    <span>2. Kiểu dáng hạt QR</span>
+                  </label>
+                  <div class="grid grid-cols-2 gap-2">
+                    <button type="button" class="qr-style-btn p-2.5 rounded-2xl glass text-xs font-bold border border-indigo-500 bg-indigo-500/20 text-white flex items-center gap-2 transition-all" data-style="rounded">
+                      <span class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                        <span class="w-3 h-3 rounded-[4px] bg-cyan-400 block"></span>
+                      </span>
+                      <span>Bo mượt</span>
+                    </button>
+                    <button type="button" class="qr-style-btn p-2.5 rounded-2xl glass text-xs font-bold border border-white/10 text-slate-300 hover:text-white flex items-center gap-2 transition-all" data-style="dots">
+                      <span class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                        <span class="w-3 h-3 rounded-full bg-indigo-400 block"></span>
+                      </span>
+                      <span>Chấm tròn</span>
+                    </button>
+                    <button type="button" class="qr-style-btn p-2.5 rounded-2xl glass text-xs font-bold border border-white/10 text-slate-300 hover:text-white flex items-center gap-2 transition-all" data-style="diamond">
+                      <span class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                        <span class="w-2.5 h-2.5 rotate-45 rounded-[2px] bg-purple-400 block"></span>
+                      </span>
+                      <span>Kim cương</span>
+                    </button>
+                    <button type="button" class="qr-style-btn p-2.5 rounded-2xl glass text-xs font-bold border border-white/10 text-slate-300 hover:text-white flex items-center gap-2 transition-all" data-style="square">
+                      <span class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                        <span class="w-3 h-3 bg-emerald-400 block"></span>
+                      </span>
+                      <span>Vuông nét</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="flex items-center gap-2 text-xs font-extrabold text-white uppercase tracking-wider mb-2.5">
+                    <span class="w-6 h-6 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                      <i data-lucide="scan-eye" class="w-3.5 h-3.5"></i>
+                    </span>
+                    <span>3. Mắt định vị 3 góc</span>
+                  </label>
+                  <div class="grid grid-cols-3 gap-2">
+                    <button type="button" class="qr-eye-btn p-2.5 rounded-2xl glass text-[11px] font-bold border border-indigo-500 bg-indigo-500/20 text-white flex flex-col items-center justify-center gap-1.5 transition-all" data-eye="rounded">
+                      <span class="w-5 h-5 rounded-md border-2 border-cyan-400 flex items-center justify-center"><span class="w-2 h-2 rounded-sm bg-cyan-400"></span></span>
+                      <span>Squircle</span>
+                    </button>
+                    <button type="button" class="qr-eye-btn p-2.5 rounded-2xl glass text-[11px] font-bold border border-white/10 text-slate-300 hover:text-white flex flex-col items-center justify-center gap-1.5 transition-all" data-eye="circle">
+                      <span class="w-5 h-5 rounded-full border-2 border-indigo-400 flex items-center justify-center"><span class="w-2 h-2 rounded-full bg-indigo-400"></span></span>
+                      <span>Tròn</span>
+                    </button>
+                    <button type="button" class="qr-eye-btn p-2.5 rounded-2xl glass text-[11px] font-bold border border-white/10 text-slate-300 hover:text-white flex flex-col items-center justify-center gap-1.5 transition-all" data-eye="square">
+                      <span class="w-5 h-5 border-2 border-purple-400 flex items-center justify-center"><span class="w-2 h-2 bg-purple-400"></span></span>
+                      <span>Vuông</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. BIỂU TƯỢNG TÂM MÃ QR -->
+              <div class="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-black/30 border border-white/10">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-white">Gắn Avatar cá nhân ở tâm mã QR</p>
+                    <p class="text-[11px] text-slate-400">Tự động căn chuẩn tỷ lệ sửa lỗi Level-H (30%) để mọi Camera quét cực nhạy</p>
+                  </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input type="checkbox" id="qr-has-logo-cb" checked class="sr-only peer" />
+                  <div class="w-11 h-6 bg-slate-700 peer-checked:bg-indigo-600 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                </label>
+              </div>
+
+              <!-- 5. LIÊN KẾT TRANG CÁ NHÂN CỦA BẠN -->
+              <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-indigo-950/50 via-slate-900/60 to-cyan-950/40 border border-indigo-500/25 space-y-2.5">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
+                    <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                    <span>Liên kết Trang Giao Diện Cá Nhân khi quét QR:</span>
+                  </span>
+                  <button type="button" id="btn-preview-my-profile" class="text-[11px] font-bold text-indigo-300 hover:text-white underline flex items-center gap-1">
+                    <i data-lucide="external-link" class="w-3 h-3"></i>
+                    <span>Xem giao diện trang của tôi</span>
+                  </button>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="text" id="qr-share-url-display" readonly class="flex-1 min-w-0 px-3 py-2 rounded-xl bg-black/50 border border-white/10 text-xs font-mono text-slate-200 focus:outline-none" value="https://..." />
+                  <button type="button" id="btn-copy-profile-link" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all">
+                    <i data-lucide="copy" class="w-3.5 h-3.5 text-cyan-400"></i>
+                    <span>Sao chép</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex flex-col sm:flex-row gap-3 pt-1">
+                <button type="button" id="btn-download-qr" class="btn-gradient flex-1 py-3.5 px-5 rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xl">
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                  <span>Tải Thẻ QR PNG Độ Nét Cao</span>
+                </button>
+                <button type="button" id="btn-share-profile-qr" class="glass px-5 py-3.5 rounded-2xl text-xs sm:text-sm font-bold text-white hover:bg-white/10 border border-white/15 flex items-center justify-center gap-2 transition-all">
+                  <i data-lucide="share-2" class="w-4 h-4 text-cyan-400"></i>
+                  <span>Chia sẻ Trang Cá Nhân</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- QR Preview Card (Right 5 cols on Tablet & PC) -->
+            <div class="md:col-span-5 flex flex-col items-center md:sticky md:top-4">
+              <div id="qr-vip-card-preview" class="relative overflow-hidden glass p-5 sm:p-7 rounded-[32px] border border-white/15 shadow-2xl flex flex-col items-center text-center w-full max-w-[360px] bg-gradient-to-b from-[#11172a] via-[#0b1020] to-[#070a14]">
+                <!-- Ambient Decorative Glow -->
+                <div id="qr-card-ambient-glow" class="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-60 rounded-full bg-indigo-500/25 blur-3xl pointer-events-none"></div>
+
+                <!-- Card Top Header -->
+                <div class="relative z-10 w-full flex items-center justify-between mb-4 px-1">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-400 to-indigo-600 flex items-center justify-center shadow-sm">
+                      <i data-lucide="zap" class="w-3.5 h-3.5 text-white"></i>
+                    </div>
+                    <span class="font-heading font-extrabold text-xs tracking-wider text-white">SEE <span class="text-cyan-400">LAD</span> ID</span>
+                  </div>
+                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>QUÉT NHẠY 100%</span>
+                  </span>
+                </div>
+
+                <!-- Pure White Optical Quiet-Zone Container for Instant Camera Scanning -->
+                <div class="relative z-10 bg-white p-3.5 sm:p-4 rounded-[26px] shadow-[0_16px_40px_rgba(0,0,0,0.55)] ring-4 ring-white/10 mb-5">
+                  <!-- Subtle Corner Viewfinder Accents -->
+                  <span class="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-slate-300 rounded-tl"></span>
+                  <span class="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-slate-300 rounded-tr"></span>
+                  <span class="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-slate-300 rounded-bl"></span>
+                  <span class="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-slate-300 rounded-br"></span>
+
+                  <canvas id="qr-preview-canvas" width="600" height="600" class="w-[210px] h-[210px] sm:w-[240px] sm:h-[240px] lg:w-[250px] lg:h-[250px] block rounded-xl"></canvas>
+                </div>
+
+                <!-- User Info Footer -->
+                <div class="relative z-10 w-full">
+                  <h4 class="font-heading font-extrabold text-lg text-white user-display-name tracking-tight">Người dùng SEE LAD</h4>
+                  <p class="text-xs font-mono text-cyan-400 font-semibold user-display-username mt-0.5">@seelad_user</p>
+                  
+                  <div class="mt-3 pt-3 border-t border-white/10 flex items-center justify-center gap-2 text-[11px] text-slate-300">
+                    <i data-lucide="camera" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
+                    <span>Quét bằng Camera hoặc Zalo để mở trang cá nhân</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Preview Trigger Button below Card -->
+              <button type="button" onclick="window.qrStudio && window.qrStudio.openSharedProfileModal()" class="mt-4 px-4 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-cyan-300 hover:text-white flex items-center gap-2 transition-all">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+                <span>Xem trước Trang Cá Nhân khi người khác quét mã</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 5: SCHEDULER & OFFLINE REMINDERS
+             =================================================================== -->
+        <section id="tab-view-schedule" class="hidden flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8 pb-8 w-full max-w-4xl mx-auto">
+          <div class="text-center max-w-xl mx-auto mb-6 sm:mb-8">
+            <h2 class="font-heading font-extrabold text-2xl sm:text-3xl text-white">Lên lịch & Nhắc hẹn khi Offline</h2>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1.5 sm:mt-2">Tự động kích hoạt thông báo nhắc nhở các cuộc gọi, tin nhắn quan trọng ngay cả khi bạn không online!</p>
+          </div>
+
+          <!-- Add Schedule Form -->
+          <form id="form-add-schedule" class="glass p-5 sm:p-8 rounded-3xl border border-white/10 mb-6 sm:mb-8 space-y-4">
+            <h4 class="font-bold text-sm sm:text-base text-white flex items-center gap-2">
+              <i data-lucide="calendar-plus" class="w-5 h-5 text-indigo-400"></i>
+              <span>Tạo lịch nhắc hẹn mới</span>
+            </h4>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Nội dung nhắc hẹn / Công việc</label>
+                <input type="text" id="schedule-title-input" class="glass-input w-full px-4 py-2.5 rounded-xl text-sm" placeholder="Ví dụ: Họp gọi video với Hoàng Nam..." required />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Người liên quan</label>
+                <select id="schedule-recipient-select" class="glass-input w-full px-4 py-2.5 rounded-xl text-sm bg-slate-900 text-white">
+                  <option value="Nguyễn Hoàng Nam">Nguyễn Hoàng Nam</option>
+                  <option value="Lê Thảo Nhi">Lê Thảo Nhi</option>
+                  <option value="Phạm Minh Quân">Phạm Minh Quân</option>
+                  <option value="Team Dự Án SEE LAD 🚀">Team Dự Án SEE LAD 🚀</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+              <div class="w-full sm:w-auto flex items-center gap-2">
+                <label class="text-xs text-slate-400 shrink-0">Thời gian:</label>
+                <input type="datetime-local" id="schedule-time-input" class="glass-input flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs bg-slate-900 text-white" />
+              </div>
+
+              <button type="submit" class="btn-gradient w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                <span>Lưu lịch hẹn</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Scheduled Tasks List -->
+          <div class="space-y-3">
+            <h4 class="font-bold text-sm sm:text-base text-white">Danh sách lời nhắc đang hoạt động</h4>
+            <div id="schedule-tasks-list" class="space-y-2.5">
+              <!-- Rendered via js/scheduler.js -->
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       4. MODALS & OVERLAYS
+       ========================================================================= -->
+
+  <!-- SVG Hardware Optical Filter for Crisp Skin Brightening & Unsharp Mask (No Blur) -->
+  <svg class="sr-only" width="0" height="0" aria-hidden="true">
+    <defs>
+      <filter id="seelad-beauty-sharp" color-interpolation-filters="sRGB">
+        <!-- Lift midtone skin luminance smoothly without blowing out highlights -->
+        <feComponentTransfer result="brightened">
+          <feFuncR type="gamma" amplitude="1.05" exponent="0.86" offset="0.01" />
+          <feFuncG type="gamma" amplitude="1.03" exponent="0.88" offset="0.01" />
+          <feFuncB type="gamma" amplitude="1.04" exponent="0.88" offset="0.015" />
+        </feComponentTransfer>
+        <!-- Crisp micro-contrast sharpening matrix so video is never blurry -->
+        <feConvolveMatrix in="brightened" order="3 3" preserveAlpha="true"
+          kernelMatrix="0 -0.18 0 -0.18 1.72 -0.18 0 -0.18 0" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Modal: Cuộc gọi thoại / Video HD (Call Overlay) -->
+  <div id="call-modal-overlay" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-2.5 sm:p-4 bg-black/90 backdrop-blur-2xl overflow-y-auto">
+    <div class="relative w-full max-w-2xl glass p-4 sm:p-6 rounded-[32px] border border-white/15 text-center shadow-[0_25px_80px_rgba(0,0,0,0.9)] flex flex-col items-center my-auto">
+      
+      <!-- Top Status Header Bar -->
+      <div class="w-full flex items-center justify-between mb-3 px-1">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>KHỬ TẠP ÂM AI • 1080P HD</span>
+          </span>
+        </div>
+        <div class="text-right">
+          <h3 id="call-user-name" class="font-heading font-extrabold text-sm sm:text-base text-white leading-tight">Người dùng</h3>
+          <p id="call-status-label" class="text-[11px] font-semibold text-cyan-400">Đang kết nối...</p>
+        </div>
+      </div>
+
+      <!-- Video Streams Studio (if video call) -->
+      <div id="call-video-container" class="hidden w-full h-[340px] sm:h-[420px] rounded-3xl bg-[#070b14] overflow-hidden relative mb-3 border border-white/15 shadow-2xl">
+        <!-- Remote Video Stream -->
+        <video id="call-remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+
+        <!-- Remote Waiting / Avatar Placeholder while ringing or audio-only peer -->
+        <div id="call-remote-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#0f172a]/90 to-[#070b14]/95 pointer-events-none transition-opacity duration-300">
+          <div class="relative mb-3">
+            <div class="absolute -inset-2 rounded-full bg-indigo-500/25 animate-ping"></div>
+            <img id="call-video-remote-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-cyan-400 shadow-2xl" />
+          </div>
+          <p id="call-remote-placeholder-text" class="text-xs font-semibold text-slate-300">Đang đổ chuông tới đối phương...</p>
+        </div>
+
+        <!-- Local Camera PiP Preview (Sharp + Mirrored + Beauty Filter) -->
+        <div class="absolute top-3 right-3 w-28 h-40 sm:w-36 sm:h-48 rounded-2xl overflow-hidden border-2 border-cyan-400/80 shadow-[0_12px_30px_rgba(0,0,0,0.75)] bg-slate-900 z-20 group">
+          <video id="call-local-video" autoplay playsinline muted class="w-full h-full object-cover scale-x-[-1] transition-all duration-200"></video>
+          <div class="absolute bottom-1.5 left-1.5 right-1.5 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-md flex items-center justify-between text-[9px] font-bold text-white">
+            <span>Bạn</span>
+            <span id="call-local-filter-badge" class="text-pink-300">✨ Trắng hồng</span>
+          </div>
+        </div>
+
+        <!-- Camera Permission Request Banner (Shown if camera access needed/blocked) -->
+        <div id="call-camera-perm-banner" class="hidden absolute inset-x-4 bottom-12 z-30 p-3 rounded-2xl bg-slate-900/95 border border-cyan-400/40 shadow-2xl flex items-center justify-between gap-3">
+          <div class="text-left">
+            <p class="text-xs font-bold text-white">Cho phép truy cập Camera & Micro</p>
+            <p class="text-[10px] text-slate-300">Bấm nút bên cạnh để bật hình ảnh Video HD sắc nét</p>
+          </div>
+          <button type="button" id="btn-grant-camera-perm" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 text-black text-xs font-extrabold shrink-0 shadow-lg hover:scale-105 transition-transform">
+            📷 Bật Camera
+          </button>
+        </div>
+
+        <!-- Bottom Left Live Badge -->
+        <div class="absolute bottom-3 left-3 z-20 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] font-semibold text-white flex items-center gap-1.5">
+          <i data-lucide="sparkles" class="w-3 h-3 text-pink-400"></i>
+          <span id="call-video-quality-label">Full HD • Beauty Studio</span>
+        </div>
+      </div>
+
+      <!-- Voice Avatar Ripple (if voice call) -->
+      <div id="call-voice-container" class="my-6">
+        <div class="call-ripple inline-block">
+          <img id="call-user-avatar" src="" class="w-28 h-28 rounded-full object-cover border-4 border-indigo-500 shadow-2xl" />
+        </div>
+      </div>
+
+      <!-- Beauty & Skin Brightening Filter Bar -->
+      <div id="call-beauty-panel" class="hidden w-full p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 mb-3 text-left space-y-3 animate-fade-in">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-pink-300 flex items-center gap-1.5">
+            <i data-lucide="wand-2" class="w-3.5 h-3.5 text-pink-400"></i>
+            <span>Bộ lọc Làm đẹp & Trắng sáng da HD</span>
+          </span>
+          <span id="call-beauty-level-text" class="text-[11px] font-mono font-bold text-cyan-300">Độ sáng da: 65%</span>
+        </div>
+
+        <!-- 6 Filter Presets -->
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+          <button type="button" class="call-filter-btn px-2 py-1.5 rounded-xl text-[11px] font-bold border border-pink-400 bg-pink-500/20 text-white transition-all" data-filter="beauty_glow">
+            ✨ Trắng hồng
+          </button>
+          <button type="button" class="call-filter-btn px-2 py-1.5 rounded-xl text-[11px] font-semibold border border-white/10 bg-white/5 text-slate-300 hover:text-white transition-all" data-filter="porcelain">
+            ❄️ Trắng sứ
+          </button>
+          <button type="button" class="call-filter-btn px-2 py-1.5 rounded-xl text-[11px] font-semibold border border-white/10 bg-white/5 text-slate-300 hover:text-white transition-all" data-filter="peach">
+            🌸 Đào tươi
+          </button>
+          <button type="button" class="call-filter-btn px-2 py-1.5 rounded-xl text-[11px] font-semibold border border-white/10 bg-white/5 text-slate-300 hover:text-white transition-all" data-filter="ultra_sharp">
+            💎 Sắc nét HD
+          </button>
+          <button type="button" class="call-filter-btn px-2 py-1.5 rounded-xl text-[11px] font-semibold border border-white/10 bg-white/5 text-slate-300 hover:text-white transition-all" data-filter="golden">
+            🌅 Nắng ấm
+          </button>
+          <button type="button" class="call-filter-btn px-2 py-1.5 rounded-xl text-[11px] font-semibold border border-white/10 bg-white/5 text-slate-300 hover:text-white transition-all" data-filter="original">
+            🌿 Gốc HD
+          </button>
+        </div>
+
+        <!-- Skin Brightening & Sharpness Sliders -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div class="flex items-center gap-2.5">
+            <span class="text-[11px] text-slate-300 font-semibold whitespace-nowrap">🌞 Trắng sáng:</span>
+            <input type="range" id="call-skin-brightness-slider" min="0" max="100" value="65" class="w-full accent-pink-400 cursor-pointer h-1.5 bg-slate-700 rounded-lg" />
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="text-[11px] text-slate-300 font-semibold whitespace-nowrap">💎 Độ nét HD:</span>
+            <input type="range" id="call-sharpness-slider" min="0" max="100" value="80" class="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-700 rounded-lg" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Audio output for voice calls -->
+      <audio id="call-remote-audio" autoplay playsinline class="hidden"></audio>
+
+      <!-- Simulated test call button (when testing camera/mic solo) -->
+      <button id="btn-call-test-simulation" onclick="window.call?.simulateAnswerTest()" class="hidden mb-3 px-4 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-xs font-semibold text-indigo-200 flex items-center gap-1.5 transition-all">
+        <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
+        <span>Thử nghiệm bắt máy (Test Mic, Camera & Filter)</span>
+      </button>
+
+      <!-- Call Controls -->
+      <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 mt-2">
+        <button type="button" id="btn-call-toggle-mute" class="p-3.5 sm:p-4 rounded-2xl bg-slate-800/90 border border-white/10 text-white hover:bg-slate-700 transition-all shadow-lg" title="Bật/Tắt Micro (Khử tạp âm AI)">
+          <i data-lucide="mic" class="w-5 h-5"></i>
+        </button>
+        <button type="button" id="btn-call-toggle-cam" class="p-3.5 sm:p-4 rounded-2xl bg-slate-800/90 border border-white/10 text-white hover:bg-slate-700 transition-all shadow-lg" title="Bật/Tắt Camera Video HD">
+          <i data-lucide="video" class="w-5 h-5"></i>
+        </button>
+        <button type="button" id="btn-call-switch-cam" class="p-3.5 sm:p-4 rounded-2xl bg-slate-800/90 border border-white/10 text-white hover:bg-slate-700 transition-all shadow-lg" title="Đổi Camera Trước / Sau">
+          <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+        </button>
+        <button type="button" id="btn-call-toggle-beauty" class="px-3.5 py-3.5 sm:py-4 rounded-2xl bg-pink-500/20 border border-pink-400/40 text-pink-200 hover:bg-pink-500/30 transition-all shadow-lg flex items-center gap-1.5 text-xs font-bold" title="Bộ lọc Làm đẹp & Trắng da">
+          <i data-lucide="sparkles" class="w-5 h-5 text-pink-400"></i>
+          <span class="hidden sm:inline">Filter Trắng Da</span>
+        </button>
+        <button type="button" id="btn-call-end" class="p-3.5 sm:p-4 rounded-2xl bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg shadow-red-500/30" title="Kết thúc cuộc gọi">
+          <i data-lucide="phone-off" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Cuộc gọi đến (Incoming Call Modal) -->
+  <div id="modal-incoming-call" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl">
+    <div class="relative w-full max-w-sm glass p-8 rounded-3xl border border-white/10 text-center shadow-2xl flex flex-col items-center animate-fade-in">
+      <!-- Pulsing Ringing Avatar -->
+      <div class="relative my-4">
+        <div class="absolute inset-0 rounded-full bg-emerald-500/30 animate-ping"></div>
+        <img id="incoming-call-avatar" src="" class="relative w-24 h-24 rounded-full object-cover border-4 border-emerald-400 shadow-2xl z-10" />
+      </div>
+
+      <h3 id="incoming-call-name" class="font-heading font-extrabold text-xl text-white mt-2">Người dùng</h3>
+      <p id="incoming-call-type" class="text-xs font-semibold text-emerald-400 mt-1 flex items-center gap-1.5 justify-center">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="incoming-call-type-text">Đang gọi Video HD cho bạn...</span>
+      </p>
+
+      <!-- Answer / Decline Actions -->
+      <div class="flex items-center justify-center gap-8 mt-8 w-full">
+        <!-- Decline button -->
+        <div class="flex flex-col items-center gap-2">
+          <button type="button" id="btn-incoming-decline" onclick="window.call?.declineIncomingCall()" class="w-16 h-16 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-xl shadow-red-500/40 hover:scale-105 active:scale-95 transition-all" title="Từ chối">
+            <i data-lucide="phone-off" class="w-7 h-7"></i>
+          </button>
+          <span class="text-xs font-semibold text-slate-300">Từ chối</span>
+        </div>
+
+        <!-- Answer button -->
+        <div class="flex flex-col items-center gap-2">
+          <button type="button" id="btn-incoming-accept" onclick="window.call?.acceptIncomingCall()" class="w-16 h-16 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-xl shadow-emerald-500/40 hover:scale-105 active:scale-95 transition-all animate-bounce" title="Trả lời">
+            <i data-lucide="phone" class="w-7 h-7"></i>
+          </button>
+          <span class="text-xs font-semibold text-emerald-400">Trả lời</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Tạo nhóm chat mới -->
+  <div id="modal-create-group" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+    <div class="w-full max-w-lg glass p-5 sm:p-7 rounded-3xl border border-indigo-500/30 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <i data-lucide="users" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-heading font-extrabold text-lg sm:text-xl text-white">Tạo nhóm chat mới</h3>
+            <p class="text-[11px] text-slate-400">Nhấn vào bạn bè bên dưới để chọn hoặc bỏ chọn vào nhóm</p>
+          </div>
+        </div>
+        <button type="button" id="btn-cancel-create-group" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-create-group" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">Tên nhóm trò chuyện</label>
+          <input type="text" id="group-name-input" class="glass-input w-full px-4 py-2.5 rounded-xl text-sm font-semibold" placeholder="Ví dụ: Team Thiết Kế UI/UX 🎨, Hội Bạn Thân..." required />
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-bold text-slate-300 flex items-center gap-2">
+              <span>Chọn bạn bè tham gia</span>
+              <span id="group-selected-count-badge" class="px-2 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-[11px] font-extrabold text-indigo-300">Đã chọn: 0</span>
+            </label>
+            <button type="button" id="btn-group-select-all" onclick="window.chat?.toggleSelectAllGroupMembers()" class="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 transition-colors">
+              Chọn tất cả
+            </button>
+          </div>
+
+          <!-- Search Filter inside Group Modal -->
+          <div class="relative mb-2">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="group-member-search-input" oninput="window.chat?.filterGroupMemberCards(this.value)" class="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-xs" placeholder="Tìm tên bạn bè để thêm vào nhóm..." />
+          </div>
+
+          <!-- Selected Member Chips Preview -->
+          <div id="group-selected-chips" class="hidden flex-wrap gap-1.5 mb-2 p-2 rounded-xl bg-indigo-950/40 border border-indigo-500/20 max-h-20 overflow-y-auto custom-scrollbar"></div>
+
+          <!-- Interactive Friend Cards List -->
+          <div id="group-members-select-list" class="max-h-56 overflow-y-auto space-y-1.5 bg-slate-950/60 p-2.5 rounded-2xl border border-white/10 custom-scrollbar">
+            <!-- Populated via js/chat.js -->
+          </div>
+        </div>
+
+        <button type="submit" class="btn-gradient w-full py-3 rounded-xl text-xs sm:text-sm font-extrabold shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 active:scale-98 transition-all">
+          <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+          <span>Tạo nhóm & Bắt đầu trò chuyện ngay</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Liên kết mời & Đổi link -->
+  <div id="modal-invite-link" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+    <div class="w-full max-w-md glass p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="invite-modal-title" class="font-heading font-extrabold text-lg text-white">Liên kết tham gia</h3>
+        <button id="btn-close-invite" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400 mb-4">Bất kỳ ai có liên kết này đều có thể kết nối với bạn hoặc tham gia nhóm chat.</p>
+
+      <div class="flex items-center gap-2 mb-4">
+        <input type="text" id="invite-link-input" readonly class="glass-input flex-1 px-4 py-2.5 rounded-xl text-xs font-mono" />
+        <button id="btn-copy-invite-link" class="btn-gradient px-4 py-2.5 rounded-xl text-xs font-bold">
+          Sao chép
+        </button>
+      </div>
+
+      <!-- Đổi mã liên kết / Đổi link mới -->
+      <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-4">
+        <p class="text-xs text-amber-300 font-medium mb-2">Đổi link mới sẽ vô hiệu hóa ngay lập tức liên kết cũ để tránh người ngoài tiếp tục sử dụng:</p>
+        <button id="btn-reset-invite-link" type="button" class="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold transition-colors flex items-center justify-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          <span>Tạo & Đổi mã liên kết mới</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Báo cáo vi phạm (Report User) -->
+  <div id="modal-report-user" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+    <div class="w-full max-w-md glass p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-heading font-extrabold text-lg text-white">Báo cáo người dùng vi phạm</h3>
+        <button id="btn-cancel-report" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-report-user" class="space-y-4">
+        <p class="text-xs text-slate-400">Chọn lý do bạn muốn báo cáo người này cho đội ngũ kiểm duyệt SEE LAD:</p>
+
+        <div class="space-y-2 text-xs text-slate-300">
+          <label class="flex items-center gap-2 p-2.5 rounded-xl hover:bg-white/5 cursor-pointer">
+            <input type="radio" name="report_reason" value="Spam hoặc lừa đảo" checked class="text-indigo-600" />
+            <span>Spam hoặc hành vi lừa đảo</span>
+          </label>
+          <label class="flex items-center gap-2 p-2.5 rounded-xl hover:bg-white/5 cursor-pointer">
+            <input type="radio" name="report_reason" value="Ngôn từ gây thù ghét / Quấy rối" class="text-indigo-600" />
+            <span>Ngôn từ gây thù ghét / Quấy rối</span>
+          </label>
+          <label class="flex items-center gap-2 p-2.5 rounded-xl hover:bg-white/5 cursor-pointer">
+            <input type="radio" name="report_reason" value="Nội dung không phù hợp" class="text-indigo-600" />
+            <span>Chia sẻ nội dung độc hại / không phù hợp</span>
+          </label>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-lg transition-colors">
+          Gửi báo cáo vi phạm
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Xem trước tệp (File Preview) -->
+  <div id="modal-file-preview" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl">
+    <div class="relative w-full max-w-3xl glass p-6 rounded-3xl border border-white/10 shadow-2xl flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h4 id="file-preview-title" class="font-bold text-sm text-white truncate max-w-md">Xem trước tệp</h4>
+        <button onclick="document.getElementById('modal-file-preview').classList.add('hidden')" class="p-1 text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="file-preview-content" class="flex-1 flex items-center justify-center overflow-auto min-h-[300px]"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Cài đặt Profile cá nhân -->
+  <div id="modal-user-profile" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+    <div class="w-full max-w-md glass p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-heading font-extrabold text-xl text-white">Hồ sơ cá nhân</h3>
+        <button id="btn-close-user-profile" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col items-center mb-6">
+        <div class="relative group cursor-pointer" onclick="document.getElementById('profile-avatar-input').click()">
+          <img src="" class="w-24 h-24 rounded-3xl object-cover border-2 border-indigo-500 shadow-xl user-display-avatar" />
+          <div class="absolute inset-0 rounded-3xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+            <i data-lucide="camera" class="w-6 h-6"></i>
+          </div>
+        </div>
+        <input type="file" id="profile-avatar-input" class="hidden" accept="image/*" />
+        <button type="button" onclick="document.getElementById('profile-avatar-input').click()" class="mt-3 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-all">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          <span>Tải ảnh đại diện mới từ thiết bị</span>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Họ tên</label>
+          <input type="text" readonly class="glass-input w-full px-4 py-2.5 rounded-xl text-xs user-display-name text-white font-bold" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Tên người dùng</label>
+          <input type="text" readonly class="glass-input w-full px-4 py-2.5 rounded-xl text-xs user-display-username text-slate-300 font-mono" />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Tiểu sử (Bio)</label>
+          <p class="text-xs text-slate-300 p-3 rounded-xl bg-black/20 border border-white/5">
+            Lập trình viên & Nhà thiết kế giao diện Web/App. Chào mừng bạn đến với SEE LAD!
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       5. BONG BÓNG CHAT NỔI (CHAT HEAD BUBBLE - KIỂU MESSENGER)
+       ========================================================================= -->
+  <div id="floating-chat-bubble" class="hidden chat-head-bubble flex items-center justify-center p-1 bg-gradient-to-tr from-indigo-600 to-pink-500">
+    <img id="chat-bubble-avatar" src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" class="w-full h-full rounded-full object-cover border-2 border-white/20" />
+    <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-md">1</span>
+  </div>
+
+  <!-- Mini Chat Popup From Chat Bubble -->
+  <div id="chat-bubble-popup" class="hidden fixed bottom-24 right-6 w-80 sm:w-96 h-[460px] glass rounded-3xl border border-white/10 shadow-2xl z-50 flex flex-col overflow-hidden animate-fade-in">
+    <div class="p-3.5 px-4 bg-indigo-600 text-white flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i data-lucide="message-square" class="w-4 h-4"></i>
+        <h5 class="font-bold text-xs">SEE LAD Mini Chat</h5>
+      </div>
+      <button id="btn-close-bubble-popup" class="text-white/80 hover:text-white">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <div id="mini-chat-messages" class="flex-1 p-3 overflow-y-auto space-y-1 bg-slate-900/60">
+      <!-- Mini messages rendered here -->
+    </div>
+    <form id="mini-chat-form" class="p-2.5 bg-black/40 border-t border-white/10 flex gap-2">
+      <input type="text" id="mini-chat-input" class="glass-input flex-1 px-3 py-2 rounded-xl text-xs" placeholder="Nhắn tin nhanh..." />
+      <button type="submit" class="p-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500">
+        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: DANH SÁCH LỜI MỜI KẾT BẠN (FRIEND REQUESTS WITH MESSAGES)
+       ========================================================================= -->
+  <div id="modal-friend-requests" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="relative w-full max-w-lg bg-[#0c1017] border border-[#1f293d] rounded-[28px] p-6 sm:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-[#1f293d] shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+            <i data-lucide="user-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-lg text-white flex items-center gap-2">
+              <span>Lời mời kết bạn</span>
+              <span id="friend-requests-count-badge" class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 text-xs font-bold">0</span>
+            </h3>
+            <p class="text-xs text-slate-400">Những người muốn kết nối và trò chuyện với bạn trên SEE LAD</p>
+          </div>
+        </div>
+        <button type="button" id="btn-close-friend-requests" class="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-white/10 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- List of Requests -->
+      <div id="friend-requests-list" class="flex-1 overflow-y-auto py-4 space-y-3">
+        <!-- Rendered dynamically via js/chat.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: GỬI LỜI MỜI KẾT BẠN KÈM LỜI NHẮN (SEND FRIEND REQUEST MODAL)
+       ========================================================================= -->
+  <div id="modal-send-friend-request" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="relative w-full max-w-md bg-[#0c1017] border border-[#1f293d] rounded-[28px] p-6 shadow-2xl">
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-[#1f293d] mb-4">
+        <h3 class="font-bold text-base text-white flex items-center gap-2">
+          <i data-lucide="user-plus" class="w-4 h-4 text-indigo-400"></i>
+          <span>Gửi lời mời kết bạn</span>
+        </h3>
+        <button type="button" id="btn-close-send-request" class="text-slate-400 hover:text-white p-1 rounded-xl hover:bg-white/10">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Target User Preview -->
+      <div class="flex items-center gap-3 p-3 rounded-2xl bg-[#121824] border border-[#1f293d] mb-4">
+        <img id="send-request-target-avatar" src="" class="w-12 h-12 rounded-xl object-cover border border-white/10 shrink-0" />
+        <div class="min-w-0 flex-1">
+          <p id="send-request-target-name" class="font-bold text-sm text-white truncate"></p>
+          <p id="send-request-target-username" class="text-xs text-slate-400 truncate"></p>
+        </div>
+      </div>
+
+      <!-- Form Message -->
+      <form id="form-send-friend-request" class="space-y-4">
+        <input type="hidden" id="send-request-target-id" value="" />
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+            <span>Lời nhắn gửi kèm (Lời chào / Giới thiệu):</span>
+            <span class="text-[10px] text-slate-500">Tùy chọn</span>
+          </label>
+          <textarea id="send-request-message" rows="3" maxlength="300"
+            class="w-full bg-[#121824] border border-[#1f293d] focus:border-indigo-500 text-white placeholder-slate-500 p-3 rounded-xl text-xs focus:outline-none transition-all resize-none"
+            placeholder="Ví dụ: Chào bạn, mình là bạn học cấp 3 nè! Kết bạn với mình nhé..."></textarea>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button type="button" id="btn-cancel-send-request" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 transition-colors">
+            Hủy
+          </button>
+          <button type="submit" id="btn-submit-send-request" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/30 transition-all">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            <span>Gửi lời mời</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Xem ảnh phóng to (Image Lightbox Viewer) -->
+  <div id="modal-image-viewer" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+    <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
+      <div class="absolute -top-12 right-0 flex items-center gap-3">
+        <a id="btn-download-viewer-img" href="#" download="seelad_photo.png" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors flex items-center gap-1.5 text-xs font-semibold" title="Tải ảnh về máy">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span>Tải ảnh</span>
+        </a>
+        <button onclick="document.getElementById('modal-image-viewer').classList.add('hidden')" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors" title="Đóng">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <img id="modal-viewer-img" src="" class="max-w-full max-h-[85vh] rounded-2xl object-contain shadow-2xl border border-white/10" alt="Full Image" />
+    </div>
+  </div>
+
+
+  <!-- =========================================================================
+       5F. SHARED USER PROFILE LANDING PAGE MODAL (KHI QUÉT MÃ QR HOẶC MỞ LINK)
+       ========================================================================= -->
+  <div id="shared-profile-modal" class="hidden fixed inset-0 z-[120] bg-black/85 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
+    <div class="relative w-full max-w-md rounded-[32px] bg-[#0b101e] border border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden my-auto animate-fade-in">
+      
+      <!-- Cover Banner -->
+      <div class="relative h-32 sm:h-36 bg-gradient-to-tr from-indigo-600 via-purple-600 to-cyan-400 overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_60%)]"></div>
+        <!-- Top Brand Pill -->
+        <div class="absolute top-3.5 left-4 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center gap-1.5">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-cyan-300"></i>
+          <span class="text-[10px] font-extrabold tracking-wider text-white uppercase">Hồ Sơ Định Danh SEE LAD</span>
+        </div>
+        <!-- Close Button -->
+        <button type="button" id="btn-close-shared-profile" class="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center border border-white/20 transition-all">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Avatar & Identity Body -->
+      <div class="px-6 pb-6 pt-0 text-center relative">
+        <!-- Overlapping Avatar -->
+        <div class="relative -mt-14 mb-3 inline-block">
+          <img id="shared-profile-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80" alt="Avatar" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover ring-4 ring-[#0b101e] shadow-2xl bg-slate-800" />
+          <span id="shared-profile-status-dot" class="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-emerald-400 ring-4 ring-[#0b101e]"></span>
+        </div>
+
+        <!-- Name & Verified Badge -->
+        <div class="flex items-center justify-center gap-1.5">
+          <h3 id="shared-profile-name" class="font-heading font-extrabold text-xl sm:text-2xl text-white tracking-tight">Người dùng SEE LAD</h3>
+          <span class="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300" title="Tài khoản xác thực">
+            <i data-lucide="check" class="w-3 h-3"></i>
+          </span>
+        </div>
+
+        <!-- Username & Online Status -->
+        <div class="flex items-center justify-center gap-2 mt-1">
+          <span id="shared-profile-username" class="text-xs sm:text-sm font-mono font-semibold text-cyan-400">@user</span>
+          <span class="text-slate-600">•</span>
+          <span id="shared-profile-status-text" class="text-xs font-semibold text-emerald-400">Đang trực tuyến</span>
+        </div>
+
+        <!-- Bio Box -->
+        <p id="shared-profile-bio" class="mt-3 text-xs sm:text-sm text-slate-300 bg-white/[0.04] border border-white/5 rounded-2xl px-4 py-3 leading-relaxed">
+          Thành viên kết nối trên nền tảng nhắn tin thời gian thực SEE LAD 🌟
+        </p>
+
+        <!-- Meta Pills (Location & Friends) -->
+        <div class="flex flex-wrap items-center justify-center gap-2 mt-3.5">
+          <div class="px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] text-slate-300 flex items-center gap-1.5">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-400"></i>
+            <span id="shared-profile-location">TP. Hồ Chí Minh</span>
+          </div>
+          <div class="px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] text-slate-300 flex items-center gap-1.5">
+            <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <span id="shared-profile-friends">Kết nối SEE LAD</span>
+          </div>
+        </div>
+
+        <!-- Primary Action Buttons -->
+        <div class="mt-6 space-y-2.5">
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" id="btn-shared-profile-chat" class="btn-gradient py-3 px-4 rounded-2xl text-xs sm:text-sm font-bold text-white shadow-lg flex items-center justify-center gap-2">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <span>Nhắn tin ngay</span>
+            </button>
+            <button type="button" id="btn-shared-profile-add" class="py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 text-xs sm:text-sm font-bold text-white flex items-center justify-center gap-2 transition-all">
+              <i data-lucide="user-plus" class="w-4 h-4 text-cyan-400"></i>
+              <span id="btn-shared-profile-add-text">Kết bạn</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" id="btn-shared-profile-call" class="py-2.5 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="phone-call" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Gọi thoại / Video</span>
+            </button>
+            <button type="button" id="btn-shared-profile-copy" class="py-2.5 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="link" class="w-3.5 h-3.5 text-indigo-400"></i>
+              <span>Sao chép liên kết</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       6. GLOBAL TOAST NOTIFICATIONS PILL
+       ========================================================================= -->
+  <div id="global-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass px-5 py-3 rounded-full border border-white/10 shadow-2xl flex items-center gap-3 transition-all duration-300 translate-y-24 opacity-0 pointer-events-none">
+    <span id="global-toast-icon-wrap" class="flex items-center justify-center shrink-0">
+      <i id="global-toast-icon" data-lucide="sparkles" class="w-5 h-5 text-indigo-400 shrink-0"></i>
+    </span>
+    <span id="global-toast-text" class="text-xs sm:text-sm font-semibold text-white"></span>
+  </div>
+
+  <!-- Lucide Icons Library -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Confetti Celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Real ISO/IEC 18004 QRCode Matrix Generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+
+  <!-- Application Scripts (Versioned v4.2 for instant cross-device cache-busting) -->
+  <script src="js/config.js?v=4.2"></script>
+  <script src="js/sounds.js?v=4.2"></script>
+  <script src="js/intro.js?v=4.2"></script>
+  <script src="js/auth.js?v=4.2"></script>
+  <script src="js/chat.js?v=4.2"></script>
+  <script src="js/call.js?v=4.2"></script>
+  <script src="js/recorder.js?v=4.2"></script>
+  <script src="js/streak.js?v=4.2"></script>
+  <script src="js/radar.js?v=4.2"></script>
+  <script src="js/qr-studio.js?v=4.2"></script>
+  <script src="js/file-hub.js?v=4.2"></script>
+  <script src="js/bubble.js?v=4.2"></script>
+  <script src="js/scheduler.js?v=4.2"></script>
+  <script src="js/app.js?v=4.2"></script>
+  <!-- Service Worker & PWA Install Manager -->
+  <script>
+    let deferredPrompt = null;
+    const btnInstallPwa = document.getElementById('btn-install-pwa');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (btnInstallPwa) {
+        btnInstallPwa.classList.remove('hidden');
+        if (window.lucide) window.lucide.createIcons();
+      }
+    });
+
+    if (btnInstallPwa) {
+      btnInstallPwa.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            if (window.app) window.app.showToast("Đang cài đặt SEE LAD vào màn hình chính! 📲");
+          }
+          deferredPrompt = null;
+          btnInstallPwa.classList.add('hidden');
+        } else {
+          if (window.app) {
+            window.app.showToast("Mở menu trình duyệt và chọn 'Thêm vào Màn hình chính' để cài đặt app! 📱");
+          }
+        }
+      });
+    }
+
+    // Force register & update latest Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js?v=4.2')
+          .then(reg => {
+            reg.update();
+            console.log('SEE LAD PWA Service Worker Registered & Updated:', reg.scope);
+          })
+          .catch(err => console.log('Service Worker registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>

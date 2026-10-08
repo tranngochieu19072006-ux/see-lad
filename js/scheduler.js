@@ -1,0 +1,148 @@
+/**
+ * SEE LAD - Scheduler & Offline Reminder Controller
+ * Lên lịch tin nhắn và nhắc hẹn khi người dùng không online
+ */
+
+class SchedulerController {
+  constructor() {
+    this.tasks = [];
+    this.checkInterval = null;
+  }
+
+  init() {
+    const saved = localStorage.getItem('see_lad_tasks');
+    if (saved) {
+      try { this.tasks = JSON.parse(saved); } catch (e) {}
+    } else {
+      // Default sample reminders
+      this.tasks = [
+        {
+          id: 'task_1',
+          title: "Họp review thiết kế giao diện SEE LAD với Lê Thảo Nhi",
+          recipient: "Lê Thảo Nhi",
+          timeStr: "14:00 hôm nay",
+          isOfflineAlert: true,
+          status: 'pending'
+        },
+        {
+          id: 'task_2',
+          title: "Gửi bản dựng thử nghiệm cho Hoàng Nam test gọi video",
+          recipient: "Nguyễn Hoàng Nam",
+          timeStr: "16:30 hôm nay",
+          isOfflineAlert: true,
+          status: 'pending'
+        }
+      ];
+    }
+
+    this.bindEvents();
+    this.renderTasks();
+    this.startChecker();
+  }
+
+  bindEvents() {
+    const formSchedule = document.getElementById('form-add-schedule');
+    if (formSchedule) {
+      formSchedule.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('schedule-title-input').value.trim();
+        const recipient = document.getElementById('schedule-recipient-select').value;
+        const time = document.getElementById('schedule-time-input').value;
+
+        if (!title) return alert("Vui lòng nhập nội dung nhắc hẹn!");
+
+        const newTask = {
+          id: 'task_' + Date.now(),
+          title: title,
+          recipient: recipient,
+          timeStr: time ? new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Sắp tới',
+          isOfflineAlert: true,
+          status: 'pending'
+        };
+
+        this.tasks.unshift(newTask);
+        this.saveTasks();
+        this.renderTasks();
+        formSchedule.reset();
+
+        if (window.app) window.app.showToast("Đã lên lịch nhắc hẹn thành công! ⏰ Hệ thống sẽ tự động nhắc bạn.");
+      });
+    }
+  }
+
+  renderTasks() {
+    const listEl = document.getElementById('schedule-tasks-list');
+    if (!listEl) return;
+
+    if (this.tasks.length === 0) {
+      listEl.innerHTML = `
+        <div class="py-8 text-center text-slate-400">
+          <p class="text-sm">Chưa có lịch hẹn nào. Tạo lịch hẹn đầu tiên để SEE LAD nhắc bạn cả khi không online!</p>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = this.tasks.map(t => `
+      <div class="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-indigo-500/30 transition-all">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h5 class="font-semibold text-sm text-white">${t.title}</h5>
+            <p class="text-xs text-slate-400">${t.recipient} • Giờ hẹn: <span class="text-indigo-400 font-medium">${t.timeStr}</span></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold ${t.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+            ${t.status === 'completed' ? 'Đã hoàn thành' : 'Đang chờ nhắc'}
+          </span>
+          <button onclick="window.scheduler.deleteTask('${t.id}')" class="p-1.5 text-slate-400 hover:text-red-400 transition-colors">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  deleteTask(taskId) {
+    this.tasks = this.tasks.filter(t => t.id !== taskId);
+    this.saveTasks();
+    this.renderTasks();
+    if (window.app) window.app.showToast("Đã xóa lịch nhắc hẹn");
+  }
+
+  saveTasks() {
+    localStorage.setItem('see_lad_tasks', JSON.stringify(this.tasks));
+  }
+
+  startChecker() {
+    // Check when user changes status or returns online
+    if (this.checkInterval) clearInterval(this.checkInterval);
+    this.checkInterval = setInterval(() => {
+      // Periodic gentle reminder check
+      const pendingCount = this.tasks.filter(t => t.status === 'pending').length;
+      const badge = document.getElementById('scheduler-badge-count');
+      if (badge) {
+        if (pendingCount > 0) {
+          badge.textContent = pendingCount;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }, 5000);
+  }
+
+  checkOfflineNotifications() {
+    const pending = this.tasks.filter(t => t.status === 'pending' && t.isOfflineAlert);
+    if (pending.length > 0 && window.app) {
+      window.app.showToast(`🔔 Bạn có ${pending.length} nhắc hẹn quan trọng được lên lịch sẵn!`);
+    }
+  }
+}
+
+window.scheduler = new SchedulerController();
