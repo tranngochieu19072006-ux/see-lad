@@ -2289,22 +2289,22 @@
   <!-- Real ISO/IEC 18004 QRCode Matrix Generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
-  <!-- Application Scripts (Versioned v4.4 for instant cross-device cache-busting) -->
-  <script src="js/config.js?v=4.4"></script>
-  <script src="js/sounds.js?v=4.4"></script>
-  <script src="js/intro.js?v=4.4"></script>
-  <script src="js/auth.js?v=4.4"></script>
-  <script src="js/chat.js?v=4.4"></script>
-  <script src="js/call.js?v=4.4"></script>
-  <script src="js/recorder.js?v=4.4"></script>
-  <script src="js/feed.js?v=4.4"></script>
-  <script src="js/streak.js?v=4.4"></script>
-  <script src="js/radar.js?v=4.4"></script>
-  <script src="js/qr-studio.js?v=4.4"></script>
-  <script src="js/file-hub.js?v=4.4"></script>
-  <script src="js/bubble.js?v=4.4"></script>
-  <script src="js/scheduler.js?v=4.4"></script>
-  <script src="js/app.js?v=4.4"></script>
+  <!-- Application Scripts (Versioned v4.5 for instant cross-device cache-busting) -->
+  <script src="js/config.js?v=4.5"></script>
+  <script src="js/sounds.js?v=4.5"></script>
+  <script src="js/intro.js?v=4.5"></script>
+  <script src="js/auth.js?v=4.5"></script>
+  <script src="js/chat.js?v=4.5"></script>
+  <script src="js/call.js?v=4.5"></script>
+  <script src="js/recorder.js?v=4.5"></script>
+  <script src="js/feed.js?v=4.5"></script>
+  <script src="js/streak.js?v=4.5"></script>
+  <script src="js/radar.js?v=4.5"></script>
+  <script src="js/qr-studio.js?v=4.5"></script>
+  <script src="js/file-hub.js?v=4.5"></script>
+  <script src="js/bubble.js?v=4.5"></script>
+  <script src="js/scheduler.js?v=4.5"></script>
+  <script src="js/app.js?v=4.5"></script>
   <!-- Service Worker & PWA Install Manager -->
   <script>
     let deferredPrompt = null;
@@ -2340,10 +2340,10 @@
     // Force register & update latest Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?v=4.4')
+        navigator.serviceWorker.register('/sw.js?v=4.5')
           .then(reg => {
             reg.update();
-            console.log('SEE LAD PWA Service Worker Registered & Updated v4.4:', reg.scope);
+            console.log('SEE LAD PWA Service Worker Registered & Updated v4.5:', reg.scope);
           })
           .catch(err => console.log('Service Worker registration failed:', err));
       });

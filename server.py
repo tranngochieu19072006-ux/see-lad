@@ -12,6 +12,7 @@ import sqlite3
 import hashlib
 import queue
 import urllib.parse
+import base64
 from datetime import datetime
 import collections
 import requests
@@ -256,9 +257,16 @@ def init_db():
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', ("user_1791396467957", "duckiet8146", "b30a96947d4ea66803f633a6dacf4ff51aa13ed83baa9b9954cbeff8a64ccdd6", "Đức Kiệt", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80", "Thành viên năng động trên SEE LAD 🚀", "online", "+84 900 123 456", "duckiet8146@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
 
+    c.execute('''
+        INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', ("user_1791424965072", "125001110", hash_pw("123456"), "Lifetime Sin", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
+
     # Seed friendship between them
     c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791395608431', 'user_1791396467957', 'accepted')")
     c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791396467957', 'user_1791395608431', 'accepted')")
+    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791424965072', 'user_1791396467957', 'accepted')")
+    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791396467957', 'user_1791424965072', 'accepted')")
     c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_hieu', 'user_1791396467957', 'accepted')")
     c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791396467957', 'user_hieu', 'accepted')")
 
@@ -2502,9 +2510,11 @@ def api_get_posts():
     if target_user_id:
         c.execute('''
             SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
-                   u.name as author_name, u.username as author_username, u.avatar as author_avatar
+                   COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
+                   COALESCE(u.username, 'seelad_user') as author_username,
+                   COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
             FROM posts p
-            JOIN users u ON p.user_id = u.id
+            LEFT JOIN users u ON p.user_id = u.id
             WHERE p.user_id = ?
             ORDER BY p.created_at DESC
             LIMIT 50
@@ -2512,9 +2522,11 @@ def api_get_posts():
     else:
         c.execute('''
             SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
-                   u.name as author_name, u.username as author_username, u.avatar as author_avatar
+                   COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
+                   COALESCE(u.username, 'seelad_user') as author_username,
+                   COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
             FROM posts p
-            JOIN users u ON p.user_id = u.id
+            LEFT JOIN users u ON p.user_id = u.id
             ORDER BY p.created_at DESC
             LIMIT 50
         ''')
@@ -2529,9 +2541,11 @@ def api_get_posts():
 
         c.execute('''
             SELECT pc.id, pc.post_id, pc.user_id, pc.content, pc.created_at,
-                   u.name as author_name, u.username as author_username, u.avatar as author_avatar
+                   COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
+                   COALESCE(u.username, 'seelad_user') as author_username,
+                   COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
             FROM post_comments pc
-            JOIN users u ON pc.user_id = u.id
+            LEFT JOIN users u ON pc.user_id = u.id
             WHERE pc.post_id = ?
             ORDER BY pc.created_at ASC
         ''', (pid,))
@@ -2552,8 +2566,40 @@ def api_create_post():
         return jsonify({'error': 'Vui lòng nhập nội dung bài viết!'}), 400
 
     post_id = f"post_{int(time.time() * 1000)}"
+
+    # Auto-save Base64 image payload to physical static file in uploads/
+    if image_url and image_url.startswith('data:image/'):
+        try:
+            header, encoded = image_url.split(',', 1)
+            ext = 'png' if 'png' in header else ('webp' if 'webp' in header else 'jpg')
+            img_bytes = base64.b64decode(encoded)
+            filename = f"post_{post_id}_{int(time.time())}.{ext}"
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            with open(file_path, 'wb') as f:
+                f.write(img_bytes)
+            image_url = f"/uploads/{filename}"
+        except Exception as img_err:
+            print("Base64 post image save note:", img_err)
+
     conn = get_db()
     c = conn.cursor()
+
+    # Ensure author exists in users table
+    c.execute('SELECT id, name, username, avatar FROM users WHERE id = ?', (user_id,))
+    if not c.fetchone():
+        c.execute('''
+            INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status)
+            VALUES (?, ?, ?, ?, ?, ?, 'online')
+        ''', (
+            user_id,
+            f"user_{user_id[-8:]}",
+            hash_pw("123456"),
+            "Lifetime Sin" if "1791424965072" in user_id else "Người dùng SEE LAD",
+            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+            "Thành viên kết nối chính thức 🌟"
+        ))
+        conn.commit()
+
     c.execute('''
         INSERT INTO posts (id, user_id, content, image_url, mood, likes_count, created_at)
         VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
@@ -2562,12 +2608,19 @@ def api_create_post():
 
     c.execute('''
         SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
-               u.name as author_name, u.username as author_username, u.avatar as author_avatar
+               COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
+               COALESCE(u.username, 'seelad_user') as author_username,
+               COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
         FROM posts p
-        JOIN users u ON p.user_id = u.id
+        LEFT JOIN users u ON p.user_id = u.id
         WHERE p.id = ?
     ''', (post_id,))
-    new_post = dict(c.fetchone())
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({'error': 'Không thể tạo bài viết!'}), 500
+
+    new_post = dict(row)
     new_post['has_liked'] = False
     new_post['comments'] = []
     conn.close()
@@ -2616,6 +2669,23 @@ def api_add_post_comment(post_id):
     comment_id = f"comment_{int(time.time() * 1000)}"
     conn = get_db()
     c = conn.cursor()
+
+    # Ensure author exists in users table
+    c.execute('SELECT id FROM users WHERE id = ?', (user_id,))
+    if not c.fetchone():
+        c.execute('''
+            INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status)
+            VALUES (?, ?, ?, ?, ?, ?, 'online')
+        ''', (
+            user_id,
+            f"user_{user_id[-8:]}",
+            hash_pw("123456"),
+            "Lifetime Sin" if "1791424965072" in user_id else "Người dùng SEE LAD",
+            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+            "Thành viên kết nối chính thức 🌟"
+        ))
+        conn.commit()
+
     c.execute('''
         INSERT INTO post_comments (id, post_id, user_id, content, created_at)
         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
@@ -2624,12 +2694,19 @@ def api_add_post_comment(post_id):
 
     c.execute('''
         SELECT pc.id, pc.post_id, pc.user_id, pc.content, pc.created_at,
-               u.name as author_name, u.username as author_username, u.avatar as author_avatar
+               COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
+               COALESCE(u.username, 'seelad_user') as author_username,
+               COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
         FROM post_comments pc
-        JOIN users u ON pc.user_id = u.id
+        LEFT JOIN users u ON pc.user_id = u.id
         WHERE pc.id = ?
     ''', (comment_id,))
-    comment = dict(c.fetchone())
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({'error': 'Không thể tạo bình luận!'}), 500
+
+    comment = dict(row)
     conn.close()
 
     broadcast_to_all({'type': 'post_comment_added', 'post_id': post_id, 'comment': comment})

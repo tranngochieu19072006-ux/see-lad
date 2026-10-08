@@ -166,18 +166,22 @@ class FeedController {
         })
       });
       const data = await res.json();
-      if (data.success && data.post) {
+      if (res.ok && data.success && data.post) {
         this.posts.unshift(data.post);
         if (contentInput) contentInput.value = '';
         this.clearImagePreview();
         this.renderPosts();
         if (window.app) window.app.showToast("Đã chia sẻ nhật ký mới thành công! 🌟");
       } else {
-        alert(data.error || "Không thể đăng bài!");
+        const errMsg = data.error || `Không thể đăng bài (${res.status})`;
+        if (window.app) window.app.showToast(errMsg, "error");
+        else alert(errMsg);
       }
     } catch (err) {
       console.error("Create post error:", err);
-      alert("Lỗi kết nối máy chủ khi đăng bài.");
+      const msg = "Lỗi kết nối khi gửi bài viết. Vui lòng thử lại!";
+      if (window.app) window.app.showToast(msg, "error");
+      else alert(msg);
     } finally {
       if (btnSubmit) {
         btnSubmit.disabled = false;
