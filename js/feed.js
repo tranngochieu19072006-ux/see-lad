@@ -7,6 +7,24 @@ class FeedController {
   constructor() {
     this.posts = [];
     this.currentFilter = 'all'; // 'all' | 'my'
+
+    // Cover reposition state
+    this.isRepositioningCover = false;
+    this.coverPosX = 50;
+    this.coverPosY = 50;
+    this.coverZoom = 1.0;
+    this.originalCoverPos = '50% 50%';
+    this.originalCoverZoom = 1.0;
+    this.pendingCoverBase64 = null;
+
+    // Avatar reposition & cropper state
+    this.avatarZoom = 1.0;
+    this.avatarOffsetX = 0;
+    this.avatarOffsetY = 0;
+    this.avatarBaseScale = 1.0;
+    this.avatarNaturalWidth = 0;
+    this.avatarNaturalHeight = 0;
+    this.avatarImgElement = null;
   }
 
   async init() {
@@ -95,6 +113,45 @@ class FeedController {
     if (formEditProfile) {
       formEditProfile.addEventListener('submit', (e) => this.handleSaveProfile(e));
     }
+
+    // Cover zoom slider
+    const coverZoomSlider = document.getElementById('cover-zoom-slider');
+    if (coverZoomSlider) {
+      coverZoomSlider.addEventListener('input', (e) => {
+        this.coverZoom = parseFloat(e.target.value) || 1.0;
+        const img = document.getElementById('profile-card-cover-img');
+        if (img) img.style.transform = `scale(${this.coverZoom})`;
+      });
+    }
+
+    // Avatar zoom slider
+    const avatarZoomSlider = document.getElementById('avatar-zoom-slider');
+    if (avatarZoomSlider) {
+      avatarZoomSlider.addEventListener('input', (e) => {
+        this.avatarZoom = parseFloat(e.target.value) || 1.0;
+        const lbl = document.getElementById('avatar-zoom-label');
+        if (lbl) lbl.textContent = `${this.avatarZoom.toFixed(1)}x`;
+        this.updateAvatarPreviewTransform();
+      });
+    }
+
+    // Avatar cropper file input
+    const avatarCropperFile = document.getElementById('avatar-cropper-file-input');
+    if (avatarCropperFile) {
+      avatarCropperFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          this.openAvatarAdjustModal(evt.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Initialize dragging handlers
+    this.initCoverDragEvents();
+    this.initAvatarCropDragEvents();
   }
 
   updateFilterUI() {
@@ -564,16 +621,30 @@ class FeedController {
     const locationEl = document.getElementById('profile-card-location');
     const statPostsEl = document.getElementById('profile-stat-posts');
 
-    if (coverEl) {
-      if (user.cover_image) {
-        coverEl.style.backgroundImage = `url('${user.cover_image}')`;
-      } else {
-        coverEl.style.backgroundImage = `url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80')`;
-      }
-      coverEl.style.imageRendering = '-webkit-optimize-contrast';
-      coverEl.style.backgroundSize = 'cover';
-      coverEl.style.backgroundPosition = 'center';
+    const coverImg = document.getElementById('profile-card-cover-img');
+    const coverUrl = user.cover_image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80';
+    const coverPos = user.cover_position || '50% 50%';
+    const coverZoom = parseFloat(user.cover_zoom) || 1.0;
+
+    if (coverImg) {
+      coverImg.src = coverUrl;
+      coverImg.style.objectPosition = coverPos;
+      coverImg.style.transform = `scale(${coverZoom})`;
+      coverImg.style.imageRendering = '-webkit-optimize-contrast';
     }
+    if (coverEl) {
+      coverEl.style.imageRendering = '-webkit-optimize-contrast';
+      coverEl.style.backgroundPosition = coverPos;
+    }
+
+    const posParts = coverPos.split(' ');
+    if (posParts.length >= 2) {
+      this.coverPosX = parseFloat(posParts[0]) || 50;
+      this.coverPosY = parseFloat(posParts[1]) || 50;
+    }
+    this.coverZoom = coverZoom;
+    this.originalCoverPos = coverPos;
+    this.originalCoverZoom = coverZoom;
     if (avatarEl) {
       avatarEl.src = user.avatar;
       avatarEl.style.imageRendering = '-webkit-optimize-contrast';
@@ -831,6 +902,175 @@ class FeedController {
     }
   }
 
+  startCoverReposition() {
+    this.isRepositioningCover = true;
+    this.originalCoverPos = `${this.coverPosX}% ${this.coverPosY}%`;
+    this.originalCoverZoom = this.coverZoom || 1.0;
+
+    const bar = document.getElementById('cover-reposition-bar');
+    const overlay = document.getElementById('cover-drag-overlay');
+    const btnRepo = document.getElementById('btn-reposition-cover');
+    const btnChange = document.getElementById('btn-change-cover-photo');
+    const slider = document.getElementById('cover-zoom-slider');
+
+    if (bar) bar.classList.remove('hidden');
+    if (overlay) overlay.classList.remove('hidden');
+    if (btnRepo) btnRepo.classList.add('hidden');
+    if (btnChange) btnChange.classList.add('hidden');
+    if (slider) slider.value = this.coverZoom || 1.0;
+
+    const img = document.getElementById('profile-card-cover-img');
+    if (img) {
+      img.style.objectPosition = `${this.coverPosX}% ${this.coverPosY}%`;
+      img.style.transform = `scale(${this.coverZoom || 1.0})`;
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  cancelCoverReposition() {
+    this.isRepositioningCover = false;
+    const parts = (this.originalCoverPos || '50% 50%').split(' ');
+    this.coverPosX = parseFloat(parts[0]) || 50;
+    this.coverPosY = parseFloat(parts[1]) || 50;
+    this.coverZoom = this.originalCoverZoom || 1.0;
+
+    const img = document.getElementById('profile-card-cover-img');
+    if (img) {
+      if (this.pendingCoverBase64) {
+        const user = this.getCurrentUser();
+        img.src = user.cover_image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80';
+      }
+      img.style.objectPosition = `${this.coverPosX}% ${this.coverPosY}%`;
+      img.style.transform = `scale(${this.coverZoom})`;
+    }
+
+    this.pendingCoverBase64 = null;
+
+    const bar = document.getElementById('cover-reposition-bar');
+    const overlay = document.getElementById('cover-drag-overlay');
+    const btnRepo = document.getElementById('btn-reposition-cover');
+    const btnChange = document.getElementById('btn-change-cover-photo');
+
+    if (bar) bar.classList.add('hidden');
+    if (overlay) overlay.classList.add('hidden');
+    if (btnRepo) btnRepo.classList.remove('hidden');
+    if (btnChange) btnChange.classList.remove('hidden');
+  }
+
+  async saveCoverReposition() {
+    const user = this.getCurrentUser();
+    const payload = {
+      user_id: user.id,
+      cover_position: `${this.coverPosX}% ${this.coverPosY}%`,
+      cover_zoom: this.coverZoom
+    };
+
+    if (this.pendingCoverBase64) {
+      payload.cover_image = this.pendingCoverBase64;
+    }
+
+    try {
+      const res = await fetch('/api/users/update_profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        if (window.auth && window.auth.currentUser) {
+          Object.assign(window.auth.currentUser, data.user);
+          localStorage.setItem('see_lad_user', JSON.stringify(window.auth.currentUser));
+        }
+        user.cover_position = payload.cover_position;
+        user.cover_zoom = payload.cover_zoom;
+        if (payload.cover_image) user.cover_image = payload.cover_image;
+
+        this.originalCoverPos = payload.cover_position;
+        this.originalCoverZoom = payload.cover_zoom;
+        this.pendingCoverBase64 = null;
+
+        const bar = document.getElementById('cover-reposition-bar');
+        const overlay = document.getElementById('cover-drag-overlay');
+        const btnRepo = document.getElementById('btn-reposition-cover');
+        const btnChange = document.getElementById('btn-change-cover-photo');
+
+        if (bar) bar.classList.add('hidden');
+        if (overlay) overlay.classList.add('hidden');
+        if (btnRepo) btnRepo.classList.remove('hidden');
+        if (btnChange) btnChange.classList.remove('hidden');
+        this.isRepositioningCover = false;
+
+        if (window.app) window.app.showToast("Đã lưu vị trí ảnh bìa thành công! ✨");
+      } else {
+        if (window.app) window.app.showToast("Lỗi khi lưu vị trí ảnh bìa!", "error");
+      }
+    } catch (err) {
+      console.error("Save cover reposition error:", err);
+      if (window.app) window.app.showToast("Lỗi kết nối khi lưu vị trí ảnh bìa!", "error");
+    }
+  }
+
+  initCoverDragEvents() {
+    const overlay = document.getElementById('cover-drag-overlay');
+    if (!overlay) return;
+
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let startPosX = 50, startPosY = 50;
+
+    overlay.addEventListener('pointerdown', (e) => {
+      if (!this.isRepositioningCover) return;
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startPosX = this.coverPosX;
+      startPosY = this.coverPosY;
+      try { overlay.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+
+    overlay.addEventListener('pointermove', (e) => {
+      if (!isDragging || !this.isRepositioningCover) return;
+      const rect = overlay.getBoundingClientRect();
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
+      // Dragging down shifts view up (reveals top)
+      const changeY = (deltaY / rect.height) * 100;
+      const changeX = (deltaX / rect.width) * 100;
+
+      this.coverPosY = Math.max(0, Math.min(100, Math.round(startPosY - changeY)));
+      this.coverPosX = Math.max(0, Math.min(100, Math.round(startPosX - changeX)));
+
+      const img = document.getElementById('profile-card-cover-img');
+      if (img) {
+        img.style.objectPosition = `${this.coverPosX}% ${this.coverPosY}%`;
+      }
+    });
+
+    const endDrag = (e) => {
+      if (isDragging) {
+        isDragging = false;
+        try { overlay.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+    };
+
+    overlay.addEventListener('pointerup', endDrag);
+    overlay.addEventListener('pointercancel', endDrag);
+
+    // Mouse wheel zoom
+    overlay.addEventListener('wheel', (e) => {
+      if (!this.isRepositioningCover) return;
+      e.preventDefault();
+      const slider = document.getElementById('cover-zoom-slider');
+      const step = e.deltaY < 0 ? 0.05 : -0.05;
+      this.coverZoom = Math.max(1.0, Math.min(2.5, Math.round((this.coverZoom + step) * 100) / 100));
+      if (slider) slider.value = this.coverZoom;
+      const img = document.getElementById('profile-card-cover-img');
+      if (img) img.style.transform = `scale(${this.coverZoom})`;
+    }, { passive: false });
+  }
+
   handleCoverUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -838,7 +1078,7 @@ class FeedController {
     const reader = new FileReader();
     reader.onload = (evt) => {
       const img = new Image();
-      img.onload = async () => {
+      img.onload = () => {
         const maxDim = 1920;
         let { width, height } = img;
         if (width > maxDim || height > maxDim) {
@@ -858,34 +1098,217 @@ class FeedController {
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
         const base64Cover = canvas.toDataURL('image/jpeg', 0.90);
-        const user = this.getCurrentUser();
-        try {
-          const res = await fetch('/api/users/update_profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_id: user.id,
-              cover_image: base64Cover
-            })
-          });
-          const data = await res.json();
-          if (data.success) {
-            if (window.auth && window.auth.currentUser) {
-              window.auth.currentUser.cover_image = base64Cover;
-            }
-            user.cover_image = base64Cover;
-            const coverEl = document.getElementById('profile-card-cover');
-            if (coverEl) coverEl.style.backgroundImage = `url('${base64Cover}')`;
-            if (window.app) window.app.showToast("Đã cập nhật ảnh bìa Full HD thành công!");
-          }
-        } catch (err) {
-          console.error("Cover upload error:", err);
-          if (window.app) window.app.showToast("Lỗi khi tải ảnh bìa lên. Vui lòng thử lại!", "error");
+
+        this.pendingCoverBase64 = base64Cover;
+        const coverImg = document.getElementById('profile-card-cover-img');
+        if (coverImg) {
+          coverImg.src = base64Cover;
         }
+
+        // Immediately enter reposition mode so user can align their new cover
+        this.startCoverReposition();
+        if (window.app) window.app.showToast("Kéo để căn chỉnh vị trí ảnh bìa mới rồi bấm Lưu vị trí! 🌟");
       };
       img.src = evt.target.result;
     };
     reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  initAvatarCropDragEvents() {
+    const viewport = document.getElementById('avatar-crop-viewport');
+    if (!viewport) return;
+
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let startOffsetX = 0, startOffsetY = 0;
+
+    viewport.addEventListener('pointerdown', (e) => {
+      if (!this.avatarImgElement) return;
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startOffsetX = this.avatarOffsetX;
+      startOffsetY = this.avatarOffsetY;
+      try { viewport.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+
+    viewport.addEventListener('pointermove', (e) => {
+      if (!isDragging || !this.avatarImgElement) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      this.avatarOffsetX = startOffsetX + dx;
+      this.avatarOffsetY = startOffsetY + dy;
+      this.updateAvatarPreviewTransform();
+    });
+
+    const endDrag = (e) => {
+      if (isDragging) {
+        isDragging = false;
+        try { viewport.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+    };
+
+    viewport.addEventListener('pointerup', endDrag);
+    viewport.addEventListener('pointercancel', endDrag);
+
+    // Mouse wheel zoom
+    viewport.addEventListener('wheel', (e) => {
+      if (!this.avatarImgElement) return;
+      e.preventDefault();
+      const slider = document.getElementById('avatar-zoom-slider');
+      const step = e.deltaY < 0 ? 0.05 : -0.05;
+      this.avatarZoom = Math.max(1.0, Math.min(3.0, Math.round((this.avatarZoom + step) * 100) / 100));
+      if (slider) slider.value = this.avatarZoom;
+      const lbl = document.getElementById('avatar-zoom-label');
+      if (lbl) lbl.textContent = `${this.avatarZoom.toFixed(1)}x`;
+      this.updateAvatarPreviewTransform();
+    }, { passive: false });
+  }
+
+  openAvatarAdjustModal(imageSrc = null) {
+    const user = this.getCurrentUser();
+    const src = imageSrc || user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+    const modal = document.getElementById('modal-avatar-adjuster');
+    const previewImg = document.getElementById('avatar-crop-preview-img');
+    const slider = document.getElementById('avatar-zoom-slider');
+    const zoomLabel = document.getElementById('avatar-zoom-label');
+    const viewport = document.getElementById('avatar-crop-viewport');
+
+    if (!modal) return;
+    modal.classList.remove('hidden');
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const vw = (viewport && viewport.clientWidth) ? viewport.clientWidth : 280;
+      const vh = (viewport && viewport.clientHeight) ? viewport.clientHeight : 280;
+
+      this.avatarNaturalWidth = img.naturalWidth || 400;
+      this.avatarNaturalHeight = img.naturalHeight || 400;
+      this.avatarBaseScale = Math.max(vw / this.avatarNaturalWidth, vh / this.avatarNaturalHeight);
+      this.avatarZoom = 1.0;
+      this.avatarOffsetX = 0;
+      this.avatarOffsetY = 0;
+      this.avatarImgElement = img;
+
+      if (slider) slider.value = 1.0;
+      if (zoomLabel) zoomLabel.textContent = '1.0x';
+
+      if (previewImg) {
+        previewImg.src = img.src;
+        this.updateAvatarPreviewTransform();
+      }
+    };
+    img.src = src;
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  updateAvatarPreviewTransform() {
+    const previewImg = document.getElementById('avatar-crop-preview-img');
+    if (!previewImg || !this.avatarImgElement) return;
+
+    const w = this.avatarNaturalWidth * this.avatarBaseScale;
+    const h = this.avatarNaturalHeight * this.avatarBaseScale;
+    previewImg.style.width = `${Math.round(w)}px`;
+    previewImg.style.height = `${Math.round(h)}px`;
+    previewImg.style.transform = `translate(${this.avatarOffsetX}px, ${this.avatarOffsetY}px) scale(${this.avatarZoom})`;
+  }
+
+  resetAvatarCropPosition() {
+    this.avatarOffsetX = 0;
+    this.avatarOffsetY = 0;
+    this.avatarZoom = 1.0;
+    const slider = document.getElementById('avatar-zoom-slider');
+    const zoomLabel = document.getElementById('avatar-zoom-label');
+    if (slider) slider.value = 1.0;
+    if (zoomLabel) zoomLabel.textContent = '1.0x';
+    this.updateAvatarPreviewTransform();
+  }
+
+  closeAvatarAdjustModal() {
+    const modal = document.getElementById('modal-avatar-adjuster');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  async saveAvatarCrop() {
+    if (!this.avatarImgElement) return;
+    const btnSave = document.getElementById('btn-save-avatar-crop');
+    if (btnSave) {
+      btnSave.disabled = true;
+      btnSave.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> <span>Đang lưu...</span>`;
+    }
+
+    try {
+      const viewport = document.getElementById('avatar-crop-viewport');
+      const vw = (viewport && viewport.clientWidth) ? viewport.clientWidth : 280;
+
+      // High-resolution square canvas (FHD 600x600)
+      const canvasSize = 600;
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasSize;
+      canvas.height = canvasSize;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      const scaleRatio = canvasSize / vw;
+      ctx.translate(canvasSize / 2, canvasSize / 2);
+      ctx.translate(this.avatarOffsetX * scaleRatio, this.avatarOffsetY * scaleRatio);
+      ctx.scale(this.avatarZoom, this.avatarZoom);
+
+      const drawW = this.avatarNaturalWidth * this.avatarBaseScale * scaleRatio;
+      const drawH = this.avatarNaturalHeight * this.avatarBaseScale * scaleRatio;
+      ctx.drawImage(this.avatarImgElement, -drawW / 2, -drawH / 2, drawW, drawH);
+
+      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.92);
+      const user = this.getCurrentUser();
+
+      const res = await fetch('/api/users/update_profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          avatar: croppedBase64
+        })
+      });
+
+      const data = await res.json();
+      if (data.success && data.user) {
+        if (window.auth && window.auth.currentUser) {
+          Object.assign(window.auth.currentUser, data.user);
+          localStorage.setItem('see_lad_user', JSON.stringify(window.auth.currentUser));
+        }
+        user.avatar = croppedBase64;
+
+        // Update all avatar images across the app
+        const avatarEl = document.getElementById('profile-card-avatar');
+        if (avatarEl) avatarEl.src = croppedBase64;
+
+        document.querySelectorAll('.user-display-avatar').forEach(img => {
+          img.src = croppedBase64;
+        });
+        const headerAvatar = document.getElementById('header-user-avatar');
+        if (headerAvatar) headerAvatar.src = croppedBase64;
+        const composerAvatar = document.getElementById('feed-composer-avatar');
+        if (composerAvatar) composerAvatar.src = croppedBase64;
+
+        this.closeAvatarAdjustModal();
+        if (window.app) window.app.showToast("Đã căn chỉnh và cập nhật ảnh đại diện thành công! ✨");
+      } else {
+        if (window.app) window.app.showToast("Lỗi khi lưu ảnh đại diện!", "error");
+      }
+    } catch (err) {
+      console.error("Save avatar crop error:", err);
+      if (window.app) window.app.showToast("Lỗi kết nối khi lưu ảnh đại diện!", "error");
+    } finally {
+      if (btnSave) {
+        btnSave.disabled = false;
+        btnSave.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> <span>Lưu ảnh đại diện</span>`;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
   }
 
   viewAuthorProfile(userId) {

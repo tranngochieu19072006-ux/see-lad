@@ -226,6 +226,14 @@ def init_db():
     except Exception:
         pass
     try:
+        c.execute("ALTER TABLE users ADD COLUMN cover_position TEXT DEFAULT '50% 50%'")
+    except Exception:
+        pass
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN cover_zoom REAL DEFAULT 1.0")
+    except Exception:
+        pass
+    try:
         c.execute('ALTER TABLE streaks ADD COLUMN last_streak_date TEXT')
     except Exception:
         pass
@@ -1498,7 +1506,7 @@ def api_get_user_public_profile(identifier):
     conn = get_db()
     c = conn.cursor()
     c.execute('''
-    SELECT id, username, name, avatar, bio, status, phone, email, lat, lng, location_name, cover_image, qr_token, created_at
+    SELECT id, username, name, avatar, bio, status, phone, email, lat, lng, location_name, cover_image, cover_position, cover_zoom, qr_token, created_at
     FROM users
     WHERE lower(username) = ? OR lower(id) = ?
     LIMIT 1
@@ -2990,6 +2998,8 @@ def api_update_user_profile():
     name = data.get('name', '').strip()
     bio = data.get('bio')
     cover_image = data.get('cover_image', '').strip()
+    cover_position = data.get('cover_position', '').strip()
+    cover_zoom = data.get('cover_zoom')
     avatar = data.get('avatar', '').strip()
     location_name = data.get('location_name', '').strip()
 
@@ -3009,6 +3019,12 @@ def api_update_user_profile():
     if cover_image:
         updates.append('cover_image = ?')
         params.append(cover_image)
+    if cover_position:
+        updates.append('cover_position = ?')
+        params.append(cover_position)
+    if cover_zoom is not None:
+        updates.append('cover_zoom = ?')
+        params.append(float(cover_zoom))
     if avatar:
         updates.append('avatar = ?')
         params.append(avatar)
@@ -3021,7 +3037,7 @@ def api_update_user_profile():
         c.execute(f"UPDATE users SET {', '.join(updates)} WHERE id = ?", tuple(params))
         conn.commit()
 
-    c.execute('SELECT id, username, name, avatar, bio, status, phone, email, lat, lng, location_name, cover_image, qr_token FROM users WHERE id = ?', (user_id,))
+    c.execute('SELECT id, username, name, avatar, bio, status, phone, email, lat, lng, location_name, cover_image, cover_position, cover_zoom, qr_token FROM users WHERE id = ?', (user_id,))
     updated_user = dict(c.fetchone())
     conn.close()
 
