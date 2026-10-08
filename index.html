@@ -991,12 +991,12 @@
              TAB: TRANG CÁ NHÂN (DEDICATED PROFILE - TINH GỌN & SẮC NÉT FULL HD)
              =================================================================== -->
         <section id="tab-view-profile" class="hidden flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 custom-scrollbar">
-          <div class="max-w-2xl mx-auto space-y-4 pb-16">
+          <div class="max-w-3xl xl:max-w-4xl mx-auto space-y-4 pb-16">
 
             <!-- Profile Header Showcase Card -->
             <div class="glass rounded-2xl overflow-hidden border border-white/10 shadow-xl relative">
               <!-- Cover Photo: Full HD, Click to View in Lightbox, Crisp without blur, Repositionable -->
-              <div id="profile-card-cover" class="h-44 sm:h-52 w-full bg-slate-900 overflow-hidden relative select-none group" onclick="if(!window.feed?.isRepositioningCover) window.feed.openProfileCoverLightbox()" title="Bấm để xem ảnh bìa Full HD sắc nét">
+              <div id="profile-card-cover" class="h-44 sm:h-56 w-full bg-slate-900 overflow-hidden relative select-none group" onclick="if(!window.feed?.isRepositioningCover) window.feed.openProfileCoverLightbox()" title="Bấm để xem ảnh bìa Full HD sắc nét">
                 <!-- Cover Image (Supports dynamic object-position & scale) -->
                 <img id="profile-card-cover-img" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80" class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-none" style="object-position: 50% 50%; transform-origin: center center;" alt="Ảnh bìa" />
 
@@ -1065,11 +1065,11 @@
               </div>
 
               <!-- Profile Details Row -->
-              <div class="px-4 sm:px-6 pb-4 pt-0 relative">
+              <div class="px-4 sm:px-6 pb-5 pt-0 relative">
                 <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 -mt-12 sm:-mt-14 mb-3">
                   <!-- Avatar + Basic Info -->
-                  <div class="flex items-end gap-3.5">
-                    <div class="relative cursor-pointer group" onclick="window.feed.openProfileAvatarLightbox()" title="Bấm để xem ảnh đại diện Full HD sắc nét">
+                  <div class="flex items-end gap-3.5 sm:gap-4 min-w-0">
+                    <div class="relative cursor-pointer group shrink-0" onclick="window.feed.openProfileAvatarLightbox()" title="Bấm để xem ảnh đại diện Full HD sắc nét">
                       <img id="profile-card-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900 group-hover:scale-105 transition-transform" />
                       <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-900 shadow" title="Đang trực tuyến"></span>
                       <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
@@ -1081,19 +1081,25 @@
                         <i data-lucide="camera" class="w-3.5 h-3.5"></i>
                       </button>
                     </div>
-                    <div class="mb-1 min-w-0">
-                      <h2 id="profile-card-name" class="font-heading font-extrabold text-lg sm:text-xl text-white tracking-tight truncate">Lifetime Sin</h2>
-                      <p id="profile-card-handle" class="text-xs text-indigo-400 font-semibold">@125001110</p>
+                    <div class="pb-1 sm:pb-1.5 min-w-0 flex flex-col justify-end">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <h2 id="profile-card-name" class="font-heading font-black text-xl sm:text-2xl text-white tracking-tight leading-tight truncate">Lifetime Sin</h2>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold shrink-0">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                          <span>Online</span>
+                        </span>
+                      </div>
+                      <p id="profile-card-handle" class="text-xs sm:text-sm text-cyan-400 font-medium font-mono tracking-wide mt-0.5 truncate">@125001110</p>
                     </div>
                   </div>
 
                   <!-- Action Buttons -->
-                  <div class="flex items-center gap-2">
-                    <button type="button" id="btn-edit-profile-modal" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-white/10 shadow-sm">
+                  <div class="flex items-center gap-2 shrink-0 pb-1 sm:pb-1.5">
+                    <button type="button" id="btn-edit-profile-modal" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-white/10 shadow-sm cursor-pointer">
                       <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-400"></i>
                       <span>Chỉnh sửa hồ sơ</span>
                     </button>
-                    <button type="button" onclick="window.app.switchTab('feed')" class="px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 text-xs font-bold flex items-center gap-1.5 transition-all border border-indigo-500/30 shadow-sm">
+                    <button type="button" onclick="window.app.switchTab('feed')" class="px-3.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 text-xs font-bold flex items-center gap-1.5 transition-all border border-indigo-500/30 shadow-sm cursor-pointer">
                       <i data-lucide="book-heart" class="w-3.5 h-3.5"></i>
                       <span>Đến Nhật ký</span>
                     </button>
@@ -1101,7 +1107,7 @@
                 </div>
 
                 <!-- Bio & Accurate Location & Posts count -->
-                <p id="profile-card-bio" class="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-xl">
+                <p id="profile-card-bio" class="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-2xl pt-1">
                   Thành viên kết nối chính thức qua Facebook 🌟
                 </p>
 
