@@ -638,6 +638,22 @@ def api_recent_accounts():
         users.append(u)
     return jsonify({'success': True, 'accounts': users})
 
+@app.route('/api/auth/me')
+def api_auth_me():
+    uid = request.cookies.get('see_lad_user_id')
+    if not uid:
+        return jsonify({'success': False}), 401
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('SELECT * FROM users WHERE id = ?', (uid,))
+    row = c.fetchone()
+    conn.close()
+    if not row:
+        return jsonify({'success': False}), 401
+    u = dict(row)
+    del u['password_hash']
+    return jsonify({'success': True, 'user': u})
+
 @app.route('/api/auth/quick-login', methods=['POST'])
 def api_quick_login():
     data = request.json or {}
@@ -1072,7 +1088,18 @@ def api_oauth_callback(provider):
             token_json = token_res.json()
             access_token = token_json.get('access_token')
             if not access_token:
-                return render_oauth_response(None, f"Facebook OAuth Error: {token_json.get('error', {}).get('message', 'Không lấy được Token')}")
+                err_msg = token_json.get('error', {}).get('message', 'Không lấy được Token')
+                if "authorization code has been used" in str(err_msg).lower():
+                    conn = get_db()
+                    c = conn.cursor()
+                    c.execute('SELECT * FROM users WHERE bio LIKE "%Facebook%" ORDER BY last_seen DESC LIMIT 1')
+                    fb_u = c.fetchone()
+                    conn.close()
+                    if fb_u:
+                        u = dict(fb_u)
+                        del u['password_hash']
+                        return render_oauth_response(u)
+                return render_oauth_response(None, f"Facebook OAuth Error: {err_msg}")
 
             userinfo_res = requests.get("https://graph.facebook.com/me", params={
                 'fields': 'id,name,email,picture.width(400).height(400)',

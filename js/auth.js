@@ -30,6 +30,23 @@ class AuthController {
         } catch (e) {
           this.currentUser = null;
         }
+      } else {
+        fetch('/api/auth/me')
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.success && data.user) {
+              this.currentUser = data.user;
+              this.status = this.currentUser.status || 'online';
+              this.saveUser();
+              this.saveAndEnter();
+              this.updateUI();
+              this.connectSSE();
+              if (window.chatManager && window.chatManager.init) {
+                window.chatManager.init();
+              }
+            }
+          })
+          .catch(() => {});
       }
     }
 
