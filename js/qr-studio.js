@@ -59,7 +59,11 @@ class QRStudioController {
     const user = this.getCurrentUser();
     const base = this.publicOrigin || window.location.origin;
     const handle = (user.username || user.id || 'user').toString().replace(/^@/, '').trim();
-    this.qrText = `${base}/u/${encodeURIComponent(handle)}`;
+    if (user.qr_token) {
+      this.qrText = `${base}/u/${encodeURIComponent(handle)}?token=${encodeURIComponent(user.qr_token)}`;
+    } else {
+      this.qrText = `${base}/u/${encodeURIComponent(handle)}`;
+    }
 
     const urlDisplay = document.getElementById('qr-share-url-display');
     if (urlDisplay) {
@@ -239,6 +243,37 @@ class QRStudioController {
     const btnModalCall = document.getElementById('btn-shared-profile-call');
     if (btnModalCall) {
       btnModalCall.addEventListener('click', () => this.handleSharedProfileCall());
+    }
+
+    // Reset QR token button
+    const btnResetQR = document.getElementById('btn-reset-qr-token');
+    if (btnResetQR) {
+      btnResetQR.addEventListener('click', () => this.handleResetQRToken());
+    }
+  }
+
+  async handleResetQRToken() {
+    if (!confirm("Bạn có chắc chắn muốn đổi mã QR mới không? Mã QR cũ và các hình ảnh in/lưu trước đây sẽ không còn hiệu lực.")) return;
+    const user = this.getCurrentUser();
+    try {
+      const res = await fetch('/api/qr/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (window.auth && window.auth.currentUser) {
+          window.auth.currentUser.qr_token = data.qr_token;
+        }
+        user.qr_token = data.qr_token;
+        this.updateQRText();
+        this.cachedMatrix = null;
+        this.renderQR();
+        if (window.app) window.app.showToast("Đã cấp đổi mã QR mới an toàn thành công! ✨");
+      }
+    } catch (e) {
+      console.error("Reset QR error:", e);
     }
   }
 

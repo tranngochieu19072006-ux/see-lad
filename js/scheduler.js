@@ -1,6 +1,6 @@
 /**
  * SEE LAD - Scheduler & Offline Reminder Controller
- * Lên lịch tin nhắn và nhắc hẹn khi người dùng không online
+ * Lên lịch tin nhắn và nhắc hẹn thông minh với bạn bè thật và chính mình
  */
 
 class SchedulerController {
@@ -12,32 +12,35 @@ class SchedulerController {
   init() {
     const saved = localStorage.getItem('see_lad_tasks');
     if (saved) {
-      try { this.tasks = JSON.parse(saved); } catch (e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        // Lọc bỏ các bot thử nghiệm trước kia
+        this.tasks = (parsed || []).filter(t => !['Lê Thảo Nhi', 'Nguyễn Hoàng Nam', 'Phạm Minh Quân', 'Team Dự án SEE LAD 🚀'].includes(t.recipient));
+      } catch (e) {
+        this.tasks = [];
+      }
     } else {
-      // Default sample reminders
-      this.tasks = [
-        {
-          id: 'task_1',
-          title: "Họp review thiết kế giao diện SEE LAD với Lê Thảo Nhi",
-          recipient: "Lê Thảo Nhi",
-          timeStr: "14:00 hôm nay",
-          isOfflineAlert: true,
-          status: 'pending'
-        },
-        {
-          id: 'task_2',
-          title: "Gửi bản dựng thử nghiệm cho Hoàng Nam test gọi video",
-          recipient: "Nguyễn Hoàng Nam",
-          timeStr: "16:30 hôm nay",
-          isOfflineAlert: true,
-          status: 'pending'
-        }
-      ];
+      this.tasks = [];
     }
 
     this.bindEvents();
+    this.populateRecipients();
     this.renderTasks();
     this.startChecker();
+  }
+
+  populateRecipients() {
+    const selectEl = document.getElementById('schedule-recipient-select');
+    if (!selectEl) return;
+
+    const friends = (window.chat?.contacts || []).filter(c => !c.isGroup);
+    let optionsHtml = `<option value="Chính mình (Nhắc bản thân)">Chính mình (Nhắc bản thân)</option>`;
+
+    friends.forEach(f => {
+      optionsHtml += `<option value="${this.escapeHtml(f.name)}">${this.escapeHtml(f.name)}</option>`;
+    });
+
+    selectEl.innerHTML = optionsHtml;
   }
 
   bindEvents() {
@@ -90,8 +93,8 @@ class SchedulerController {
             <i data-lucide="clock" class="w-5 h-5"></i>
           </div>
           <div>
-            <h5 class="font-semibold text-sm text-white">${t.title}</h5>
-            <p class="text-xs text-slate-400">${t.recipient} • Giờ hẹn: <span class="text-indigo-400 font-medium">${t.timeStr}</span></p>
+            <h5 class="font-semibold text-sm text-white">${this.escapeHtml(t.title)}</h5>
+            <p class="text-xs text-slate-400">${this.escapeHtml(t.recipient)} • Giờ hẹn: <span class="text-indigo-400 font-medium">${t.timeStr}</span></p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -120,10 +123,8 @@ class SchedulerController {
   }
 
   startChecker() {
-    // Check when user changes status or returns online
     if (this.checkInterval) clearInterval(this.checkInterval);
     this.checkInterval = setInterval(() => {
-      // Periodic gentle reminder check
       const pendingCount = this.tasks.filter(t => t.status === 'pending').length;
       const badge = document.getElementById('scheduler-badge-count');
       if (badge) {
@@ -142,6 +143,16 @@ class SchedulerController {
     if (pending.length > 0 && window.app) {
       window.app.showToast(`🔔 Bạn có ${pending.length} nhắc hẹn quan trọng được lên lịch sẵn!`);
     }
+  }
+
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 }
 

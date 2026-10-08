@@ -486,8 +486,15 @@
             <span class="hidden lg:inline whitespace-nowrap">Đoạn chat & Nhóm</span>
           </button>
 
-          <!-- 2. Cày Chuỗi Lửa Vô Hạn (48h) -->
-          <button class="app-nav-btn relative flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="streak" title="Cày Chuỗi Vô Hạn & Khôi Phục Chuỗi 48h">
+          <!-- 2. Nhật Ký & Trang Cá Nhân -->
+          <button class="app-nav-btn flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="feed" title="Nhật ký & Trang cá nhân">
+            <i data-lucide="book-heart" class="w-4 h-4 md:w-5 md:h-5 text-pink-400 shrink-0"></i>
+            <span class="text-[8.5px] sm:text-[10px] font-bold lg:hidden leading-none truncate max-w-full text-center mt-0.5">Nhật ký</span>
+            <span class="hidden lg:inline whitespace-nowrap">Nhật ký & Cá nhân</span>
+          </button>
+
+          <!-- 3. Cày Chuỗi Lửa (Chu kỳ 48h) -->
+          <button class="app-nav-btn relative flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="streak" title="Chuỗi Lửa 2 Chiều & Bảng Xếp Hạng">
             <div class="relative flex items-center justify-center shrink-0">
               <i data-lucide="flame" class="w-4 h-4 md:w-5 md:h-5 text-orange-400 shrink-0"></i>
               <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-ping absolute -top-0.5 -right-0.5"></span>
@@ -664,6 +671,18 @@
                     <button id="btn-action-invite" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left transition-colors">
                       <i data-lucide="link" class="w-4 h-4 text-indigo-400"></i>
                       <span>Liên kết mời & Đổi link</span>
+                    </button>
+
+                    <!-- Change wallpaper -->
+                    <button id="btn-action-wallpaper" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left transition-colors">
+                      <i data-lucide="image" class="w-4 h-4 text-emerald-400"></i>
+                      <span>Đổi ảnh nền đoạn chat 🖼️</span>
+                    </button>
+
+                    <!-- Change nickname -->
+                    <button id="btn-action-nickname" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left transition-colors">
+                      <i data-lucide="edit-3" class="w-4 h-4 text-amber-400"></i>
+                      <span>Đổi biệt danh ✏️</span>
                     </button>
 
                     <!-- Change theme -->
@@ -860,7 +879,145 @@
         </section>
 
         <!-- ===================================================================
-             TAB: CÀY CHUỖI VÔ HẠN 🔥 (48H EXPIRATION & NAMED STREAK RESTORE)
+             TAB: NHẬT KÝ & TRANG CÁ NHÂN (SOCIAL FEED & PROFILE)
+             =================================================================== -->
+        <section id="tab-view-feed" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+          <div class="max-w-3xl mx-auto space-y-6 pb-16">
+
+            <!-- 1. Profile Header Showcase Card -->
+            <div class="glass rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative">
+              <!-- Cover Photo with change button -->
+              <div id="profile-card-cover" class="h-44 sm:h-52 w-full bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 bg-cover bg-center relative transition-all duration-300">
+                <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
+                <button type="button" id="btn-change-cover-photo" class="absolute top-3.5 right-3.5 px-3 py-1.5 rounded-xl glass hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-lg">
+                  <i data-lucide="camera" class="w-3.5 h-3.5 text-cyan-400"></i>
+                  <span>Đổi ảnh bìa</span>
+                </button>
+                <input type="file" id="input-cover-upload" accept="image/*" class="hidden" />
+              </div>
+
+              <!-- Profile Details Row -->
+              <div class="px-5 sm:px-7 pb-6 pt-0 relative">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-16 sm:-mt-14 mb-4">
+                  <!-- Avatar + Basic Info -->
+                  <div class="flex items-end gap-4">
+                    <div class="relative">
+                      <img id="profile-card-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900" />
+                      <span class="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-900 shadow" title="Đang trực tuyến"></span>
+                    </div>
+                    <div class="mb-1 min-w-0">
+                      <h2 id="profile-card-name" class="font-heading font-extrabold text-xl sm:text-2xl text-white tracking-tight truncate">Trần Ngọc Hiếu</h2>
+                      <p id="profile-card-handle" class="text-xs text-indigo-400 font-semibold">@ngochieu.dev</p>
+                    </div>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="flex items-center gap-2">
+                    <button type="button" id="btn-edit-profile-modal" class="px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-white/10 shadow-md">
+                      <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-400"></i>
+                      <span>Chỉnh sửa hồ sơ</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Bio & Location -->
+                <p id="profile-card-bio" class="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-xl">
+                  Nhà sáng lập & Lập trình viên SEE LAD 🌟
+                </p>
+
+                <div class="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-400">
+                  <span class="flex items-center gap-1">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i>
+                    <span id="profile-card-location">TP. Hồ Chí Minh</span>
+                  </span>
+                  <span>•</span>
+                  <span class="flex items-center gap-1">
+                    <i data-lucide="book-open" class="w-3.5 h-3.5 text-pink-400"></i>
+                    <span><b id="profile-stat-posts" class="text-white font-mono">0</b> bài viết nhật ký</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Status Composer Card ("Bạn đang nghĩ gì thế?") -->
+            <div class="glass rounded-3xl p-5 border border-white/10 shadow-xl space-y-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-pink-500 to-indigo-500 flex items-center justify-center text-white text-sm shadow-md">
+                  ✨
+                </div>
+                <div>
+                  <h3 class="font-heading font-extrabold text-sm sm:text-base text-white">Đăng Nhật Ký & Trạng Thái Mới</h3>
+                  <p class="text-[11px] text-slate-400">Chia sẻ khoảnh khắc, cảm xúc hoặc hình ảnh đến bạn bè</p>
+                </div>
+              </div>
+
+              <form id="feed-composer-form" class="space-y-3">
+                <textarea id="feed-post-content" rows="3" placeholder="Bạn đang nghĩ gì thế? Chia sẻ cảm xúc của bạn hôm nay..." class="glass-input w-full p-3.5 rounded-2xl text-xs sm:text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-white/10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 custom-scrollbar resize-none"></textarea>
+
+                <!-- Image Preview Box (if chosen) -->
+                <div id="feed-image-preview-box" class="hidden relative rounded-2xl overflow-hidden border border-white/15 bg-black/40 max-h-60 flex items-center justify-center">
+                  <img id="feed-image-preview-img" src="" class="max-h-60 w-auto object-contain rounded-xl" />
+                  <button type="button" id="btn-remove-feed-image" class="absolute top-2 right-2 p-1.5 rounded-full bg-black/70 text-white hover:bg-rose-600 transition-colors" title="Xóa ảnh">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                  </button>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                  <div class="flex items-center gap-2">
+                    <!-- Photo attach button -->
+                    <button type="button" onclick="document.getElementById('feed-image-input').click()" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition-all">
+                      <i data-lucide="image" class="w-4 h-4 text-emerald-400"></i>
+                      <span>Ảnh / Video</span>
+                    </button>
+                    <input type="file" id="feed-image-input" accept="image/*" class="hidden" />
+
+                    <!-- Mood Emoji Selector -->
+                    <select id="feed-post-mood" class="glass-input px-3 py-1.5 rounded-xl text-xs bg-slate-900 text-white border border-white/10 focus:border-indigo-500">
+                      <option value="🌟 Vui vẻ">🌟 Vui vẻ</option>
+                      <option value="🚀 Tràn đầy năng lượng">🚀 Tràn đầy năng lượng</option>
+                      <option value="☕ Thư giãn">☕ Thư giãn</option>
+                      <option value="🔥 Hừng hực khí thế">🔥 Hừng hực khí thế</option>
+                      <option value="❤️ Đang hạnh phúc">❤️ Đang hạnh phúc</option>
+                      <option value="🌧️ Lắng đọng tâm trạng">🌧️ Lắng đọng tâm trạng</option>
+                      <option value="🎧 Chill nghe nhạc">🎧 Chill nghe nhạc</option>
+                      <option value="💻 Say mê làm việc">💻 Say mê làm việc</option>
+                    </select>
+                  </div>
+
+                  <!-- Submit Post Button -->
+                  <button type="submit" id="btn-submit-post" class="btn-gradient px-5 py-2 rounded-2xl text-xs font-bold text-white flex items-center gap-1.5 shadow-lg shadow-indigo-500/25 active:scale-95 transition-all">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    <span>Đăng nhật ký</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- 3. Feed Filter Tabs -->
+            <div class="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
+              <div class="flex items-center gap-2">
+                <button type="button" id="feed-tab-all" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
+                  🌟 Bảng tin bạn bè
+                </button>
+                <button type="button" id="feed-tab-my" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5">
+                  📖 Nhật ký của tôi
+                </button>
+              </div>
+              <button onclick="window.feed.loadFeed()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all" title="Làm mới bảng tin">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- 4. Posts Feed Stream -->
+            <div id="feed-posts-container" class="space-y-4">
+              <!-- Populated by js/feed.js -->
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB: CHUỖI TƯƠNG TÁC 🔥 (2-WAY DAILY STREAK & ANIMATED FLAME)
              =================================================================== -->
         <section id="tab-view-streak" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
           <div class="max-w-5xl mx-auto space-y-6 pb-12">
@@ -869,22 +1026,16 @@
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
                 <div>
                   <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-300 text-xs font-extrabold mb-2.5">
-                    <span>🔥 HỆ THỐNG CÀY CHUỖI VÔ HẠN</span>
+                    <span>🔥 CHUỖI LỬA TƯƠNG TÁC 2 CHIỀU</span>
                     <span>•</span>
-                    <span>CHU KỲ 48 GIỜ</span>
+                    <span>5 CẤP ĐỘ NGỌN LỬA SỐNG ĐỘNG</span>
                   </div>
                   <h2 class="font-heading font-extrabold text-xl sm:text-3xl text-white tracking-tight">
-                    Cày Chuỗi Tương Tác & Khôi Phục Chuỗi
+                    Bảng Xếp Hạng Giữ Chuỗi Lâu Nhất
                   </h2>
                   <p class="text-xs sm:text-sm text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
-                    Nhắn tin hoặc bấm <strong class="text-orange-400">Cày Chuỗi (+1 🔥)</strong> không giới hạn với bạn bè. Chuỗi sẽ tự động mất nếu không tương tác trong vòng <strong class="text-amber-300">48 tiếng</strong> — nhưng bạn luôn có thể <strong class="text-cyan-300">Khôi phục chuỗi với đúng tên người đó</strong> bất cứ lúc nào!
+                    Chuỗi chỉ được tính khi <strong>bạn và người đó cùng nhắn tin qua lại cho nhau trong ngày</strong> (mỗi ngày cộng đúng +1 chuỗi). Giữ vững tương tác đều đặn để nâng cấp ngọn lửa từ <strong>Cam Khởi Đầu</strong> lên đến <strong>Hoàng Kim Cực Quang</strong>!
                   </p>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button type="button" id="btn-refresh-streaks" class="px-4 py-2.5 rounded-2xl glass hover:bg-white/10 text-xs font-extrabold text-white flex items-center gap-2 border border-white/15 transition-all active:scale-95">
-                    <i data-lucide="refresh-cw" class="w-4 h-4 text-orange-400"></i>
-                    <span>Làm mới BXH</span>
-                  </button>
                 </div>
               </div>
 
@@ -930,14 +1081,14 @@
               </div>
             </div>
 
-            <!-- KHU VỰC 2: BẢNG XẾP HẠNG CÀY CHUỖI VÔ HẠN -->
+            <!-- KHU VỰC 2: BẢNG XẾP HẠNG NGƯỜI GIỮ CHUỖI LÂU NHẤT -->
             <div class="glass rounded-3xl p-4 sm:p-6 border border-orange-500/25 shadow-xl">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                 <div class="flex items-center gap-2.5">
                   <span class="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-base">🏆</span>
                   <div>
-                    <h3 class="font-heading font-extrabold text-base sm:text-lg text-white">Bảng Xếp Hạng Nhắn Tin Nhiều Nhất & Cày Chuỗi Vô Hạn</h3>
-                    <p class="text-xs text-slate-400">Chuỗi không giới hạn cấp độ — Cày bao nhiêu cũng được! Có nút <span class="text-amber-300 font-semibold">Thử quá 48h</span> để kiểm tra tính năng mất & khôi phục chuỗi.</p>
+                    <h3 class="font-heading font-extrabold text-base sm:text-lg text-white">Bảng Xếp Hạng Người Giữ Chuỗi Lâu Nhất</h3>
+                    <p class="text-xs text-slate-400">Chuỗi được cộng khi cả hai cùng nhắn tin qua lại cho nhau trong ngày. Ngọn lửa sẽ đổi màu và toả sáng rực rỡ theo từng mốc thời gian!</p>
                   </div>
                 </div>
               </div>
@@ -971,14 +1122,18 @@
                 <i data-lucide="crosshair" class="w-4 h-4 text-indigo-400"></i>
                 <span>Vị trí của tôi</span>
               </button>
+              <button id="btn-toggle-map-layer" class="glass px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-2xl text-[11px] sm:text-xs font-semibold text-white hover:bg-white/10 flex items-center gap-1.5" title="Chuyển đổi Google Maps Tiêu chuẩn & Vệ tinh">
+                <i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>
+                <span>Google Maps / Vệ tinh</span>
+              </button>
             </div>
           </div>
 
           <!-- Radar Friends List Sidebar -->
           <div class="w-full md:w-80 lg:w-96 max-h-[42vh] md:max-h-full glass border-t md:border-t-0 md:border-l border-[var(--border-color)] p-4 sm:p-5 flex flex-col shrink-0 overflow-y-auto">
             <div class="mb-3 sm:mb-4">
-              <h3 class="font-heading font-extrabold text-lg sm:text-xl text-white">Bạn bè quanh đây</h3>
-              <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">Cập nhật vị trí thời gian thực khi ở cách xa nhau</p>
+              <h3 class="font-heading font-extrabold text-lg sm:text-xl text-white">Bản đồ bạn bè toàn cầu</h3>
+              <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">Google Maps trực tuyến • Xem vị trí GPS và thời gian hoạt động cuối cùng</p>
             </div>
 
             <div id="radar-friends-list" class="space-y-2.5 flex-1">
@@ -1268,6 +1423,10 @@
                   <i data-lucide="share-2" class="w-4 h-4 text-cyan-400"></i>
                   <span>Chia sẻ Trang Cá Nhân</span>
                 </button>
+                <button type="button" id="btn-reset-qr-token" class="glass px-4 py-3.5 rounded-2xl text-xs sm:text-sm font-bold text-amber-300 hover:bg-amber-500/10 border border-amber-500/30 flex items-center justify-center gap-2 transition-all" title="Cấp đổi mã QR mới để bảo vệ quyền riêng tư và vô hiệu hóa mã cũ">
+                  <i data-lucide="refresh-cw" class="w-4 h-4 text-amber-400"></i>
+                  <span>Đổi mã QR mới</span>
+                </button>
               </div>
             </div>
 
@@ -1347,10 +1506,7 @@
               <div>
                 <label class="block text-xs font-medium text-slate-300 mb-1.5">Người liên quan</label>
                 <select id="schedule-recipient-select" class="glass-input w-full px-4 py-2.5 rounded-xl text-sm bg-slate-900 text-white">
-                  <option value="Nguyễn Hoàng Nam">Nguyễn Hoàng Nam</option>
-                  <option value="Lê Thảo Nhi">Lê Thảo Nhi</option>
-                  <option value="Phạm Minh Quân">Phạm Minh Quân</option>
-                  <option value="Team Dự Án SEE LAD 🚀">Team Dự Án SEE LAD 🚀</option>
+                  <option value="Chính mình (Nhắc bản thân)">Chính mình (Nhắc bản thân)</option>
                 </select>
               </div>
             </div>
@@ -1971,8 +2127,146 @@
               <span>Sao chép liên kết</span>
             </button>
           </div>
+  <!-- =========================================================================
+       MODALS: CHỈNH SỬA TRANG CÁ NHÂN, ẢNH NỀN & BIỆT DANH
+       ========================================================================= -->
+
+  <!-- Modal: Chỉnh sửa trang cá nhân -->
+  <div id="modal-edit-profile" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+    <div class="glass w-full max-w-md rounded-3xl p-6 border border-white/15 shadow-2xl space-y-4 bg-slate-900/95">
+      <div class="flex items-center justify-between">
+        <h3 class="font-heading font-extrabold text-base text-white flex items-center gap-2">
+          <i data-lucide="user" class="w-4 h-4 text-indigo-400"></i>
+          <span>Chỉnh Sửa Trang Cá Nhân</span>
+        </h3>
+        <button onclick="window.feed.closeEditProfileModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="form-edit-profile" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Họ và tên hiển thị</label>
+          <input type="text" id="edit-profile-name" required class="glass-input w-full px-3.5 py-2.5 rounded-xl text-xs bg-slate-800 text-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Tiểu sử (Bio)</label>
+          <textarea id="edit-profile-bio" rows="3" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-xs bg-slate-800 text-white resize-none" placeholder="Viết vài dòng giới thiệu bản thân..."></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Khu vực / Thành phố</label>
+          <input type="text" id="edit-profile-location" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-xs bg-slate-800 text-white" placeholder="TP. Hồ Chí Minh, Việt Nam" />
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" onclick="window.feed.closeEditProfileModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/10">Hủy</button>
+          <button type="submit" class="btn-gradient px-5 py-2 rounded-xl text-xs font-bold text-white shadow-lg shadow-indigo-500/25">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Đổi ảnh nền cuộc trò chuyện -->
+  <div id="modal-chat-wallpaper" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+    <div class="glass w-full max-w-md rounded-3xl p-6 border border-white/15 shadow-2xl space-y-4 bg-slate-900/95">
+      <div class="flex items-center justify-between">
+        <h3 class="font-heading font-extrabold text-base text-white flex items-center gap-2">
+          <i data-lucide="image" class="w-4 h-4 text-emerald-400"></i>
+          <span>Ảnh Nền Cuộc Trò Chuyện 🖼️</span>
+        </h3>
+        <button onclick="document.getElementById('modal-chat-wallpaper').classList.add('hidden')" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400">Tùy chỉnh ảnh nền riêng biệt cho cuộc trò chuyện này. Ảnh sẽ tự động tối ưu tương phản để tin nhắn luôn rõ nét.</p>
+
+      <!-- Upload from computer / phone -->
+      <div>
+        <button type="button" onclick="document.getElementById('chat-custom-wallpaper-file').click()" class="w-full py-3 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600/30 text-indigo-300 font-bold text-xs flex items-center justify-center gap-2 transition-all">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          <span>Tải ảnh từ máy / điện thoại lên</span>
+        </button>
+        <input type="file" id="chat-custom-wallpaper-file" accept="image/*" class="hidden" onchange="
+          const file = this.files[0];
+          if (file) {
+            const r = new FileReader();
+            r.onload = e => {
+              window.chat.setWallpaperForActiveChat(e.target.result);
+              document.getElementById('modal-chat-wallpaper').classList.add('hidden');
+            };
+            r.readAsDataURL(file);
+          }
+        " />
+      </div>
+
+      <!-- Presets -->
+      <div>
+        <p class="text-xs font-semibold text-slate-300 mb-2">Hoặc chọn ảnh nền mẫu chất lượng cao:</p>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button type="button" onclick="window.chat.setWallpaperForActiveChat('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80'); document.getElementById('modal-chat-wallpaper').classList.add('hidden');" class="h-16 rounded-xl overflow-hidden relative group border border-white/10">
+            <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+            <span class="absolute inset-0 bg-black/40 flex items-center justify-center text-[11px] font-bold text-white">Bầu Trời Đêm</span>
+          </button>
+          <button type="button" onclick="window.chat.setWallpaperForActiveChat('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1200&q=80'); document.getElementById('modal-chat-wallpaper').classList.add('hidden');" class="h-16 rounded-xl overflow-hidden relative group border border-white/10">
+            <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+            <span class="absolute inset-0 bg-black/40 flex items-center justify-center text-[11px] font-bold text-white">Neon Cyber</span>
+          </button>
+          <button type="button" onclick="window.chat.setWallpaperForActiveChat('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'); document.getElementById('modal-chat-wallpaper').classList.add('hidden');" class="h-16 rounded-xl overflow-hidden relative group border border-white/10">
+            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+            <span class="absolute inset-0 bg-black/40 flex items-center justify-center text-[11px] font-bold text-white">Biển Hoàng Hôn</span>
+          </button>
+          <button type="button" onclick="window.chat.setWallpaperForActiveChat('https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=80'); document.getElementById('modal-chat-wallpaper').classList.add('hidden');" class="h-16 rounded-xl overflow-hidden relative group border border-white/10">
+            <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+            <span class="absolute inset-0 bg-black/40 flex items-center justify-center text-[11px] font-bold text-white">Vũ Trụ Huyền Bí</span>
+          </button>
         </div>
       </div>
+
+      <div class="pt-2 border-t border-white/10 flex justify-between items-center">
+        <button type="button" onclick="window.chat.setWallpaperForActiveChat(''); document.getElementById('modal-chat-wallpaper').classList.add('hidden');" class="text-xs text-rose-400 hover:text-rose-300 font-semibold">
+          Xóa ảnh nền (Về mặc định)
+        </button>
+        <button type="button" onclick="document.getElementById('modal-chat-wallpaper').classList.add('hidden')" class="px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Đổi biệt danh -->
+  <div id="modal-chat-nickname" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+    <div class="glass w-full max-w-sm rounded-3xl p-6 border border-white/15 shadow-2xl space-y-4 bg-slate-900/95">
+      <div class="flex items-center justify-between">
+        <h3 class="font-heading font-extrabold text-base text-white flex items-center gap-2">
+          <i data-lucide="edit-3" class="w-4 h-4 text-amber-400"></i>
+          <span>Đặt Biệt Danh ✏️</span>
+        </h3>
+        <button onclick="document.getElementById('modal-chat-nickname').classList.add('hidden')" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400">Biệt danh chỉ hiển thị trong giao diện tin nhắn của bạn để tiện phân biệt bạn bè thân thiết.</p>
+
+      <form onsubmit="
+        event.preventDefault();
+        const val = document.getElementById('chat-nickname-input').value.trim();
+        window.chat.setNicknameForActiveChat(val);
+        document.getElementById('modal-chat-nickname').classList.add('hidden');
+      " class="space-y-3.5">
+        <input type="text" id="chat-nickname-input" placeholder="Nhập biệt danh cho người này..." class="glass-input w-full px-3.5 py-2.5 rounded-xl text-xs bg-slate-800 text-white" />
+
+        <div class="flex items-center justify-between pt-1">
+          <button type="button" onclick="window.chat.setNicknameForActiveChat(''); document.getElementById('modal-chat-nickname').classList.add('hidden');" class="text-xs text-slate-400 hover:text-rose-400 font-medium">
+            Gỡ biệt danh
+          </button>
+          <div class="flex gap-2">
+            <button type="button" onclick="document.getElementById('modal-chat-nickname').classList.add('hidden')" class="px-3 py-1.5 rounded-xl text-xs text-slate-400 hover:bg-white/10">Hủy</button>
+            <button type="submit" class="btn-gradient px-4 py-1.5 rounded-xl text-xs font-bold text-white shadow-md">Lưu</button>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1995,21 +2289,22 @@
   <!-- Real ISO/IEC 18004 QRCode Matrix Generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
-  <!-- Application Scripts (Versioned v4.2 for instant cross-device cache-busting) -->
-  <script src="js/config.js?v=4.2"></script>
-  <script src="js/sounds.js?v=4.2"></script>
-  <script src="js/intro.js?v=4.2"></script>
-  <script src="js/auth.js?v=4.2"></script>
-  <script src="js/chat.js?v=4.2"></script>
-  <script src="js/call.js?v=4.2"></script>
-  <script src="js/recorder.js?v=4.2"></script>
-  <script src="js/streak.js?v=4.2"></script>
-  <script src="js/radar.js?v=4.2"></script>
-  <script src="js/qr-studio.js?v=4.2"></script>
-  <script src="js/file-hub.js?v=4.2"></script>
-  <script src="js/bubble.js?v=4.2"></script>
-  <script src="js/scheduler.js?v=4.2"></script>
-  <script src="js/app.js?v=4.2"></script>
+  <!-- Application Scripts (Versioned v4.3 for instant cross-device cache-busting) -->
+  <script src="js/config.js?v=4.3"></script>
+  <script src="js/sounds.js?v=4.3"></script>
+  <script src="js/intro.js?v=4.3"></script>
+  <script src="js/auth.js?v=4.3"></script>
+  <script src="js/chat.js?v=4.3"></script>
+  <script src="js/call.js?v=4.3"></script>
+  <script src="js/recorder.js?v=4.3"></script>
+  <script src="js/feed.js?v=4.3"></script>
+  <script src="js/streak.js?v=4.3"></script>
+  <script src="js/radar.js?v=4.3"></script>
+  <script src="js/qr-studio.js?v=4.3"></script>
+  <script src="js/file-hub.js?v=4.3"></script>
+  <script src="js/bubble.js?v=4.3"></script>
+  <script src="js/scheduler.js?v=4.3"></script>
+  <script src="js/app.js?v=4.3"></script>
   <!-- Service Worker & PWA Install Manager -->
   <script>
     let deferredPrompt = null;

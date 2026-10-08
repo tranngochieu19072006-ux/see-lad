@@ -15,6 +15,7 @@ import urllib.parse
 from datetime import datetime
 import collections
 import requests
+import secrets
 from flask import Flask, request, jsonify, Response, send_from_directory, render_template, redirect
 
 # Initialize Flask app
@@ -141,57 +142,111 @@ def init_db():
     )
     ''')
 
-    # 6. Unlimited Messaging Streaks Table (Cày Chuỗi Lửa Vô Hạn - 48h Expiry & Recovery)
+    # 6. Unlimited Messaging Streaks Table (2-Way Daily Real Streak)
     c.execute('''
     CREATE TABLE IF NOT EXISTS streaks (
         user_id TEXT NOT NULL,
         friend_id TEXT NOT NULL,
-        streak_count INTEGER DEFAULT 1,
-        total_messages INTEGER DEFAULT 1,
+        streak_count INTEGER DEFAULT 0,
+        total_messages INTEGER DEFAULT 0,
         last_message_at REAL NOT NULL,
         status TEXT DEFAULT 'active',
         lost_streak_count INTEGER DEFAULT 0,
         restored_count INTEGER DEFAULT 0,
+        last_streak_date TEXT,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (user_id, friend_id)
     )
     ''')
 
-    # Seed Default Users if table is empty
+    # 7. Social Diary & Status Posts Table
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS posts (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        content TEXT NOT NULL,
+        image_url TEXT,
+        mood TEXT DEFAULT '🌟 Vui vẻ',
+        likes_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    # 8. Post Likes Table
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS post_likes (
+        post_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (post_id, user_id)
+    )
+    ''')
+
+    # 9. Post Comments Table
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS post_comments (
+        id TEXT PRIMARY KEY,
+        post_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    # 10. Nicknames Table (Biệt danh tùy chỉnh cho bạn bè)
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS nicknames (
+        user_id TEXT NOT NULL,
+        target_id TEXT NOT NULL,
+        nickname TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, target_id)
+    )
+    ''')
+
+    # 11. Chat Wallpapers Table (Ảnh nền riêng cho từng cuộc trò chuyện)
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS chat_wallpapers (
+        user_id TEXT NOT NULL,
+        conversation_id TEXT NOT NULL,
+        wallpaper_url TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, conversation_id)
+    )
+    ''')
+
+    # Add missing columns dynamically
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN qr_token TEXT')
+    except Exception:
+        pass
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN cover_image TEXT')
+    except Exception:
+        pass
+    try:
+        c.execute('ALTER TABLE streaks ADD COLUMN last_streak_date TEXT')
+    except Exception:
+        pass
+
+    # Purge mock bot users so users connect only with real people
+    try:
+        c.execute("DELETE FROM users WHERE id IN ('user_nam', 'user_nhi', 'user_quan')")
+        c.execute("DELETE FROM friendships WHERE user1_id IN ('user_nam', 'user_nhi', 'user_quan') OR user2_id IN ('user_nam', 'user_nhi', 'user_quan')")
+        c.execute("DELETE FROM messages WHERE sender_id IN ('user_nam', 'user_nhi', 'user_quan') OR receiver_id IN ('user_nam', 'user_nhi', 'user_quan')")
+        c.execute("DELETE FROM group_members WHERE user_id IN ('user_nam', 'user_nhi', 'user_quan')")
+        c.execute("DELETE FROM groups WHERE id = 'group_core'")
+        c.execute("DELETE FROM streaks WHERE user_id IN ('user_nam', 'user_nhi', 'user_quan') OR friend_id IN ('user_nam', 'user_nhi', 'user_quan')")
+    except Exception as e:
+        print("Mock bot purge note:", e)
+
+    # Seed Admin / Founder if users table is completely empty
     c.execute('SELECT COUNT(*) FROM users')
     if c.fetchone()[0] == 0:
-        default_users = [
-            ("user_hieu", "ngochieu.dev", hash_pw("123456"), "Trần Ngọc Hiếu", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Lập trình viên & Nhà thiết kế giao diện Web/App. Chào mừng bạn đến với SEE LAD!", "online", "+84 987 654 321", 10.7769, 106.7009, "Quận 1, TP.HCM"),
-            ("user_nam", "nam_tech", hash_pw("123456"), "Nguyễn Hoàng Nam", "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=300&q=80", "Tech Lead • SEE LAD Core", "online", "+84 987 111 222", 10.7820, 106.6950, "Quận 3, TP.HCM"),
-            ("user_nhi", "thaonhi_design", hash_pw("123456"), "Lê Thảo Nhi", "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80", "UI/UX Designer", "busy", "+84 987 333 444", 10.7650, 106.6820, "Quận 5, TP.HCM"),
-            ("user_quan", "quan_mobile", hash_pw("123456"), "Phạm Minh Quân", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80", "Mobile App Specialist", "offline", "+84 987 555 666", 10.8010, 106.7110, "Bình Thạnh, TP.HCM")
-        ]
-        for u in default_users:
-            c.execute('INSERT INTO users (id, username, password_hash, name, avatar, bio, status, phone, lat, lng, location_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', u)
-
-        # Make friendships
-        friend_pairs = [
-            ("user_hieu", "user_nam"),
-            ("user_hieu", "user_nhi"),
-            ("user_hieu", "user_quan"),
-        ]
-        for p in friend_pairs:
-            c.execute('INSERT INTO friendships (user1_id, user2_id, status) VALUES (?, ?, "accepted")', (p[0], p[1]))
-            c.execute('INSERT INTO friendships (user1_id, user2_id, status) VALUES (?, ?, "accepted")', (p[1], p[0]))
-
-        # Default Group
-        c.execute('INSERT INTO groups (id, name, avatar, created_by, invite_code) VALUES (?, ?, ?, ?, ?)',
-                  ('group_core', 'Team Dự Án SEE LAD 🚀', 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=300&q=80', 'user_hieu', 'SEELAD-CORE-2026'))
-        for uid in ["user_hieu", "user_nam", "user_nhi", "user_quan"]:
-            c.execute('INSERT INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)', ('group_core', uid, 'admin' if uid == 'user_hieu' else 'member'))
-
-        # Seed initial messages
-        c.execute('INSERT INTO messages (id, conversation_id, sender_id, receiver_id, content, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-                  ('m_1', 'user_nam', 'user_nam', 'user_hieu', 'Chào Hiếu! Hệ thống chat thật của SEE LAD đã sẵn sàng hoạt động rồi nhé 🔥', '2026-10-07 10:30:00'))
-        c.execute('INSERT INTO messages (id, conversation_id, sender_id, receiver_id, content, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-                  ('m_2', 'user_nam', 'user_hieu', 'user_nam', 'Tuyệt vời Nam! Bây giờ mọi người có thể kết bạn và chat trực tiếp từ điện thoại luôn!', '2026-10-07 10:32:00'))
-        c.execute('INSERT INTO messages (id, conversation_id, sender_id, receiver_id, is_group, content, is_pinned, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                  ('g_1', 'group_core', 'user_hieu', 'group_core', 1, 'Chào mừng mọi người đến với hệ thống SEE LAD Real-time! 🚀', 1, '2026-10-07 11:00:00'))
+        c.execute('''
+            INSERT INTO users (id, username, password_hash, name, avatar, bio, status, phone, lat, lng, location_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', ("user_hieu", "ngochieu.dev", hash_pw("123456"), "Trần Ngọc Hiếu", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Nhà sáng lập & Lập trình viên SEE LAD 🌟", "online", "+84 987 654 321", 10.7769, 106.7009, "Quận 1, TP.HCM"))
 
     # Normalize existing message timestamps from embedded millisecond IDs (fixes UTC vs Local Time ordering)
     try:
@@ -261,6 +316,11 @@ def broadcast_to_group(group_id, sender_id, event_data):
         if uid != sender_id:
             broadcast_to_user(uid, event_data)
 
+def broadcast_to_all(event_data):
+    """Pushes event data to all connected active users"""
+    for uid in list(active_clients.keys()):
+        broadcast_to_user(uid, event_data)
+
 # ----------------- Static & Profile Shortlink Routes -----------------
 @app.route('/')
 def index():
@@ -268,6 +328,9 @@ def index():
 
 @app.route('/u/<identifier>')
 def user_public_profile_route(identifier):
+    token = request.args.get('token', '').strip()
+    if token:
+        return redirect(f'/?u={urllib.parse.quote(identifier)}&token={urllib.parse.quote(token)}')
     return redirect(f'/?u={urllib.parse.quote(identifier)}')
 
 @app.route('/api/public-url', methods=['GET'])
@@ -1381,7 +1444,7 @@ def api_get_user_public_profile(identifier):
     conn = get_db()
     c = conn.cursor()
     c.execute('''
-    SELECT id, username, name, avatar, bio, status, phone, email, lat, lng, location_name, created_at
+    SELECT id, username, name, avatar, bio, status, phone, email, lat, lng, location_name, cover_image, qr_token, created_at
     FROM users
     WHERE lower(username) = ? OR lower(id) = ?
     LIMIT 1
@@ -1739,46 +1802,76 @@ def api_create_group():
 
     return jsonify({'success': True, 'group': group_obj})
 
-# ----------------- Unlimited Streak Engine (Cày Chuỗi Vô Hạn 48h & Khôi Phục) -----------------
-def update_streak_pair_in_db(c, user_a, user_b):
-    """Updates bidirectional unlimited streak between user_a and user_b upon messaging"""
-    if not user_a or not user_b or user_a == user_b:
+# ----------------- 2-Way Daily Streak Engine & Flame Tier System -----------------
+def get_flame_tier(streak_count):
+    if streak_count >= 30:
+        return {'tier': 5, 'name': 'Lửa Hoàng Kim Cực Quang', 'color': '#fbbf24', 'bg': 'from-amber-400 via-yellow-300 to-amber-500', 'class_name': 'flame-gold', 'icon': '🌟'}
+    elif streak_count >= 15:
+        return {'tier': 4, 'name': 'Lửa Xanh Băng Giá Plasma', 'color': '#06b6d4', 'bg': 'from-cyan-400 to-blue-500', 'class_name': 'flame-cyan', 'icon': '⚡'}
+    elif streak_count >= 8:
+        return {'tier': 3, 'name': 'Lửa Tím Huyền Ảo', 'color': '#c084fc', 'bg': 'from-purple-500 to-pink-500', 'class_name': 'flame-purple', 'icon': '💜'}
+    elif streak_count >= 4:
+        return {'tier': 2, 'name': 'Lửa Đỏ Nhiệt Huyết', 'color': '#f43f5e', 'bg': 'from-rose-500 to-red-600', 'class_name': 'flame-red', 'icon': '🔴'}
+    elif streak_count >= 1:
+        return {'tier': 1, 'name': 'Lửa Cam Khởi Đầu', 'color': '#f97316', 'bg': 'from-orange-500 to-amber-500', 'class_name': 'flame-orange', 'icon': '🔥'}
+    else:
+        return {'tier': 0, 'name': 'Chưa kích hoạt', 'color': '#64748b', 'bg': 'from-slate-600 to-slate-700', 'class_name': 'flame-gray', 'icon': '❄️'}
+
+def update_streak_pair_in_db(c, sender_id, receiver_id):
+    """
+    Chuỗi 2 Chiều Chuẩn Xác:
+    - Chỉ tăng khi CẢ HAI người cùng nhắn tin cho nhau trong ngày hôm nay.
+    - Mỗi ngày lịch (today) chỉ cộng tối đa đúng 1 điểm chuỗi.
+    - Nếu quá 48h không ai nhắn, chuỗi sẽ về 0.
+    """
+    if not sender_id or not receiver_id or sender_id == receiver_id:
         return None
     now_ts = time.time()
-    result_streak = 1
+    today_str = datetime.now().strftime('%Y-%m-%d')
+    result_streak = 0
 
-    for (u1, u2) in [(user_a, user_b), (user_b, user_a)]:
-        c.execute('SELECT streak_count, total_messages, last_message_at, status, lost_streak_count FROM streaks WHERE user_id = ? AND friend_id = ?', (u1, u2))
+    # Kiểm tra xem receiver_id đã nhắn cho sender_id hôm nay chưa
+    c.execute('''
+        SELECT COUNT(*) as cnt FROM messages
+        WHERE sender_id = ? AND receiver_id = ? AND is_group = 0
+        AND date(created_at) = date('now')
+    ''', (receiver_id, sender_id))
+    cnt_row = c.fetchone()
+    has_receiver_messaged_today = (cnt_row['cnt'] if cnt_row else 0) > 0
+
+    for (u1, u2) in [(sender_id, receiver_id), (receiver_id, sender_id)]:
+        c.execute('SELECT streak_count, total_messages, last_message_at, status, last_streak_date FROM streaks WHERE user_id = ? AND friend_id = ?', (u1, u2))
         row = c.fetchone()
         if not row:
+            init_streak = 1 if has_receiver_messaged_today else 0
+            init_date = today_str if has_receiver_messaged_today else None
             c.execute('''
-                INSERT INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count)
-                VALUES (?, ?, 1, 1, ?, 'active', 0)
-            ''', (u1, u2, now_ts))
-            result_streak = 1
+                INSERT INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
+                VALUES (?, ?, ?, 1, ?, 'active', 0, ?)
+            ''', (u1, u2, init_streak, now_ts, init_date))
+            result_streak = init_streak
         else:
             elapsed = now_ts - float(row['last_message_at'] or now_ts)
-            if elapsed >= 48 * 3600 or row['status'] == 'lost':
-                # If expired (>48h), preserve lost_streak_count so user can still restore it, and start new streak at 1
-                lost_prev = max(row['lost_streak_count'] or 0, row['streak_count'] or 0)
-                new_streak = 1
-                new_total = (row['total_messages'] or 0) + 1
-                c.execute('''
-                    UPDATE streaks
-                    SET streak_count = ?, total_messages = ?, last_message_at = ?, status = 'active', lost_streak_count = ?, updated_at = CURRENT_TIMESTAMP
-                    WHERE user_id = ? AND friend_id = ?
-                ''', (new_streak, new_total, now_ts, lost_prev, u1, u2))
-                result_streak = new_streak
-            else:
-                # Active within 48h -> Unlimited streak grinding (+1 every message interaction!)
-                new_streak = (row['streak_count'] or 0) + 1
-                new_total = (row['total_messages'] or 0) + 1
-                c.execute('''
-                    UPDATE streaks
-                    SET streak_count = ?, total_messages = ?, last_message_at = ?, status = 'active', updated_at = CURRENT_TIMESTAMP
-                    WHERE user_id = ? AND friend_id = ?
-                ''', (new_streak, new_total, now_ts, u1, u2))
-                result_streak = new_streak
+            current_streak = int(row['streak_count'] or 0)
+            last_date = row['last_streak_date']
+            total_msgs = (row['total_messages'] or 0) + 1
+
+            if elapsed >= 48 * 3600:
+                current_streak = 0
+                last_date = None
+
+            # Cả hai đã nhắn hôm nay và hôm nay chưa được cộng
+            if has_receiver_messaged_today and last_date != today_str:
+                current_streak += 1
+                last_date = today_str
+
+            c.execute('''
+                UPDATE streaks
+                SET streak_count = ?, total_messages = ?, last_message_at = ?, status = 'active', last_streak_date = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = ? AND friend_id = ?
+            ''', (current_streak, total_msgs, now_ts, last_date, u1, u2))
+            result_streak = current_streak
+
     return result_streak
 
 @app.route('/api/streaks', methods=['GET'])
@@ -1788,12 +1881,12 @@ def api_get_streaks():
         return jsonify({'streaks': []})
 
     now_ts = time.time()
-    EXPIRE_SECONDS = 48 * 3600  # 48 hours = 172,800 seconds
+    EXPIRE_SECONDS = 48 * 3600
 
     conn = get_db()
     c = conn.cursor()
 
-    # Ensure all accepted friends have a streak row
+    # Lấy danh sách bạn bè thật đã kết bạn
     c.execute('''
         SELECT u.id, u.name, u.username, u.avatar, u.status as user_status
         FROM users u
@@ -1805,7 +1898,6 @@ def api_get_streaks():
     streaks_list = []
     for f in friends:
         fid = f['id']
-        # Count real messages exchanged between user_id and fid
         c.execute('''
             SELECT COUNT(*) as cnt FROM messages
             WHERE is_group = 0 AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))
@@ -1815,11 +1907,10 @@ def api_get_streaks():
         c.execute('SELECT * FROM streaks WHERE user_id = ? AND friend_id = ?', (user_id, fid))
         st = c.fetchone()
         if not st:
-            init_cnt = max(1, real_msg_cnt)
             c.execute('''
-                INSERT INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count)
-                VALUES (?, ?, ?, ?, ?, 'active', 0)
-            ''', (user_id, fid, init_cnt, init_cnt, now_ts))
+                INSERT INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
+                VALUES (?, ?, 0, ?, ?, 'active', 0, NULL)
+            ''', (user_id, fid, real_msg_cnt, now_ts))
             conn.commit()
             c.execute('SELECT * FROM streaks WHERE user_id = ? AND friend_id = ?', (user_id, fid))
             st = c.fetchone()
@@ -1831,19 +1922,12 @@ def api_get_streaks():
 
         status = st_dict.get('status', 'active')
         streak_count = int(st_dict.get('streak_count') or 0)
-        lost_streak_count = int(st_dict.get('lost_streak_count') or 0)
-        total_messages = max(int(st_dict.get('total_messages') or 0), real_msg_cnt, streak_count)
+        total_messages = max(int(st_dict.get('total_messages') or 0), real_msg_cnt)
 
         if elapsed >= EXPIRE_SECONDS and status == 'active':
             status = 'lost'
-            lost_streak_count = max(streak_count, lost_streak_count, 1)
             streak_count = 0
-            remaining = 0
-            c.execute('''
-                UPDATE streaks
-                SET status = 'lost', lost_streak_count = ?, streak_count = 0, updated_at = CURRENT_TIMESTAMP
-                WHERE user_id = ? AND friend_id = ?
-            ''', (lost_streak_count, user_id, fid))
+            c.execute('UPDATE streaks SET status = "lost", streak_count = 0 WHERE user_id = ? AND friend_id = ?', (user_id, fid))
             conn.commit()
 
         hours_left = remaining // 3600
@@ -1864,14 +1948,11 @@ def api_get_streaks():
             'minutes_left': minutes_left,
             'seconds_left': seconds_left,
             'status': status,
-            'lost_streak_count': lost_streak_count,
-            'restored_count': int(st_dict.get('restored_count') or 0)
+            'flame_tier': get_flame_tier(streak_count)
         })
 
     conn.close()
-
-    # Sort by highest streak_count and total_messages descending (Những ai nhắn tin nhiều nhất lên đầu)
-    streaks_list.sort(key=lambda x: (x['streak_count'], x['total_messages'], x['lost_streak_count']), reverse=True)
+    streaks_list.sort(key=lambda x: (x['streak_count'], x['total_messages']), reverse=True)
     return jsonify({'streaks': streaks_list})
 
 @app.route('/api/streaks/grind', methods=['POST'])
@@ -2379,6 +2460,364 @@ def api_call_poll():
     valid_signals = [s['event'] for s in q_list if now_ts - s['ts'] < 40]
     pending_call_signals[user_id] = []
     return jsonify({'signals': valid_signals})
+
+# ----------------- Social Diary & Posts API -----------------
+@app.route('/api/posts', methods=['GET'])
+def api_get_posts():
+    current_user_id = request.args.get('user_id', '').strip()
+    target_user_id = request.args.get('target_user_id', '').strip()
+
+    conn = get_db()
+    c = conn.cursor()
+
+    if target_user_id:
+        c.execute('''
+            SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
+                   u.name as author_name, u.username as author_username, u.avatar as author_avatar
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.user_id = ?
+            ORDER BY p.created_at DESC
+            LIMIT 50
+        ''', (target_user_id,))
+    else:
+        c.execute('''
+            SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
+                   u.name as author_name, u.username as author_username, u.avatar as author_avatar
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            ORDER BY p.created_at DESC
+            LIMIT 50
+        ''')
+    posts = [dict(r) for r in c.fetchall()]
+
+    for p in posts:
+        pid = p['id']
+        p['has_liked'] = False
+        if current_user_id:
+            c.execute('SELECT COUNT(*) FROM post_likes WHERE post_id = ? AND user_id = ?', (pid, current_user_id))
+            p['has_liked'] = c.fetchone()[0] > 0
+
+        c.execute('''
+            SELECT pc.id, pc.post_id, pc.user_id, pc.content, pc.created_at,
+                   u.name as author_name, u.username as author_username, u.avatar as author_avatar
+            FROM post_comments pc
+            JOIN users u ON pc.user_id = u.id
+            WHERE pc.post_id = ?
+            ORDER BY pc.created_at ASC
+        ''', (pid,))
+        p['comments'] = [dict(cr) for cr in c.fetchall()]
+
+    conn.close()
+    return jsonify({'success': True, 'posts': posts})
+
+@app.route('/api/posts', methods=['POST'])
+def api_create_post():
+    data = request.json or {}
+    user_id = data.get('user_id', '').strip()
+    content = data.get('content', '').strip()
+    image_url = data.get('image_url', '').strip()
+    mood = data.get('mood', '🌟 Vui vẻ').strip()
+
+    if not user_id or not content:
+        return jsonify({'error': 'Vui lòng nhập nội dung bài viết!'}), 400
+
+    post_id = f"post_{int(time.time() * 1000)}"
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO posts (id, user_id, content, image_url, mood, likes_count, created_at)
+        VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+    ''', (post_id, user_id, content, image_url or None, mood))
+    conn.commit()
+
+    c.execute('''
+        SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
+               u.name as author_name, u.username as author_username, u.avatar as author_avatar
+        FROM posts p
+        JOIN users u ON p.user_id = u.id
+        WHERE p.id = ?
+    ''', (post_id,))
+    new_post = dict(c.fetchone())
+    new_post['has_liked'] = False
+    new_post['comments'] = []
+    conn.close()
+
+    broadcast_to_all({'type': 'new_post', 'post': new_post})
+    return jsonify({'success': True, 'post': new_post})
+
+@app.route('/api/posts/<post_id>/like', methods=['POST'])
+def api_toggle_post_like(post_id):
+    data = request.json or {}
+    user_id = data.get('user_id', '').strip()
+    if not user_id:
+        return jsonify({'error': 'user_id required'}), 400
+
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('SELECT COUNT(*) FROM post_likes WHERE post_id = ? AND user_id = ?', (post_id, user_id))
+    has_liked = c.fetchone()[0] > 0
+
+    if has_liked:
+        c.execute('DELETE FROM post_likes WHERE post_id = ? AND user_id = ?', (post_id, user_id))
+        c.execute('UPDATE posts SET likes_count = MAX(0, likes_count - 1) WHERE id = ?', (post_id,))
+        now_liked = False
+    else:
+        c.execute('INSERT OR IGNORE INTO post_likes (post_id, user_id) VALUES (?, ?)', (post_id, user_id))
+        c.execute('UPDATE posts SET likes_count = likes_count + 1 WHERE id = ?', (post_id,))
+        now_liked = True
+
+    c.execute('SELECT likes_count FROM posts WHERE id = ?', (post_id,))
+    row = c.fetchone()
+    likes_count = row['likes_count'] if row else 0
+    conn.commit()
+    conn.close()
+
+    broadcast_to_all({'type': 'post_like_updated', 'post_id': post_id, 'likes_count': likes_count})
+    return jsonify({'success': True, 'has_liked': now_liked, 'likes_count': likes_count})
+
+@app.route('/api/posts/<post_id>/comment', methods=['POST'])
+def api_add_post_comment(post_id):
+    data = request.json or {}
+    user_id = data.get('user_id', '').strip()
+    content = data.get('content', '').strip()
+    if not user_id or not content:
+        return jsonify({'error': 'Vui lòng nhập nội dung bình luận!'}), 400
+
+    comment_id = f"comment_{int(time.time() * 1000)}"
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO post_comments (id, post_id, user_id, content, created_at)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ''', (comment_id, post_id, user_id, content))
+    conn.commit()
+
+    c.execute('''
+        SELECT pc.id, pc.post_id, pc.user_id, pc.content, pc.created_at,
+               u.name as author_name, u.username as author_username, u.avatar as author_avatar
+        FROM post_comments pc
+        JOIN users u ON pc.user_id = u.id
+        WHERE pc.id = ?
+    ''', (comment_id,))
+    comment = dict(c.fetchone())
+    conn.close()
+
+    broadcast_to_all({'type': 'post_comment_added', 'post_id': post_id, 'comment': comment})
+    return jsonify({'success': True, 'comment': comment})
+
+@app.route('/api/posts/<post_id>', methods=['DELETE'])
+def api_delete_post(post_id):
+    user_id = request.args.get('user_id', '').strip()
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('SELECT user_id FROM posts WHERE id = ?', (post_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({'error': 'Bài đăng không tồn tại'}), 404
+    if row['user_id'] != user_id:
+        conn.close()
+        return jsonify({'error': 'Không có quyền xóa bài đăng này'}), 403
+
+    c.execute('DELETE FROM posts WHERE id = ?', (post_id,))
+    c.execute('DELETE FROM post_likes WHERE post_id = ?', (post_id,))
+    c.execute('DELETE FROM post_comments WHERE post_id = ?', (post_id,))
+    conn.commit()
+    conn.close()
+    broadcast_to_all({'type': 'post_deleted', 'post_id': post_id})
+    return jsonify({'success': True})
+
+# ----------------- Custom Nicknames API -----------------
+@app.route('/api/nicknames', methods=['GET'])
+def api_get_nicknames():
+    user_id = request.args.get('user_id', '').strip()
+    if not user_id:
+        return jsonify({'nicknames': {}})
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('SELECT target_id, nickname FROM nicknames WHERE user_id = ?', (user_id,))
+    rows = c.fetchall()
+    conn.close()
+    nicknames_dict = {r['target_id']: r['nickname'] for r in rows}
+    return jsonify({'nicknames': nicknames_dict})
+
+@app.route('/api/nicknames', methods=['POST'])
+def api_set_nickname():
+    data = request.json or {}
+    user_id = data.get('user_id', '').strip()
+    target_id = data.get('target_id', '').strip()
+    nickname = data.get('nickname', '').strip()
+    if not user_id or not target_id:
+        return jsonify({'error': 'user_id and target_id required'}), 400
+
+    conn = get_db()
+    c = conn.cursor()
+    if nickname:
+        c.execute('''
+            INSERT INTO nicknames (user_id, target_id, nickname, updated_at)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(user_id, target_id) DO UPDATE SET
+                nickname = excluded.nickname,
+                updated_at = CURRENT_TIMESTAMP
+        ''', (user_id, target_id, nickname))
+    else:
+        c.execute('DELETE FROM nicknames WHERE user_id = ? AND target_id = ?', (user_id, target_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'target_id': target_id, 'nickname': nickname})
+
+# ----------------- Chat Wallpapers API -----------------
+@app.route('/api/wallpapers', methods=['GET'])
+def api_get_wallpapers():
+    user_id = request.args.get('user_id', '').strip()
+    if not user_id:
+        return jsonify({'wallpapers': {}})
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('SELECT conversation_id, wallpaper_url FROM chat_wallpapers WHERE user_id = ?', (user_id,))
+    rows = c.fetchall()
+    conn.close()
+    wallpapers_dict = {r['conversation_id']: r['wallpaper_url'] for r in rows}
+    return jsonify({'wallpapers': wallpapers_dict})
+
+@app.route('/api/wallpapers', methods=['POST'])
+def api_set_wallpaper():
+    data = request.json or {}
+    user_id = data.get('user_id', '').strip()
+    conversation_id = data.get('conversation_id', '').strip()
+    wallpaper_url = data.get('wallpaper_url', '').strip()
+    if not user_id or not conversation_id:
+        return jsonify({'error': 'user_id and conversation_id required'}), 400
+
+    conn = get_db()
+    c = conn.cursor()
+    if wallpaper_url:
+        c.execute('''
+            INSERT INTO chat_wallpapers (user_id, conversation_id, wallpaper_url, updated_at)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(user_id, conversation_id) DO UPDATE SET
+                wallpaper_url = excluded.wallpaper_url,
+                updated_at = CURRENT_TIMESTAMP
+        ''', (user_id, conversation_id, wallpaper_url))
+    else:
+        c.execute('DELETE FROM chat_wallpapers WHERE user_id = ? AND conversation_id = ?', (user_id, conversation_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'conversation_id': conversation_id, 'wallpaper_url': wallpaper_url})
+
+# ----------------- QR Studio & Reset API -----------------
+@app.route('/api/qr/reset', methods=['POST'])
+def api_reset_qr():
+    data = request.json or {}
+    user_id = data.get('user_id', '').strip()
+    if not user_id:
+        return jsonify({'error': 'user_id required'}), 400
+
+    new_token = secrets.token_urlsafe(12)
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('UPDATE users SET qr_token = ? WHERE id = ?', (new_token, user_id))
+    conn.commit()
+    c.execute('SELECT username FROM users WHERE id = ?', (user_id,))
+    row = c.fetchone()
+    username = row['username'] if row else user_id
+    conn.close()
+
+    return jsonify({
+        'success': True,
+        'qr_token': new_token,
+        'profile_path': f"/u/{username}?token={new_token}"
+    })
+
+# ----------------- Radar Users API -----------------
+@app.route('/api/radar/users', methods=['GET'])
+def api_get_radar_users():
+    current_user_id = request.args.get('user_id', '').strip()
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('''
+        SELECT id, username, name, avatar, bio, status, lat, lng, location_name, last_seen
+        FROM users
+        WHERE id != ?
+    ''', (current_user_id,))
+    rows = [dict(r) for r in c.fetchall()]
+
+    now = datetime.now()
+    for u in rows:
+        uid = u['id']
+        is_online = (uid in active_clients and len(active_clients[uid]) > 0) or u.get('status') == 'online'
+        u['is_online'] = is_online
+        u['status'] = 'online' if is_online else 'offline'
+
+        last_seen_str = u.get('last_seen')
+        if is_online:
+            u['last_seen_text'] = 'Đang trực tuyến 🟢'
+        elif last_seen_str:
+            try:
+                dt = datetime.strptime(last_seen_str.split('.')[0], '%Y-%m-%d %H:%M:%S')
+                diff = (now - dt).total_seconds()
+                if diff < 60:
+                    u['last_seen_text'] = 'Vừa mới online'
+                elif diff < 3600:
+                    u['last_seen_text'] = f"Hoạt động {int(diff // 60)} phút trước"
+                elif diff < 86400:
+                    u['last_seen_text'] = f"Hoạt động {int(diff // 3600)} giờ trước"
+                else:
+                    u['last_seen_text'] = f"Hoạt động {int(diff // 86400)} ngày trước"
+            except Exception:
+                u['last_seen_text'] = 'Hoạt động gần đây'
+        else:
+            u['last_seen_text'] = 'Vừa tham gia'
+
+    conn.close()
+    return jsonify({'success': True, 'users': rows})
+
+# ----------------- User Profile Update API -----------------
+@app.route('/api/users/update_profile', methods=['POST'])
+def api_update_user_profile():
+    data = request.json or {}
+    user_id = data.get('user_id', '').strip()
+    name = data.get('name', '').strip()
+    bio = data.get('bio')
+    cover_image = data.get('cover_image', '').strip()
+    avatar = data.get('avatar', '').strip()
+    location_name = data.get('location_name', '').strip()
+
+    if not user_id:
+        return jsonify({'error': 'user_id required'}), 400
+
+    conn = get_db()
+    c = conn.cursor()
+    updates = []
+    params = []
+    if name:
+        updates.append('name = ?')
+        params.append(name)
+    if bio is not None:
+        updates.append('bio = ?')
+        params.append(bio.strip())
+    if cover_image:
+        updates.append('cover_image = ?')
+        params.append(cover_image)
+    if avatar:
+        updates.append('avatar = ?')
+        params.append(avatar)
+    if location_name:
+        updates.append('location_name = ?')
+        params.append(location_name)
+
+    if updates:
+        params.append(user_id)
+        c.execute(f"UPDATE users SET {', '.join(updates)} WHERE id = ?", tuple(params))
+        conn.commit()
+
+    c.execute('SELECT id, username, name, avatar, bio, status, phone, email, lat, lng, location_name, cover_image, qr_token FROM users WHERE id = ?', (user_id,))
+    updated_user = dict(c.fetchone())
+    conn.close()
+
+    broadcast_to_all({'type': 'user_profile_updated', 'user': updated_user})
+    return jsonify({'success': True, 'user': updated_user})
 
 # ----------------- Server-Sent Events (SSE) Real-Time Stream -----------------
 @app.route('/api/stream')

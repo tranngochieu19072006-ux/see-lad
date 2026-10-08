@@ -14,10 +14,14 @@ class ChatController {
     this.lastSyncedMsgId = null;
     this.liveSyncInterval = null;
     this._isSyncing = false;
+    this.wallpapers = {};
+    this.nicknames = {};
   }
 
   async init() {
     await this.loadContacts();
+    await this.loadWallpapers();
+    await this.loadNicknames();
     await this.loadFriendRequests();
     this.bindEvents();
     this.startLiveSyncLoop();
@@ -279,6 +283,16 @@ class ChatController {
           }
         });
       }
+    }
+
+    const btnWallpaper = document.getElementById('btn-action-wallpaper');
+    if (btnWallpaper) {
+      btnWallpaper.addEventListener('click', () => this.openWallpaperModal());
+    }
+
+    const btnNickname = document.getElementById('btn-action-nickname');
+    if (btnNickname) {
+      btnNickname.addEventListener('click', () => this.openNicknameModal());
     }
 
     const btnEmoji = document.getElementById('btn-open-emoji');
@@ -892,7 +906,7 @@ class ChatController {
           <div class="flex-1 min-w-0">
             <div class="flex justify-between items-center mb-1 gap-1.5">
               <div class="flex items-center gap-1.5 min-w-0">
-                <h4 class="font-semibold text-[13.5px] sm:text-sm truncate text-white">${c.name}</h4>
+                <h4 class="font-semibold text-[13.5px] sm:text-sm truncate text-white">${this.nicknames[c.id] ? `<span class="text-amber-300 font-bold">✏️ ${this.escapeHtml(this.nicknames[c.id])}</span>` : this.escapeHtml(c.name)}</h4>
                 ${streakBadgeHtml}
               </div>
               <span class="text-[11px] text-slate-400 shrink-0 font-mono">${time}</span>
@@ -1139,7 +1153,9 @@ class ChatController {
     const statusDotEl = document.getElementById('active-chat-status-dot');
     const statusSubEl = document.getElementById('active-chat-status-text');
 
-    if (nameEl) nameEl.textContent = target.name;
+    const nick = this.nicknames[target.id];
+    const displayName = nick ? `${nick} (${target.name})` : target.name;
+    if (nameEl) nameEl.textContent = displayName;
     if (avatarEl) avatarEl.src = target.avatar;
 
     if (statusDotEl && statusSubEl) {
@@ -1164,6 +1180,7 @@ class ChatController {
     this.updateBlockUI();
     this.updatePinnedBannerUI();
     this.applyActiveChatTheme(target.chatTheme || 'theme-cyber-indigo');
+    this.applyChatWallpaper(chatId);
 
     await this.fetchMessagesForChat(chatId, target.isGroup);
     if (window.lucide) window.lucide.createIcons();
@@ -1843,6 +1860,125 @@ class ChatController {
   escapeHtml(str) {
     if (!str) return '';
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  async loadWallpapers() {
+    const currentUserId = window.auth?.currentUser?.id;
+    if (!currentUserId) return;
+    try {
+      const res = await fetch(`/api/wallpapers?user_id=${encodeURIComponent(currentUserId)}`);
+      const data = await res.json();
+      if (data.wallpapers) {
+        this.wallpapers = data.wallpapers;
+      }
+    } catch (e) {}
+  }
+
+  async loadNicknames() {
+    const currentUserId = window.auth?.currentUser?.id;
+    if (!currentUserId) return;
+    try {
+      const res = await fetch(`/api/nicknames?user_id=${encodeURIComponent(currentUserId)}`);
+      const data = await res.json();
+      if (data.nicknames) {
+        this.nicknames = data.nicknames;
+      }
+    } catch (e) {}
+  }
+
+  applyChatWallpaper(chatId) {
+    const container = document.getElementById('chat-messages-container');
+    if (!container) return;
+    const wp = this.wallpapers[chatId];
+    if (wp) {
+      container.style.backgroundImage = `linear-gradient(rgba(10, 15, 29, 0.78), rgba(10, 15, 29, 0.88)), url('${wp}')`;
+      container.style.backgroundSize = 'cover';
+      container.style.backgroundPosition = 'center';
+      container.style.backgroundRepeat = 'no-repeat';
+    } else {
+      container.style.backgroundImage = '';
+      container.style.backgroundSize = '';
+      container.style.backgroundPosition = '';
+    }
+  }
+
+  async setWallpaperForActiveChat(imageUrl) {
+    if (!this.activeChatId) return;
+    const currentUserId = window.auth?.currentUser?.id;
+    if (!currentUserId) return;
+    try {
+      const res = await fetch('/api/wallpapers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: currentUserId,
+          conversation_id: this.activeChatId,
+          wallpaper_url: imageUrl
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (imageUrl) {
+          this.wallpapers[this.activeChatId] = imageUrl;
+          if (window.app) window.app.showToast("Đã đổi ảnh nền cuộc trò chuyện thành công! 🖼️");
+        } else {
+          delete this.wallpapers[this.activeChatId];
+          if (window.app) window.app.showToast("Đã gỡ ảnh nền, quay lại mặc định.");
+        }
+        this.applyChatWallpaper(this.activeChatId);
+      }
+    } catch (e) {
+      console.error("Set wallpaper error:", e);
+    }
+  }
+
+  async setNicknameForActiveChat(nickname) {
+    if (!this.activeChatId) return;
+    const currentUserId = window.auth?.currentUser?.id;
+    if (!currentUserId) return;
+    try {
+      const res = await fetch('/api/nicknames', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: currentUserId,
+          target_id: this.activeChatId,
+          nickname: nickname
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (nickname) {
+          this.nicknames[this.activeChatId] = nickname;
+          if (window.app) window.app.showToast(`Đã đặt biệt danh: "${nickname}" ✏️`);
+        } else {
+          delete this.nicknames[this.activeChatId];
+          if (window.app) window.app.showToast("Đã gỡ biệt danh.");
+        }
+        this.renderConversationList();
+        const target = this.contacts.find(c => c.id === this.activeChatId);
+        if (target) {
+          const nameEl = document.getElementById('active-chat-name');
+          if (nameEl) nameEl.textContent = nickname ? `${nickname} (${target.name})` : target.name;
+        }
+      }
+    } catch (e) {
+      console.error("Set nickname error:", e);
+    }
+  }
+
+  openWallpaperModal() {
+    const modal = document.getElementById('modal-chat-wallpaper');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  openNicknameModal() {
+    const modal = document.getElementById('modal-chat-nickname');
+    const input = document.getElementById('chat-nickname-input');
+    const target = this.contacts.find(c => c.id === this.activeChatId);
+    if (!target) return;
+    if (input) input.value = this.nicknames[target.id] || '';
+    if (modal) modal.classList.remove('hidden');
   }
 }
 

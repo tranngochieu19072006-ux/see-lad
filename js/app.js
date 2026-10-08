@@ -29,6 +29,7 @@ class AppController {
     if (window.fileHub) window.fileHub.init();
     if (window.chatBubble) window.chatBubble.init();
     if (window.scheduler) window.scheduler.init();
+    if (window.feed) window.feed.init();
 
     // Lucide icons render
     if (window.lucide) window.lucide.createIcons();
@@ -101,6 +102,7 @@ class AppController {
     // Toggle content views
     const views = {
       'chat': document.getElementById('tab-view-chat'),
+      'feed': document.getElementById('tab-view-feed'),
       'streak': document.getElementById('tab-view-streak'),
       'radar': document.getElementById('tab-view-radar'),
       'hub': document.getElementById('tab-view-hub'),
@@ -128,6 +130,11 @@ class AppController {
       if (window.chat) window.chat.syncResponsiveChatLayout();
     }
 
+    if (tabName === 'feed' && window.feed) {
+      window.feed.loadFeed();
+      window.feed.renderProfileCard();
+    }
+
     // Special trigger for Leaflet when radar becomes visible
     if (tabName === 'radar' && window.radar) {
       setTimeout(() => {
@@ -141,6 +148,10 @@ class AppController {
 
     if (tabName === 'streak' && window.streak) {
       window.streak.loadStreaks();
+    }
+
+    if (tabName === 'schedule' && window.scheduler) {
+      window.scheduler.populateRecipients();
     }
 
     if (tabName === 'qr' && window.qrStudio) {
