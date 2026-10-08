@@ -698,7 +698,7 @@ def api_oauth_login(provider):
             + urllib.parse.urlencode({
                 'client_id': client_id,
                 'redirect_uri': redirect_uri,
-                'scope': 'public_profile,email'
+                'scope': 'public_profile'
             })
         )
         return redirect(auth_url)
