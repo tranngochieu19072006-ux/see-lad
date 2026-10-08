@@ -158,9 +158,52 @@ html, body {
   overflow: hidden;
   width: 100%;
   height: 100%;
-  height: 100dvh;
+  min-height: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   UNIFIED APP NAVIGATION BUTTONS (PERFECT RESPONSIVE & ALIGNMENT)
+   ========================================================================== */
+.app-nav-btn {
+  display: flex;
+  align-items: center;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  border: 1px solid transparent;
+}
+
+.app-nav-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.app-nav-btn.active {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.95), rgba(99, 102, 241, 0.95)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px -2px rgba(79, 70, 229, 0.45) !important;
+  border-color: rgba(165, 180, 252, 0.35) !important;
+}
+
+.app-nav-btn.active i,
+.app-nav-btn.active svg {
+  color: #ffffff !important;
+}
+
+@media (min-width: 768px) {
+  .app-nav-btn.active::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 22%;
+    bottom: 22%;
+    width: 3.5px;
+    border-radius: 4px;
+    background: #38e1e8;
+    box-shadow: 0 0 8px #38e1e8;
+  }
 }
 
 /* Smooth momentum scrolling on all scrollable panels */

@@ -1224,13 +1224,44 @@ class ChatController {
     const currentUserId = window.auth?.currentUser?.id || 'user_hieu';
 
     if (msgs.length === 0) {
+      const activeContact = this.contacts.find(c => c.id === this.activeChatId);
+      const contactName = activeContact ? (activeContact.nickname || activeContact.name) : 'Người dùng';
+      const contactAvatar = activeContact ? activeContact.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+
       container.innerHTML = `
-        <div class="h-full flex flex-col items-center justify-center text-center p-8 opacity-60">
-          <div class="w-16 h-16 rounded-3xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-3">
-            <i data-lucide="message-square" class="w-8 h-8"></i>
+        <div class="h-full flex flex-col items-center justify-center text-center p-4 sm:p-8 animate-fade-in">
+          <div class="max-w-md w-full glass p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl flex flex-col items-center">
+            <div class="relative mb-3">
+              <img src="${contactAvatar}" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-xl" alt="${contactName}" />
+              <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-[#0f172a] flex items-center justify-center">
+                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+              </div>
+            </div>
+            
+            <h4 class="font-bold text-base sm:text-lg text-white mb-1">Bắt đầu trò chuyện với ${contactName}</h4>
+            <p class="text-xs text-slate-400 mb-5 leading-relaxed">Kết nối nhanh chóng, tin nhắn được mã hóa và đồng bộ thời gian thực siêu tốc trên SEE LAD.</p>
+            
+            <div class="w-full text-left">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-cyan-400 mb-2.5 flex items-center gap-1.5">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                <span>Gợi ý lời chào nhanh:</span>
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="window.chat.sendQuickGreeting('👋 Xin chào!')" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-indigo-600/30 border border-white/10 hover:border-indigo-400/50 text-xs text-slate-200 hover:text-white transition-all cursor-pointer">
+                  👋 Xin chào!
+                </button>
+                <button type="button" onclick="window.chat.sendQuickGreeting('✨ Bạn khỏe không?')" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-indigo-600/30 border border-white/10 hover:border-indigo-400/50 text-xs text-slate-200 hover:text-white transition-all cursor-pointer">
+                  ✨ Bạn khỏe không?
+                </button>
+                <button type="button" onclick="window.chat.sendQuickGreeting('🔥 Cày chuỗi cùng mình nhé!')" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-orange-600/30 border border-white/10 hover:border-orange-400/50 text-xs text-orange-200 hover:text-white transition-all cursor-pointer">
+                  🔥 Cày chuỗi cùng mình nhé!
+                </button>
+                <button type="button" onclick="window.chat.sendQuickGreeting('☕ Khi nào rảnh đi cafe nha!')" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-cyan-600/30 border border-white/10 hover:border-cyan-400/50 text-xs text-cyan-200 hover:text-white transition-all cursor-pointer">
+                  ☕ Hẹn cafe trò chuyện
+                </button>
+              </div>
+            </div>
           </div>
-          <h4 class="font-semibold text-base mb-1">Bắt đầu trò chuyện thật</h4>
-          <p class="text-xs text-slate-400 max-w-xs">Tin nhắn của bạn được mã hóa và lưu vĩnh viễn trong cơ sở dữ liệu thật của SEE LAD!</p>
         </div>
       `;
       if (window.lucide) window.lucide.createIcons();
@@ -1663,6 +1694,17 @@ class ChatController {
     }
 
     if (window.sounds) window.sounds.playMessageSent();
+  }
+
+  sendQuickGreeting(text) {
+    const input = document.getElementById('chat-text-input');
+    if (input) {
+      input.value = text;
+      const form = document.getElementById('chat-input-form');
+      if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    }
   }
 
   receiveRealtimeMessage(msg, playSound = true) {

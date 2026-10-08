@@ -95,11 +95,11 @@ class AppController {
     document.querySelectorAll('.app-nav-btn').forEach(btn => {
       const tab = btn.getAttribute('data-tab');
       if (tab === tabName) {
-        btn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/25');
-        btn.classList.remove('text-slate-400', 'hover:bg-slate-800/40');
+        btn.classList.add('active');
+        btn.classList.remove('text-slate-400');
       } else {
-        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/25');
-        btn.classList.add('text-slate-400', 'hover:bg-slate-800/40');
+        btn.classList.remove('active');
+        btn.classList.add('text-slate-400');
       }
     });
 

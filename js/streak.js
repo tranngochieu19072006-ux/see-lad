@@ -135,8 +135,12 @@ class StreakController {
     const navBadge = document.getElementById('nav-streak-total-badge');
     const totalActive = this.streaks.reduce((acc, s) => acc + (s.status === 'active' ? (s.streak_count || 0) : 0), 0);
     if (navBadge) {
-      navBadge.textContent = totalActive > 999 ? '999+' : `${totalActive}🔥`;
-      if (totalActive > 0) navBadge.classList.remove('hidden');
+      if (totalActive > 0) {
+        navBadge.textContent = totalActive > 999 ? '999+' : `${totalActive} 🔥`;
+        navBadge.classList.remove('hidden');
+      } else {
+        navBadge.classList.add('hidden');
+      }
     }
   }
 
