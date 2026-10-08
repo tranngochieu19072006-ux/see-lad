@@ -547,7 +547,7 @@ def get_oauth_config(provider=None):
         },
         'github': {
             'client_id': os.environ.get('GITHUB_CLIENT_ID', ''),
-            'client_secret': os.environ.get('GITHUB_CLIENT_SECRET', '')
+            'client_secret': os.environ.get('GITHUB_CLIENT_SECRET', os.environ.get('CLIENT_SECRET', os.environ.get('GITHUB_CLIENT', '')))
         }
     }
     if os.path.exists(OAUTH_CONFIG_FILE):
