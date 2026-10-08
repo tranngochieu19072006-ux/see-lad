@@ -237,6 +237,10 @@ def init_db():
         c.execute('ALTER TABLE streaks ADD COLUMN last_streak_date TEXT')
     except Exception:
         pass
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN profile_note TEXT')
+    except Exception:
+        pass
 
     # Purge mock bot users so users connect only with real people
     try:
@@ -1468,7 +1472,7 @@ def api_search_users():
     conn = get_db()
     c = conn.cursor()
     c.execute('''
-    SELECT id, username, name, avatar, bio, status, lat, lng, location_name
+    SELECT id, username, name, avatar, bio, profile_note, status, lat, lng, location_name
     FROM users
     WHERE (lower(username) LIKE ? OR lower(name) LIKE ? OR lower(email) LIKE ?) AND id != ?
     LIMIT 20
@@ -1506,7 +1510,7 @@ def api_get_user_public_profile(identifier):
     conn = get_db()
     c = conn.cursor()
     c.execute('''
-    SELECT id, username, name, avatar, bio, status, phone, email, lat, lng, location_name, cover_image, cover_position, cover_zoom, qr_token, created_at
+    SELECT id, username, name, avatar, bio, profile_note, status, phone, email, lat, lng, location_name, cover_image, cover_position, cover_zoom, qr_token, created_at
     FROM users
     WHERE lower(username) = ? OR lower(id) = ?
     LIMIT 1
@@ -1523,6 +1527,45 @@ def api_get_user_public_profile(identifier):
 
     c.execute('SELECT COUNT(*) FROM friendships WHERE user1_id = ? AND status = "accepted"', (uid,))
     u['friends_count'] = c.fetchone()[0]
+
+    c.execute('SELECT COUNT(*) FROM posts WHERE user_id = ?', (uid,))
+    u['posts_count'] = c.fetchone()[0]
+
+    # Fetch posts authored by this user
+    c.execute('''
+    SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
+           u.name as author_name, u.username as author_username, u.avatar as author_avatar
+    FROM posts p
+    JOIN users u ON p.user_id = u.id
+    WHERE p.user_id = ?
+    ORDER BY p.created_at DESC
+    LIMIT 30
+    ''', (uid,))
+    posts = [dict(p) for p in c.fetchall()]
+
+    for post in posts:
+        pid = post['id']
+        c.execute('SELECT COUNT(*) FROM post_likes WHERE post_id = ?', (pid,))
+        post['likes_count'] = c.fetchone()[0]
+        c.execute('SELECT COUNT(*) FROM post_comments WHERE post_id = ?', (pid,))
+        post['comments_count'] = c.fetchone()[0]
+        c.execute('SELECT COUNT(*) FROM post_likes WHERE post_id = ? AND user_id = ?', (pid, viewer_id or ''))
+        is_liked = c.fetchone()[0] > 0
+        post['is_liked'] = is_liked
+        post['has_liked'] = is_liked
+
+        c.execute('''
+            SELECT pc.id, pc.post_id, pc.user_id, pc.content, pc.created_at,
+                   COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
+                   COALESCE(u.username, 'seelad_user') as author_username,
+                   COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
+            FROM post_comments pc
+            LEFT JOIN users u ON pc.user_id = u.id
+            WHERE pc.post_id = ?
+            ORDER BY pc.created_at ASC
+        ''', (pid,))
+        post['comments'] = [dict(cr) for cr in c.fetchall()]
+    u['posts'] = posts
 
     u['relationship'] = 'none'
     if viewer_id:
@@ -3002,6 +3045,7 @@ def api_update_user_profile():
     cover_zoom = data.get('cover_zoom')
     avatar = data.get('avatar', '').strip()
     location_name = data.get('location_name', '').strip()
+    profile_note = data.get('profile_note')
 
     if not user_id:
         return jsonify({'error': 'user_id required'}), 400
@@ -3016,6 +3060,9 @@ def api_update_user_profile():
     if bio is not None:
         updates.append('bio = ?')
         params.append(bio.strip())
+    if profile_note is not None:
+        updates.append('profile_note = ?')
+        params.append(profile_note.strip()[:80])
     if cover_image:
         updates.append('cover_image = ?')
         params.append(cover_image)
@@ -3037,7 +3084,7 @@ def api_update_user_profile():
         c.execute(f"UPDATE users SET {', '.join(updates)} WHERE id = ?", tuple(params))
         conn.commit()
 
-    c.execute('SELECT id, username, name, avatar, bio, status, phone, email, lat, lng, location_name, cover_image, cover_position, cover_zoom, qr_token FROM users WHERE id = ?', (user_id,))
+    c.execute('SELECT id, username, name, avatar, bio, profile_note, status, phone, email, lat, lng, location_name, cover_image, cover_position, cover_zoom, qr_token FROM users WHERE id = ?', (user_id,))
     updated_user = dict(c.fetchone())
     conn.close()
 

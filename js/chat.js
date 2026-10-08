@@ -537,14 +537,28 @@ class ChatController {
               `;
             }
 
+            const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'User')}&background=4f46e5&color=fff&bold=true`;
+            const avatarUrl = u.avatar || fallbackAvatar;
+            const noteBadge = u.profile_note ? `
+              <span class="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-full bg-cyan-400 text-[9px] text-black font-extrabold shadow flex items-center gap-0.5" title="${this.escapeHtml(u.profile_note)}">
+                <span>💭</span>
+              </span>
+            ` : '';
+
             return `
-              <div class="flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
-                <div class="flex items-center gap-3 min-w-0">
-                  <img src="${u.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + u.id}" class="w-11 h-11 rounded-xl object-cover border border-white/10 shrink-0" />
-                  <div class="min-w-0">
-                    <p class="font-bold text-xs text-white truncate">${this.escapeHtml(u.name)}</p>
-                    <p class="text-[10px] text-slate-400 truncate">@${this.escapeHtml(u.username || 'user')}</p>
-                    <p class="text-[10px] text-slate-500 truncate">${this.escapeHtml(u.bio || '')}</p>
+              <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5 group">
+                <div class="flex items-center gap-3 min-w-0 cursor-pointer flex-1 group/user" onclick="if(window.feed) window.feed.openUserProfile('${u.id}')" title="Bấm để xem trang cá nhân của ${this.escapeHtml(u.name)}">
+                  <div class="relative shrink-0">
+                    <img src="${avatarUrl}" onerror="this.onerror=null; this.src='${fallbackAvatar}';" class="w-11 h-11 rounded-xl object-cover border border-white/10 group-hover/user:scale-105 transition-transform" />
+                    ${noteBadge}
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5">
+                      <p class="font-bold text-xs text-white truncate group-hover/user:text-cyan-400 transition-colors">${this.escapeHtml(u.name)}</p>
+                      <i data-lucide="external-link" class="w-3 h-3 text-slate-500 group-hover/user:text-cyan-400 opacity-0 group-hover/user:opacity-100 transition-opacity"></i>
+                    </div>
+                    <p class="text-[10px] font-mono text-cyan-400/90 truncate">@${this.escapeHtml(u.username || 'user')}</p>
+                    <p class="text-[10px] text-slate-400 truncate">${this.escapeHtml(u.bio || 'Thành viên SEE LAD')}</p>
                   </div>
                 </div>
                 <div class="shrink-0 ml-2">

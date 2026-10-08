@@ -25,6 +25,11 @@ class FeedController {
     this.avatarNaturalWidth = 0;
     this.avatarNaturalHeight = 0;
     this.avatarImgElement = null;
+
+    // Viewing user profile state (self vs another user)
+    this.viewingUserId = null;
+    this.viewingUser = null;
+    this.viewingUserPosts = [];
   }
 
   async init() {
@@ -146,6 +151,15 @@ class FeedController {
           this.openAvatarAdjustModal(evt.target.result);
         };
         reader.readAsDataURL(file);
+      });
+    }
+
+    // Profile thought note character counter
+    const noteInput = document.getElementById('input-profile-note');
+    if (noteInput) {
+      noteInput.addEventListener('input', (e) => {
+        const counter = document.getElementById('note-char-counter');
+        if (counter) counter.textContent = `${e.target.value.length}/60`;
       });
     }
 
@@ -394,10 +408,13 @@ class FeedController {
                 <div class="flex items-start gap-2 bg-white/[0.03] px-2.5 py-1.5 rounded-xl border border-white/5 text-xs">
                   <img src="${c.author_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}" 
                        onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" 
-                       class="w-5 h-5 rounded-lg object-cover shrink-0 mt-0.5" />
+                       class="w-5 h-5 rounded-lg object-cover shrink-0 mt-0.5 cursor-pointer hover:scale-105 transition-transform" 
+                       onclick="if('${c.user_id}') window.feed.openUserProfile('${c.user_id}')" 
+                       title="Xem trang cá nhân" />
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between gap-1">
-                      <span class="font-bold text-white text-[11px] truncate">${this.escapeHtml(c.author_name || 'Bạn bè')}</span>
+                      <span class="font-bold text-white text-[11px] truncate cursor-pointer hover:text-cyan-400 transition-colors" 
+                            onclick="if('${c.user_id}') window.feed.openUserProfile('${c.user_id}')">${this.escapeHtml(c.author_name || 'Bạn bè')}</span>
                       <span class="text-[9px] text-slate-500">${this.formatTimeAgo(c.created_at)}</span>
                     </div>
                     <p class="text-slate-300 text-[11px] leading-snug break-words">${this.escapeHtml(c.content)}</p>
@@ -611,16 +628,68 @@ class FeedController {
     });
   }
 
-  renderProfileCard() {
-    const user = this.getCurrentUser();
-    const coverEl = document.getElementById('profile-card-cover');
-    const avatarEl = document.getElementById('profile-card-avatar');
-    const nameEl = document.getElementById('profile-card-name');
-    const handleEl = document.getElementById('profile-card-handle');
-    const bioEl = document.getElementById('profile-card-bio');
-    const locationEl = document.getElementById('profile-card-location');
-    const statPostsEl = document.getElementById('profile-stat-posts');
+  async openUserProfile(userId) {
+    const currentUser = this.getCurrentUser();
+    if (!userId || userId === currentUser.id) {
+      this.viewingUserId = null;
+      this.viewingUser = null;
+      this.viewingUserPosts = [];
+      if (window.app) window.app.switchTab('profile');
+      this.renderProfileCard();
+      this.renderProfilePosts();
+      return;
+    }
 
+    this.viewingUserId = userId;
+    if (window.app) window.app.switchTab('profile');
+
+    const nameEl = document.getElementById('profile-card-name');
+    if (nameEl) nameEl.textContent = 'Đang tải hồ sơ...';
+
+    try {
+      const res = await fetch(`/api/users/profile/${encodeURIComponent(userId)}?viewer_id=${encodeURIComponent(currentUser.id || '')}`);
+      const data = await res.json();
+      if (data && data.user) {
+        this.viewingUser = data.user;
+        this.viewingUserPosts = data.user.posts || [];
+        this.renderProfileCard();
+        this.renderProfilePosts();
+      } else {
+        if (window.app) window.app.showToast("Không tìm thấy thông tin người dùng này!", "warning");
+        this.openUserProfile(null);
+      }
+    } catch (e) {
+      console.error("Error loading user profile:", e);
+      if (window.app) window.app.showToast("Lỗi khi tải thông tin người dùng", "warning");
+      this.openUserProfile(null);
+    }
+  }
+
+  renderProfileCard() {
+    const currentUser = this.getCurrentUser();
+    const isGuest = !!(this.viewingUserId && this.viewingUser && this.viewingUserId !== currentUser.id);
+    const user = isGuest ? this.viewingUser : currentUser;
+
+    const guestNavBar = document.getElementById('profile-guest-nav-bar');
+    const guestUserLabel = document.getElementById('profile-guest-user-label');
+    const coverControls = document.getElementById('profile-cover-controls');
+    const avatarEditBtn = document.getElementById('profile-avatar-edit-btn');
+    const actionsContainer = document.getElementById('profile-actions-container');
+
+    // Guest navigation bar
+    if (guestNavBar) {
+      if (isGuest) {
+        guestNavBar.classList.remove('hidden');
+        guestNavBar.classList.add('flex');
+        if (guestUserLabel) guestUserLabel.textContent = `Hồ sơ của ${user.name || 'người dùng'}`;
+      } else {
+        guestNavBar.classList.add('hidden');
+        guestNavBar.classList.remove('flex');
+      }
+    }
+
+    // Cover Photo
+    const coverEl = document.getElementById('profile-card-cover');
     const coverImg = document.getElementById('profile-card-cover-img');
     const coverUrl = user.cover_image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80';
     const coverPos = user.cover_position || '50% 50%';
@@ -637,61 +706,221 @@ class FeedController {
       coverEl.style.backgroundPosition = coverPos;
     }
 
-    const posParts = coverPos.split(' ');
-    if (posParts.length >= 2) {
-      this.coverPosX = parseFloat(posParts[0]) || 50;
-      this.coverPosY = parseFloat(posParts[1]) || 50;
-    }
-    this.coverZoom = coverZoom;
-    this.originalCoverPos = coverPos;
-    this.originalCoverZoom = coverZoom;
-    if (avatarEl) {
-      avatarEl.src = user.avatar;
-      avatarEl.style.imageRendering = '-webkit-optimize-contrast';
-      avatarEl.onerror = () => { avatarEl.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'; };
-    }
-    if (nameEl) nameEl.textContent = user.name;
-    if (handleEl) handleEl.textContent = `@${user.username || 'user'}`;
-    if (bioEl) bioEl.textContent = user.bio || 'Thành viên kết nối chính thức qua Facebook 🌟';
-    
-    const cachedLoc = sessionStorage.getItem('seelad_detected_location');
-    if (locationEl) {
-      locationEl.textContent = cachedLoc || user.location_name || 'Việt Nam';
+    // Cover controls (hide for guest)
+    if (coverControls) {
+      if (isGuest) {
+        coverControls.classList.add('hidden');
+      } else {
+        coverControls.classList.remove('hidden');
+      }
     }
 
-    const myPostCount = (this.serverMyPostCount !== undefined)
-      ? this.serverMyPostCount
-      : this.posts.filter(p => p.user_id === user.id || p.author_username === user.username).length;
-    if (statPostsEl) statPostsEl.textContent = myPostCount;
+    // Avatar
+    const avatarEl = document.getElementById('profile-card-avatar');
+    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=4f46e5&color=fff&bold=true`;
+    if (avatarEl) {
+      avatarEl.src = user.avatar || fallbackAvatar;
+      avatarEl.style.imageRendering = '-webkit-optimize-contrast';
+      avatarEl.onerror = () => { avatarEl.src = fallbackAvatar; };
+    }
+
+    // Avatar camera edit button (hide for guest)
+    if (avatarEditBtn) {
+      if (isGuest) {
+        avatarEditBtn.classList.add('hidden');
+      } else {
+        avatarEditBtn.classList.remove('hidden');
+      }
+    }
+
+    // Floating Thought Note Bubble over Avatar
+    const thoughtWrapper = document.getElementById('profile-thought-note-wrapper');
+    const thoughtIcon = document.getElementById('profile-thought-note-icon');
+    const thoughtText = document.getElementById('profile-thought-note-text');
+
+    if (thoughtWrapper) {
+      const note = (user.profile_note || '').trim();
+      if (isGuest) {
+        if (note) {
+          thoughtWrapper.classList.remove('hidden');
+          if (thoughtIcon) thoughtIcon.textContent = '💭';
+          if (thoughtText) thoughtText.textContent = note;
+          thoughtWrapper.title = `Ghi chú của ${user.name}: "${note}"`;
+          thoughtWrapper.onclick = (e) => { e.stopPropagation(); };
+        } else {
+          thoughtWrapper.classList.add('hidden');
+        }
+      } else {
+        // Own profile
+        thoughtWrapper.classList.remove('hidden');
+        if (note) {
+          if (thoughtIcon) thoughtIcon.textContent = '💭';
+          if (thoughtText) thoughtText.textContent = note;
+          thoughtWrapper.title = 'Bấm để chỉnh sửa hoặc gỡ ghi chú suy nghĩ';
+        } else {
+          if (thoughtIcon) thoughtIcon.textContent = '➕';
+          if (thoughtText) thoughtText.textContent = 'Ghi chú...';
+          thoughtWrapper.title = 'Bấm để thêm ghi chú suy nghĩ bồng bềnh trên Avatar';
+        }
+        thoughtWrapper.onclick = (e) => { e.stopPropagation(); window.feed.openNoteModal(); };
+      }
+    }
+
+    // Name & Username Handle
+    const nameEl = document.getElementById('profile-card-name');
+    const handleEl = document.getElementById('profile-card-handle');
+    if (nameEl) nameEl.textContent = user.name || 'Người dùng SEE LAD';
+    if (handleEl) handleEl.textContent = `@${user.username || 'user'}`;
+
+    // Bio
+    const bioEl = document.getElementById('profile-card-bio');
+    if (bioEl) {
+      bioEl.textContent = user.bio || (isGuest ? 'Thành viên chưa viết tiểu sử cá nhân.' : 'Thành viên kết nối chính thức qua Facebook 🌟');
+    }
+
+    // Location
+    const locationEl = document.getElementById('profile-card-location');
+    if (locationEl) {
+      if (isGuest) {
+        locationEl.textContent = user.location_name || 'Việt Nam';
+      } else {
+        const cachedLoc = sessionStorage.getItem('seelad_detected_location');
+        locationEl.textContent = cachedLoc || user.location_name || 'Việt Nam';
+      }
+    }
+
+    // Stat: Posts count
+    const statPostsEl = document.getElementById('profile-stat-posts');
+    if (statPostsEl) {
+      if (isGuest) {
+        statPostsEl.textContent = user.posts_count !== undefined ? user.posts_count : (this.viewingUserPosts ? this.viewingUserPosts.length : 0);
+      } else {
+        const myPostCount = (this.serverMyPostCount !== undefined)
+          ? this.serverMyPostCount
+          : this.posts.filter(p => p.user_id === user.id || p.author_username === user.username).length;
+        statPostsEl.textContent = myPostCount;
+      }
+    }
+
+    // Action Buttons Container
+    if (actionsContainer) {
+      if (isGuest) {
+        let friendBtn = '';
+        if (user.relationship === 'friend') {
+          friendBtn = `
+            <span class="px-3.5 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+              <span>Bạn bè</span>
+            </span>
+          `;
+        } else if (user.relationship === 'pending_sent') {
+          friendBtn = `
+            <span class="px-3.5 py-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+              <span>Đã gửi lời mời</span>
+            </span>
+          `;
+        } else if (user.relationship === 'pending_received') {
+          friendBtn = `
+            <button type="button" onclick="window.chat.openFriendRequestsModal()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+              <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+              <span>Xem lời mời</span>
+            </button>
+          `;
+        } else {
+          friendBtn = `
+            <button type="button" onclick="window.chat.openSendFriendRequestModal('${user.id}', '${this.escapeHtml(user.name)}', '${user.avatar || ''}', '${user.username || ''}')" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer shadow-sm">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span>Kết bạn</span>
+            </button>
+          `;
+        }
+
+        actionsContainer.innerHTML = `
+          <button type="button" onclick="window.chat.selectChat('${user.id}')" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:brightness-110 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer">
+            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+            <span>Nhắn tin</span>
+          </button>
+          ${friendBtn}
+        `;
+      } else {
+        // Own profile
+        actionsContainer.innerHTML = `
+          <button type="button" id="btn-edit-profile-modal" onclick="window.feed.openEditProfileModal()" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-white/10 shadow-sm cursor-pointer">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>Chỉnh sửa hồ sơ</span>
+          </button>
+          <button type="button" onclick="window.app.switchTab('feed')" class="px-3.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 text-xs font-bold flex items-center gap-1.5 transition-all border border-indigo-500/30 shadow-sm cursor-pointer">
+            <i data-lucide="book-heart" class="w-3.5 h-3.5"></i>
+            <span>Đến Nhật ký</span>
+          </button>
+        `;
+      }
+    }
+
+    if (!isGuest) {
+      const posParts = coverPos.split(' ');
+      if (posParts.length >= 2) {
+        this.coverPosX = parseFloat(posParts[0]) || 50;
+        this.coverPosY = parseFloat(posParts[1]) || 50;
+      }
+      this.coverZoom = coverZoom;
+      this.originalCoverPos = coverPos;
+      this.originalCoverZoom = coverZoom;
+    }
+
+    if (window.lucide) window.lucide.createIcons();
   }
 
   renderProfilePosts() {
     const container = document.getElementById('profile-posts-container');
     if (!container) return;
-    const user = this.getCurrentUser();
-    const myPosts = this.posts.filter(p => p.user_id === user.id || p.author_username === user.username);
-    
-    if (myPosts.length === 0) {
-      container.innerHTML = `
-        <div class="glass p-6 rounded-2xl text-center border border-white/10 my-2">
-          <div class="w-12 h-12 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center mx-auto mb-2 text-xl">📖</div>
-          <h4 class="font-bold text-sm text-white mb-1">Bạn chưa có bài viết nào</h4>
-          <p class="text-xs text-slate-400 mb-3">Hãy chia sẻ trạng thái đầu tiên trên trang cá nhân của bạn!</p>
-          <button onclick="window.app.switchTab('feed')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md">
-            Đến viết bài ngay
-          </button>
-        </div>
-      `;
+    const currentUser = this.getCurrentUser();
+    const isGuest = !!(this.viewingUserId && this.viewingUser && this.viewingUserId !== currentUser.id);
+    const user = isGuest ? this.viewingUser : currentUser;
+
+    const titleEl = document.getElementById('profile-posts-title-text');
+    if (titleEl) {
+      titleEl.textContent = isGuest ? `Bài Viết Của ${user.name || 'Người dùng'}` : 'Bài Viết Của Tôi';
+    }
+
+    const postsToRender = isGuest 
+      ? (this.viewingUserPosts || []) 
+      : this.posts.filter(p => p.user_id === user.id || p.author_username === user.username);
+
+    if (postsToRender.length === 0) {
+      if (isGuest) {
+        container.innerHTML = `
+          <div class="glass p-6 rounded-2xl text-center border border-white/10 my-2">
+            <div class="w-12 h-12 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-2 text-xl">📖</div>
+            <h4 class="font-bold text-sm text-white mb-1">${this.escapeHtml(user.name || 'Người này')} chưa có bài viết nào</h4>
+            <p class="text-xs text-slate-400">Hãy là người đầu tiên gửi tin nhắn hoặc kết nối với bạn ấy!</p>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="glass p-6 rounded-2xl text-center border border-white/10 my-2">
+            <div class="w-12 h-12 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center mx-auto mb-2 text-xl">📖</div>
+            <h4 class="font-bold text-sm text-white mb-1">Bạn chưa có bài viết nào</h4>
+            <p class="text-xs text-slate-400 mb-3">Hãy chia sẻ trạng thái đầu tiên trên trang cá nhân của bạn!</p>
+            <button onclick="window.app.switchTab('feed')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md">
+              Đến viết bài ngay
+            </button>
+          </div>
+        `;
+      }
       return;
     }
 
-    container.innerHTML = myPosts.map(post => {
+    container.innerHTML = postsToRender.map(post => {
       const formattedTime = this.formatTimeAgo(post.created_at);
+      const isMine = post.user_id === currentUser.id;
+
       return `
         <article class="glass rounded-2xl p-3 sm:p-3.5 border border-white/10 hover:border-white/20 transition-all shadow-md space-y-2" id="profile-post-card-${post.id}">
           <div class="flex items-center justify-between gap-2.5">
             <div class="flex items-center gap-2.5 min-w-0">
-              <img src="${post.author_avatar || user.avatar}" 
+              <img src="${post.author_avatar || user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}" 
                    onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" 
                    class="w-9 h-9 rounded-xl object-cover border border-white/15 shrink-0 shadow-sm" />
               <div class="min-w-0">
@@ -702,9 +931,11 @@ class FeedController {
                 <p class="text-[10.5px] text-slate-400 mt-0.5">${formattedTime}</p>
               </div>
             </div>
-            <button onclick="window.feed.deletePost('${post.id}')" class="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Xóa bài viết">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
+            ${isMine ? `
+              <button onclick="window.feed.deletePost('${post.id}')" class="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Xóa bài viết">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            ` : ''}
           </div>
 
           <div class="text-xs sm:text-sm text-slate-100 whitespace-pre-wrap leading-relaxed select-text">
@@ -744,6 +975,36 @@ class FeedController {
               <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
             </button>
           </div>
+
+          <!-- Comments Container for Profile Posts -->
+          <div id="comments-box-${post.id}" class="hidden space-y-1.5 pt-1.5 border-t border-white/5">
+            <div class="space-y-1 max-h-56 overflow-y-auto custom-scrollbar" id="comments-list-${post.id}">
+              ${(post.comments || []).map(c => `
+                <div class="flex items-start gap-2 bg-white/[0.03] px-2.5 py-1.5 rounded-xl border border-white/5 text-xs">
+                  <img src="${c.author_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}" 
+                       onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" 
+                       class="w-5 h-5 rounded-lg object-cover shrink-0 mt-0.5 cursor-pointer hover:scale-105 transition-transform" 
+                       onclick="if('${c.user_id}') window.feed.openUserProfile('${c.user_id}')" 
+                       title="Xem trang cá nhân" />
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="font-bold text-white text-[11px] truncate cursor-pointer hover:text-cyan-400 transition-colors" 
+                            onclick="if('${c.user_id}') window.feed.openUserProfile('${c.user_id}')">${this.escapeHtml(c.author_name || 'Bạn bè')}</span>
+                      <span class="text-[9px] text-slate-500">${this.formatTimeAgo(c.created_at)}</span>
+                    </div>
+                    <p class="text-slate-300 text-[11px] leading-snug break-words">${this.escapeHtml(c.content)}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <form onsubmit="window.feed.handleAddComment(event, '${post.id}')" class="flex items-center gap-1.5 pt-0.5">
+              <input type="text" id="comment-input-${post.id}" placeholder="Viết bình luận..." class="glass-input flex-1 px-3 py-1.5 rounded-xl text-xs bg-slate-900/90 text-white placeholder-slate-500 border border-white/10 focus:border-indigo-500" />
+              <button type="submit" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1 transition-all shrink-0">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              </button>
+            </form>
+          </div>
         </article>
       `;
     }).join('');
@@ -751,17 +1012,100 @@ class FeedController {
     if (window.lucide) window.lucide.createIcons();
   }
 
-  openProfileAvatarLightbox() {
-    const user = this.getCurrentUser();
-    if (user.avatar) {
-      this.openLightbox(user.avatar, `${user.name} - Ảnh đại diện Full HD`);
+  async refreshProfilePosts() {
+    if (this.viewingUserId && this.viewingUserId !== this.getCurrentUser().id) {
+      await this.openUserProfile(this.viewingUserId);
+    } else {
+      await this.loadPosts();
+      this.renderProfilePosts();
     }
+    if (window.app) window.app.showToast("Đã làm mới danh sách bài viết! 🔄");
+  }
+
+  openProfileAvatarLightbox() {
+    const currentUser = this.getCurrentUser();
+    const isGuest = !!(this.viewingUserId && this.viewingUser && this.viewingUserId !== currentUser.id);
+    const user = isGuest ? this.viewingUser : currentUser;
+    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=4f46e5&color=fff&bold=true`;
+    const avatarUrl = user.avatar || fallbackAvatar;
+    this.openLightbox(avatarUrl, `${user.name || 'Người dùng'} - Ảnh đại diện Full HD`);
   }
 
   openProfileCoverLightbox() {
-    const user = this.getCurrentUser();
+    const currentUser = this.getCurrentUser();
+    const isGuest = !!(this.viewingUserId && this.viewingUser && this.viewingUserId !== currentUser.id);
+    const user = isGuest ? this.viewingUser : currentUser;
     const coverUrl = user.cover_image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80';
-    this.openLightbox(coverUrl, `${user.name} - Ảnh bìa Full HD`);
+    this.openLightbox(coverUrl, `${user.name || 'Người dùng'} - Ảnh bìa Full HD`);
+  }
+
+  openNoteModal() {
+    if (this.viewingUserId && this.viewingUserId !== this.getCurrentUser().id) return;
+    const modal = document.getElementById('modal-profile-note');
+    if (!modal) return;
+    const currentUser = this.getCurrentUser();
+    const noteInput = document.getElementById('input-profile-note');
+    const counter = document.getElementById('note-char-counter');
+    const curNote = (currentUser.profile_note || '').trim();
+
+    if (noteInput) {
+      noteInput.value = curNote;
+      if (counter) counter.textContent = `${curNote.length}/60`;
+    }
+    modal.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+    setTimeout(() => noteInput?.focus(), 100);
+  }
+
+  closeNoteModal() {
+    const modal = document.getElementById('modal-profile-note');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  pickQuickNote(text) {
+    const noteInput = document.getElementById('input-profile-note');
+    const counter = document.getElementById('note-char-counter');
+    if (noteInput) {
+      noteInput.value = text.trim();
+      if (counter) counter.textContent = `${noteInput.value.length}/60`;
+      noteInput.focus();
+    }
+  }
+
+  async saveNote() {
+    const currentUser = this.getCurrentUser();
+    const noteInput = document.getElementById('input-profile-note');
+    const note = (noteInput ? noteInput.value.trim() : '').slice(0, 60);
+
+    try {
+      const res = await fetch('/api/users/update_profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: currentUser.id,
+          profile_note: note
+        })
+      });
+      const data = await res.json();
+      if (data && data.success && data.user) {
+        if (window.auth?.currentUser) {
+          Object.assign(window.auth.currentUser, data.user);
+          localStorage.setItem('see_lad_user', JSON.stringify(window.auth.currentUser));
+        }
+        this.renderProfileCard();
+        this.closeNoteModal();
+        if (window.app) window.app.showToast(note ? "Đã chia sẻ suy nghĩ trên Avatar! 💭" : "Đã làm trống ghi chú.");
+      }
+    } catch (e) {
+      console.error("Save note error:", e);
+      if (window.app) window.app.showToast("Không thể lưu ghi chú, vui lòng thử lại!", "warning");
+    }
+  }
+
+  async deleteNote() {
+    const noteInput = document.getElementById('input-profile-note');
+    if (noteInput) noteInput.value = '';
+    await this.saveNote();
   }
 
   async detectRealLocation(force = false) {
@@ -903,6 +1247,7 @@ class FeedController {
   }
 
   startCoverReposition() {
+    if (this.viewingUserId && this.viewingUserId !== this.getCurrentUser().id) return;
     this.isRepositioningCover = true;
     this.originalCoverPos = `${this.coverPosX}% ${this.coverPosY}%`;
     this.originalCoverZoom = this.coverZoom || 1.0;
@@ -1167,6 +1512,7 @@ class FeedController {
   }
 
   openAvatarAdjustModal(imageSrc = null) {
+    if (this.viewingUserId && this.viewingUserId !== this.getCurrentUser().id) return;
     const user = this.getCurrentUser();
     const src = imageSrc || user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
     const modal = document.getElementById('modal-avatar-adjuster');
@@ -1312,9 +1658,7 @@ class FeedController {
   }
 
   viewAuthorProfile(userId) {
-    if (window.chat) {
-      window.chat.openPublicProfileModal(userId);
-    }
+    this.openUserProfile(userId);
   }
 
   formatTimeAgo(dateStr) {

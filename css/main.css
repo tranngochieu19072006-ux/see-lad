@@ -636,5 +636,23 @@ html, body {
   border-radius: 9999px;
 }
 
+/* ==========================================================================
+   FLOATING THOUGHT NOTE (INSTAGRAM / MESSENGER STYLE)
+   ========================================================================== */
+@keyframes noteFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(-1deg);
+  }
+}
+
+.animate-note-float {
+  animation: noteFloat 3.6s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+
 
 

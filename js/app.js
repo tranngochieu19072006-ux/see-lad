@@ -83,6 +83,11 @@ class AppController {
     document.querySelectorAll('.app-nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const tab = btn.getAttribute('data-tab');
+        if (tab === 'profile' && window.feed) {
+          window.feed.viewingUserId = null;
+          window.feed.viewingUser = null;
+          window.feed.viewingUserPosts = [];
+        }
         this.switchTab(tab);
       });
     });
