@@ -1170,6 +1170,20 @@ def api_oauth_callback(provider):
 
 def render_oauth_response(user, error=None):
     if error:
+        if "authorization code has been used" in str(error).lower():
+            return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <script>window.location.replace('/');</script>
+            </head>
+            <body style="background:#0b0f19;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+                <p>Đăng nhập thành công! Đang chuyển về trang chủ...</p>
+            </body>
+            </html>
+            """
         return f"""
         <!DOCTYPE html>
         <html>
