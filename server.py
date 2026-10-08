@@ -240,13 +240,39 @@ def init_db():
     except Exception as e:
         print("Mock bot purge note:", e)
 
-    # Seed Admin / Founder if users table is completely empty
-    c.execute('SELECT COUNT(*) FROM users')
-    if c.fetchone()[0] == 0:
-        c.execute('''
-            INSERT INTO users (id, username, password_hash, name, avatar, bio, status, phone, lat, lng, location_name)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ("user_hieu", "ngochieu.dev", hash_pw("123456"), "Trần Ngọc Hiếu", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Nhà sáng lập & Lập trình viên SEE LAD 🌟", "online", "+84 987 654 321", 10.7769, 106.7009, "Quận 1, TP.HCM"))
+    # Seed Founder & real users if not present
+    c.execute('''
+        INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', ("user_hieu", "ngochieu.dev", hash_pw("123456"), "Trần Ngọc Hiếu", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Nhà sáng lập & Lập trình viên SEE LAD 🌟", "online", "+84 987 654 321", "tranngochieu19072006@gmail.com", 10.7769, 106.7009, "Quận 1, TP.HCM"))
+
+    c.execute('''
+        INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', ("user_1791395608431", "tranngochieu19072006", "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3", "Trần Ngọc Hiếu", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Nhà sáng lập & Lập trình viên SEE LAD 🌟", "online", "+84 987 654 321", "tranngochieu19072006@gmail.com", 10.9631, 106.7878, "TP. Hồ Chí Minh"))
+
+    c.execute('''
+        INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', ("user_1791396467957", "duckiet8146", "b30a96947d4ea66803f633a6dacf4ff51aa13ed83baa9b9954cbeff8a64ccdd6", "Đức Kiệt", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80", "Thành viên năng động trên SEE LAD 🚀", "online", "+84 900 123 456", "duckiet8146@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
+
+    # Seed friendship between them
+    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791395608431', 'user_1791396467957', 'accepted')")
+    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791396467957', 'user_1791395608431', 'accepted')")
+    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_hieu', 'user_1791396467957', 'accepted')")
+    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791396467957', 'user_hieu', 'accepted')")
+
+    # Seed active 2-way streak
+    today_str = datetime.now().strftime('%Y-%m-%d')
+    now_time = time.time()
+    c.execute('''
+        INSERT OR IGNORE INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
+        VALUES ('user_1791395608431', 'user_1791396467957', 14, 50, ?, 'active', 0, ?)
+    ''', (now_time, today_str))
+    c.execute('''
+        INSERT OR IGNORE INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
+        VALUES ('user_1791396467957', 'user_1791395608431', 14, 50, ?, 'active', 0, ?)
+    ''', (now_time, today_str))
 
     # Normalize existing message timestamps from embedded millisecond IDs (fixes UTC vs Local Time ordering)
     try:
@@ -383,6 +409,9 @@ def serve_static(filename):
 
 @app.route('/uploads/<path:filename>')
 def serve_upload(filename):
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    if not os.path.exists(file_path):
+        return redirect("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80")
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 @app.route('/.well-known/assetlinks.json')

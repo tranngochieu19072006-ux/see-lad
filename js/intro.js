@@ -49,12 +49,12 @@ class IntroController {
   // Typewriter helper
   typeText(element, text, speed = 40) {
     return new Promise((resolve) => {
-      if (this.isSkipped) return resolve();
+      if (!element || this.isSkipped) return resolve();
       let index = 0;
       const interval = setInterval(() => {
-        if (this.isSkipped || index >= text.length) {
+        if (!element || this.isSkipped || index >= text.length) {
           clearInterval(interval);
-          if (this.isSkipped) element.textContent = text;
+          if (this.isSkipped && element) element.textContent = text;
           resolve();
           return;
         }
@@ -68,14 +68,16 @@ class IntroController {
   // Backspace helper
   deleteText(element, targetLength = 0, speed = 25) {
     return new Promise((resolve) => {
-      if (this.isSkipped) return resolve();
+      if (!element || this.isSkipped) return resolve();
       const interval = setInterval(() => {
-        if (this.isSkipped || element.textContent.length <= targetLength) {
+        if (!element || this.isSkipped || (element.textContent && element.textContent.length <= targetLength)) {
           clearInterval(interval);
           resolve();
           return;
         }
-        element.textContent = element.textContent.slice(0, -1);
+        if (element.textContent) {
+          element.textContent = element.textContent.slice(0, -1);
+        }
         if (window.sounds) window.sounds.playKeystroke();
       }, speed);
     });

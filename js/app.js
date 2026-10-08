@@ -66,8 +66,12 @@ class AppController {
     }
 
     // Update Leaflet tile if map is ready
-    if (window.radar) {
-      window.radar.updateTileTheme(theme === 'dark');
+    if (window.radar && typeof window.radar.updateTileTheme === 'function') {
+      try {
+        window.radar.updateTileTheme(theme === 'dark');
+      } catch (err) {
+        console.warn("Radar updateTileTheme error:", err);
+      }
     }
 
     if (animate && window.app) {
@@ -198,6 +202,10 @@ class AppController {
 window.app = new AppController();
 
 // Boot application upon DOM ready
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    window.app.init();
+  });
+} else {
   window.app.init();
-});
+}

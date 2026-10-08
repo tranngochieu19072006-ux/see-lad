@@ -58,6 +58,10 @@ class RadarController {
     this.bindEvents();
   }
 
+  updateTileTheme(isDark) {
+    // Google Maps tiles handle standard rendering
+  }
+
   async syncLocationToServer(lat, lng) {
     const currentUserId = window.auth?.currentUser?.id;
     if (!currentUserId) return;
