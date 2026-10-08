@@ -535,19 +535,27 @@ def api_social_auth():
 
 OAUTH_CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "oauth_config.json")
 
+def get_env_val(*names):
+    for k, v in os.environ.items():
+        k_clean = k.strip().upper()
+        for target in names:
+            if k_clean == target.upper() and v and v.strip():
+                return v.strip()
+    return ''
+
 def get_oauth_config(provider=None):
     cfg = {
         'google': {
-            'client_id': os.environ.get('GOOGLE_CLIENT_ID', ''),
-            'client_secret': os.environ.get('GOOGLE_CLIENT_SECRET', '')
+            'client_id': get_env_val('GOOGLE_CLIENT_ID', 'GOOGLE_ID'),
+            'client_secret': get_env_val('GOOGLE_CLIENT_SECRET', 'GOOGLE_SECRET')
         },
         'facebook': {
-            'client_id': os.environ.get('FACEBOOK_CLIENT_ID', os.environ.get('FACEBOOK_APP_ID', '')),
-            'client_secret': os.environ.get('FACEBOOK_CLIENT_SECRET', os.environ.get('FACEBOOK_APP_SECRET', ''))
+            'client_id': get_env_val('FACEBOOK_CLIENT_ID', 'FACEBOOK_APP_ID', 'FACEBOOK_ID'),
+            'client_secret': get_env_val('FACEBOOK_CLIENT_SECRET', 'FACEBOOK_APP_SECRET', 'FACEBOOK_SECRET')
         },
         'github': {
-            'client_id': os.environ.get('GITHUB_CLIENT_ID', ''),
-            'client_secret': os.environ.get('GITHUB_CLIENT_SECRET', os.environ.get('CLIENT_SECRET', os.environ.get('GITHUB_CLIENT', '')))
+            'client_id': get_env_val('GITHUB_CLIENT_ID', 'GITHUB_ID'),
+            'client_secret': get_env_val('GITHUB_CLIENT_SECRET', 'GITHUB_SECRET', 'CLIENT_SECRET', 'GITHUB_CLIENT')
         }
     }
     if os.path.exists(OAUTH_CONFIG_FILE):
