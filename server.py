@@ -2556,77 +2556,81 @@ def api_get_posts():
 
 @app.route('/api/posts', methods=['POST'])
 def api_create_post():
-    data = request.json or {}
-    user_id = data.get('user_id', '').strip()
-    content = data.get('content', '').strip()
-    image_url = data.get('image_url', '').strip()
-    mood = data.get('mood', '🌟 Vui vẻ').strip()
+    try:
+        data = request.json or {}
+        user_id = data.get('user_id', '').strip()
+        content = data.get('content', '').strip()
+        image_url = data.get('image_url', '').strip()
+        mood = data.get('mood', '🌟 Vui vẻ').strip()
 
-    if not user_id or not content:
-        return jsonify({'error': 'Vui lòng nhập nội dung bài viết!'}), 400
+        if not user_id or not content:
+            return jsonify({'error': 'Vui lòng nhập nội dung bài viết!'}), 400
 
-    post_id = f"post_{int(time.time() * 1000)}"
+        post_id = f"post_{int(time.time() * 1000)}"
 
-    # Auto-save Base64 image payload to physical static file in uploads/
-    if image_url and image_url.startswith('data:image/'):
-        try:
-            header, encoded = image_url.split(',', 1)
-            ext = 'png' if 'png' in header else ('webp' if 'webp' in header else 'jpg')
-            img_bytes = base64.b64decode(encoded)
-            filename = f"post_{post_id}_{int(time.time())}.{ext}"
-            file_path = os.path.join(UPLOAD_FOLDER, filename)
-            with open(file_path, 'wb') as f:
-                f.write(img_bytes)
-            image_url = f"/uploads/{filename}"
-        except Exception as img_err:
-            print("Base64 post image save note:", img_err)
+        # Auto-save Base64 image payload to physical static file in uploads/
+        if image_url and image_url.startswith('data:image/'):
+            try:
+                header, encoded = image_url.split(',', 1)
+                ext = 'png' if 'png' in header else ('webp' if 'webp' in header else 'jpg')
+                img_bytes = base64.b64decode(encoded)
+                filename = f"post_{post_id}_{int(time.time())}.{ext}"
+                file_path = os.path.join(UPLOAD_FOLDER, filename)
+                with open(file_path, 'wb') as f:
+                    f.write(img_bytes)
+                image_url = f"/uploads/{filename}"
+            except Exception as img_err:
+                print("Base64 post image save note:", img_err)
 
-    conn = get_db()
-    c = conn.cursor()
+        conn = get_db()
+        c = conn.cursor()
 
-    # Ensure author exists in users table
-    c.execute('SELECT id, name, username, avatar FROM users WHERE id = ?', (user_id,))
-    if not c.fetchone():
+        # Ensure author exists in users table
+        c.execute('SELECT id, name, username, avatar FROM users WHERE id = ?', (user_id,))
+        if not c.fetchone():
+            c.execute('''
+                INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status)
+                VALUES (?, ?, ?, ?, ?, ?, 'online')
+            ''', (
+                user_id,
+                f"user_{user_id[-8:]}",
+                hash_pw("123456"),
+                "Lifetime Sin" if "1791424965072" in user_id else "Người dùng SEE LAD",
+                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+                "Thành viên kết nối chính thức 🌟"
+            ))
+            conn.commit()
+
         c.execute('''
-            INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status)
-            VALUES (?, ?, ?, ?, ?, ?, 'online')
-        ''', (
-            user_id,
-            f"user_{user_id[-8:]}",
-            hash_pw("123456"),
-            "Lifetime Sin" if "1791424965072" in user_id else "Người dùng SEE LAD",
-            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-            "Thành viên kết nối chính thức 🌟"
-        ))
+            INSERT INTO posts (id, user_id, content, image_url, mood, likes_count, created_at)
+            VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
+        ''', (post_id, user_id, content, image_url or None, mood))
         conn.commit()
 
-    c.execute('''
-        INSERT INTO posts (id, user_id, content, image_url, mood, likes_count, created_at)
-        VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
-    ''', (post_id, user_id, content, image_url or None, mood))
-    conn.commit()
+        c.execute('''
+            SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
+                   COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
+                   COALESCE(u.username, 'seelad_user') as author_username,
+                   COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
+            FROM posts p
+            LEFT JOIN users u ON p.user_id = u.id
+            WHERE p.id = ?
+        ''', (post_id,))
+        row = c.fetchone()
+        if not row:
+            conn.close()
+            return jsonify({'error': 'Không thể tạo bài viết!'}), 500
 
-    c.execute('''
-        SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
-               COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
-               COALESCE(u.username, 'seelad_user') as author_username,
-               COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
-        FROM posts p
-        LEFT JOIN users u ON p.user_id = u.id
-        WHERE p.id = ?
-    ''', (post_id,))
-    row = c.fetchone()
-    if not row:
+        new_post = dict(row)
+        new_post['has_liked'] = False
+        new_post['comments'] = []
         conn.close()
-        return jsonify({'error': 'Không thể tạo bài viết!'}), 500
 
-    new_post = dict(row)
-    new_post['has_liked'] = False
-    new_post['comments'] = []
-    conn.close()
-
-    broadcast_to_all({'type': 'new_post', 'post': new_post})
-    return jsonify({'success': True, 'post': new_post})
+        broadcast_to_all({'type': 'new_post', 'post': new_post})
+        return jsonify({'success': True, 'post': new_post})
+    except Exception as e:
+        print("Create post server error:", e)
+        return jsonify({'error': f'Lỗi máy chủ khi đăng bài: {str(e)}'}), 500
 
 @app.route('/api/posts/<post_id>/like', methods=['POST'])
 def api_toggle_post_like(post_id):
