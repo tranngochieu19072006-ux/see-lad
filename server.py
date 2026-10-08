@@ -292,13 +292,11 @@ def init_db():
             UPDATE users SET 
                 name = 'Lifetime Sin', 
                 avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
-            WHERE (id IN ('user_1791461175642', 'user_1791424965072') OR username = 'user_61175642' OR (name = 'Người dùng SEE LAD' AND id LIKE '%61175642%') OR username = '125001110')
-              AND (avatar LIKE '%platform-lookaside.fbsbx.com%' OR avatar LIKE '%photo-1535713875002-d1d0cf377fde%' OR avatar IS NULL)
+            WHERE id IN ('user_1791461175642', 'user_1791424965072') OR username IN ('user_61175642', '125001110', 'fb_122128466805379955') OR name = 'Lifetime Sin'
         ''')
         c.execute('''
             UPDATE users SET avatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
-            WHERE (username = 'duckiet8146' OR id = 'user_1791396467957')
-              AND (avatar LIKE '%photo-1535713875002-d1d0cf377fde%' OR avatar IS NULL)
+            WHERE username = 'duckiet8146' OR id = 'user_1791396467957'
         ''')
         c.execute("UPDATE users SET username = '125001110' WHERE id = 'user_1791461175642'")
     except Exception as ue:
@@ -1340,6 +1338,8 @@ def api_oauth_callback(provider):
         return render_oauth_response(u)
 
 def render_oauth_response(user, error=None):
+    if user:
+        user['avatar'] = sanitize_avatar(user.get('avatar'), user.get('name'))
     if error:
         if "authorization code has been used" in str(error).lower():
             return """
