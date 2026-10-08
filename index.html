@@ -454,9 +454,9 @@
             </button>
 
             <div class="border-t border-[var(--border-color)] mt-1 pt-1 space-y-0.5">
-              <button id="btn-open-user-profile" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-[var(--text-primary)] transition-colors">
-                <i data-lucide="user-cog" class="w-4 h-4 text-indigo-400"></i>
-                <span>Cài đặt trang cá nhân</span>
+              <button id="btn-open-user-profile" onclick="window.app.switchTab('profile'); document.getElementById('status-dropdown-menu').classList.add('hidden');" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-[var(--text-primary)] transition-colors">
+                <i data-lucide="user" class="w-4 h-4 text-cyan-400"></i>
+                <span>Xem & chỉnh sửa trang cá nhân</span>
               </button>
               <button onclick="window.auth.logout()" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs hover:bg-red-500/20 text-red-400 transition-colors">
                 <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -486,11 +486,18 @@
             <span class="hidden lg:inline whitespace-nowrap">Đoạn chat & Nhóm</span>
           </button>
 
-          <!-- 2. Nhật Ký & Trang Cá Nhân -->
-          <button class="app-nav-btn flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="feed" title="Nhật ký & Trang cá nhân">
+          <!-- 2. Nhật Ký -->
+          <button class="app-nav-btn flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="feed" title="Nhật ký">
             <i data-lucide="book-heart" class="w-4 h-4 md:w-5 md:h-5 text-pink-400 shrink-0"></i>
             <span class="text-[8.5px] sm:text-[10px] font-bold lg:hidden leading-none truncate max-w-full text-center mt-0.5">Nhật ký</span>
-            <span class="hidden lg:inline whitespace-nowrap">Nhật ký & Cá nhân</span>
+            <span class="hidden lg:inline whitespace-nowrap">Nhật ký</span>
+          </button>
+
+          <!-- 3. Trang Cá Nhân -->
+          <button class="app-nav-btn flex-1 md:flex-initial flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-0.5 lg:gap-3.5 px-1 py-1 sm:px-2 md:py-2.5 lg:px-3.5 lg:py-3 rounded-xl md:rounded-2xl text-[9px] lg:text-xs font-semibold text-[var(--text-secondary)] hover:bg-white/5 transition-all min-w-0" data-tab="profile" title="Trang cá nhân">
+            <i data-lucide="user-round" class="w-4 h-4 md:w-5 md:h-5 text-cyan-400 shrink-0"></i>
+            <span class="text-[8.5px] sm:text-[10px] font-bold lg:hidden leading-none truncate max-w-full text-center mt-0.5">Cá nhân</span>
+            <span class="hidden lg:inline whitespace-nowrap">Trang cá nhân</span>
           </button>
 
           <!-- 3. Cày Chuỗi Lửa (Chu kỳ 48h) -->
@@ -676,13 +683,13 @@
                     <!-- Change wallpaper -->
                     <button id="btn-action-wallpaper" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left transition-colors">
                       <i data-lucide="image" class="w-4 h-4 text-emerald-400"></i>
-                      <span>Đổi ảnh nền đoạn chat 🖼️</span>
+                      <span>Đổi ảnh nền đoạn chat</span>
                     </button>
 
                     <!-- Change nickname -->
                     <button id="btn-action-nickname" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-white/10 text-left transition-colors">
                       <i data-lucide="edit-3" class="w-4 h-4 text-amber-400"></i>
-                      <span>Đổi biệt danh ✏️</span>
+                      <span>Đổi biệt danh</span>
                     </button>
 
                     <!-- Change theme -->
@@ -879,17 +886,115 @@
         </section>
 
         <!-- ===================================================================
-             TAB: NHẬT KÝ & TRANG CÁ NHÂN (SOCIAL FEED & PROFILE)
+             TAB: NHẬT KÝ (SOCIAL FEED)
              =================================================================== -->
         <section id="tab-view-feed" class="hidden flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 custom-scrollbar">
+          <div class="max-w-2xl mx-auto space-y-3.5 pb-16">
+
+            <!-- 1. Top Feed Header & Filter Bar -->
+            <div class="glass rounded-2xl p-3 sm:p-3.5 border border-white/10 flex items-center justify-between gap-2 shadow-md">
+              <div class="flex items-center gap-2">
+                <button type="button" id="feed-tab-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-md shadow-indigo-500/25 transition-all">
+                  🌟 Bảng tin bạn bè
+                </button>
+                <button type="button" id="feed-tab-my" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+                  📖 Nhật ký của tôi
+                </button>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="window.app.switchTab('profile')" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition-all" title="Xem trang cá nhân của tôi">
+                  <i data-lucide="user-round" class="w-3.5 h-3.5 text-cyan-400"></i>
+                  <span class="hidden sm:inline">Trang cá nhân</span>
+                </button>
+                <button onclick="window.feed.loadFeed()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all" title="Làm mới bảng tin">
+                  <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. Compact Status Composer Card (Gọn gàng & Tinh tế) -->
+            <div class="glass rounded-2xl p-3 sm:p-3.5 border border-white/10 shadow-md">
+              <form id="feed-composer-form" class="space-y-2.5">
+                <div class="flex items-start gap-2.5">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" 
+                       class="w-9 h-9 rounded-xl object-cover user-display-avatar shrink-0 border border-white/15 cursor-pointer shadow-sm hover:scale-105 transition-transform" 
+                       onclick="window.app.switchTab('profile')" 
+                       title="Bấm để vào Trang cá nhân" />
+                  <div class="flex-1 min-w-0">
+                    <textarea id="feed-post-content" rows="1" placeholder="Bạn đang nghĩ gì thế? Chia sẻ cảm xúc hôm nay..." class="glass-input w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-900/90 text-white placeholder-slate-500 border border-white/10 focus:border-indigo-500 custom-scrollbar resize-none transition-all"></textarea>
+                  </div>
+                </div>
+
+                <!-- Image Preview Box (Khớp khít với ảnh, không khoảng trống) -->
+                <div id="feed-image-preview-box" class="hidden relative rounded-xl overflow-hidden border border-white/15 bg-black/40 max-h-56 flex justify-center items-center w-fit mx-auto p-1 shadow-md">
+                  <img id="feed-image-preview-img" src="" class="max-h-56 w-auto object-contain rounded-lg block" />
+                  <button type="button" id="btn-remove-feed-image" class="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 text-white hover:bg-rose-600 transition-colors shadow-md" title="Xóa ảnh">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+
+                <!-- Compact Toolbar -->
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-white/5">
+                  <div class="flex items-center gap-1.5">
+                    <!-- Photo attach button -->
+                    <button type="button" onclick="document.getElementById('feed-image-input').click()" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition-all">
+                      <i data-lucide="image" class="w-3.5 h-3.5 text-emerald-400"></i>
+                      <span class="text-[11px] sm:text-xs">Ảnh / Video</span>
+                    </button>
+                    <input type="file" id="feed-image-input" accept="image/*" class="hidden" />
+
+                    <!-- Mood Emoji Selector -->
+                    <select id="feed-post-mood" class="glass-input px-2.5 py-1.5 rounded-xl text-[11px] sm:text-xs bg-slate-900 text-white border border-white/10 focus:border-indigo-500">
+                      <option value="🌟 Vui vẻ">🌟 Vui vẻ</option>
+                      <option value="🚀 Tràn đầy năng lượng">🚀 Năng lượng</option>
+                      <option value="☕ Thư giãn">☕ Thư giãn</option>
+                      <option value="🔥 Hừng hực khí thế">🔥 Khí thế</option>
+                      <option value="❤️ Đang hạnh phúc">❤️ Hạnh phúc</option>
+                      <option value="🌧️ Lắng đọng tâm trạng">🌧️ Tâm trạng</option>
+                      <option value="🎧 Chill nghe nhạc">🎧 Chill nhạc</option>
+                      <option value="💻 Say mê làm việc">💻 Làm việc</option>
+                    </select>
+                  </div>
+
+                  <!-- Submit Post Button -->
+                  <button type="submit" id="btn-submit-post" class="btn-gradient px-4 py-1.5 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 shadow-md shadow-indigo-500/25 active:scale-95 transition-all shrink-0">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    <span>Đăng</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- 3. Posts Feed Stream -->
+            <div id="feed-posts-container" class="space-y-3">
+              <!-- Populated by js/feed.js -->
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB: TRANG CÁ NHÂN (DEDICATED PROFILE - TINH GỌN & SẮC NÉT FULL HD)
+             =================================================================== -->
+        <section id="tab-view-profile" class="hidden flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 custom-scrollbar">
           <div class="max-w-2xl mx-auto space-y-4 pb-16">
 
-            <!-- 1. Profile Header Showcase Card -->
+            <!-- Profile Header Showcase Card -->
             <div class="glass rounded-2xl overflow-hidden border border-white/10 shadow-xl relative">
-              <!-- Cover Photo with change button -->
-              <div id="profile-card-cover" class="h-40 sm:h-48 w-full bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 bg-cover bg-center relative transition-all duration-300">
-                <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
-                <button type="button" id="btn-change-cover-photo" class="absolute top-3 right-3 px-2.5 py-1.5 rounded-xl glass hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md">
+              <!-- Cover Photo: Full HD, Click to View in Lightbox, Crisp without blur -->
+              <div id="profile-card-cover" class="h-44 sm:h-52 w-full bg-slate-900 bg-cover bg-center relative transition-all duration-300 cursor-pointer group" onclick="window.feed.openProfileCoverLightbox()" title="Bấm để xem ảnh bìa Full HD sắc nét">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                
+                <!-- View FHD Cover Badge (Shows on hover) -->
+                <div class="absolute bottom-3 right-3 px-2.5 py-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/20 text-white text-[11px] font-semibold flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                  <span class="text-[9px] font-black uppercase bg-amber-400/20 text-amber-300 px-1 py-0.5 rounded border border-amber-400/30">FHD 1080p</span>
+                  <i data-lucide="maximize-2" class="w-3 h-3 text-cyan-400"></i>
+                  <span>Xem ảnh bìa</span>
+                </div>
+
+                <!-- Button Change Cover Photo -->
+                <button type="button" id="btn-change-cover-photo" onclick="event.stopPropagation(); document.getElementById('input-cover-upload').click();" class="absolute top-3 right-3 px-2.5 py-1.5 rounded-xl glass hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md z-10">
                   <i data-lucide="camera" class="w-3.5 h-3.5 text-cyan-400"></i>
                   <span>Đổi ảnh bìa</span>
                 </button>
@@ -897,13 +1002,16 @@
               </div>
 
               <!-- Profile Details Row -->
-              <div class="px-4 sm:px-6 pb-5 pt-0 relative">
-                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 -mt-14 sm:-mt-12 mb-3">
+              <div class="px-4 sm:px-6 pb-4 pt-0 relative">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 -mt-12 sm:-mt-14 mb-3">
                   <!-- Avatar + Basic Info -->
                   <div class="flex items-end gap-3.5">
-                    <div class="relative">
-                      <img id="profile-card-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900" />
+                    <div class="relative cursor-pointer group" onclick="window.feed.openProfileAvatarLightbox()" title="Bấm để xem ảnh đại diện Full HD sắc nét">
+                      <img id="profile-card-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900 group-hover:scale-105 transition-transform" />
                       <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-900 shadow" title="Đang trực tuyến"></span>
+                      <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <i data-lucide="maximize-2" class="w-5 h-5 text-white"></i>
+                      </div>
                     </div>
                     <div class="mb-1 min-w-0">
                       <h2 id="profile-card-name" class="font-heading font-extrabold text-lg sm:text-xl text-white tracking-tight truncate">Lifetime Sin</h2>
@@ -915,102 +1023,59 @@
                   <div class="flex items-center gap-2">
                     <button type="button" id="btn-edit-profile-modal" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-white/10 shadow-sm">
                       <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-400"></i>
-                      <span>Chỉnh sửa</span>
+                      <span>Chỉnh sửa hồ sơ</span>
+                    </button>
+                    <button type="button" onclick="window.app.switchTab('feed')" class="px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 text-xs font-bold flex items-center gap-1.5 transition-all border border-indigo-500/30 shadow-sm">
+                      <i data-lucide="book-heart" class="w-3.5 h-3.5"></i>
+                      <span>Đến Nhật ký</span>
                     </button>
                   </div>
                 </div>
 
-                <!-- Bio & Location -->
+                <!-- Bio & Accurate Location & Posts count -->
                 <p id="profile-card-bio" class="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-xl">
                   Thành viên kết nối chính thức qua Facebook 🌟
                 </p>
 
-                <div class="flex flex-wrap items-center gap-3 mt-2.5 text-xs text-slate-400">
-                  <span class="flex items-center gap-1">
-                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i>
-                    <span id="profile-card-location">TP. Hồ Chí Minh</span>
-                  </span>
-                  <span>•</span>
-                  <span class="flex items-center gap-1">
-                    <i data-lucide="book-open" class="w-3.5 h-3.5 text-pink-400"></i>
-                    <span><b id="profile-stat-posts" class="text-white font-mono">0</b> bài viết</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 2. Status Composer Card (Gọn gàng & Tinh tế) -->
-            <div class="glass rounded-2xl p-4 sm:p-4.5 border border-white/10 shadow-lg space-y-3">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 to-indigo-500 flex items-center justify-center text-white text-xs shadow-md">
-                  ✨
-                </div>
-                <div>
-                  <h3 class="font-heading font-extrabold text-xs sm:text-sm text-white">Đăng Nhật Ký & Trạng Thái Mới</h3>
-                  <p class="text-[10.5px] text-slate-400">Chia sẻ khoảnh khắc, cảm xúc và hình ảnh sắc nét Full HD</p>
-                </div>
-              </div>
-
-              <form id="feed-composer-form" class="space-y-2.5">
-                <textarea id="feed-post-content" rows="2" placeholder="Bạn đang nghĩ gì thế? Chia sẻ cảm xúc hôm nay..." class="glass-input w-full p-3 rounded-xl text-xs sm:text-sm bg-slate-900/90 text-white placeholder-slate-500 border border-white/10 focus:border-indigo-500 custom-scrollbar resize-none"></textarea>
-
-                <!-- Image Preview Box (Khớp khít với ảnh, không khoảng trống) -->
-                <div id="feed-image-preview-box" class="hidden relative rounded-xl overflow-hidden border border-white/15 bg-black/40 max-h-64 flex justify-center items-center w-fit mx-auto p-1 shadow-md">
-                  <img id="feed-image-preview-img" src="" class="max-h-64 w-auto object-contain rounded-lg block" />
-                  <button type="button" id="btn-remove-feed-image" class="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 text-white hover:bg-rose-600 transition-colors shadow-md" title="Xóa ảnh">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                  </button>
-                </div>
-
-                <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <div class="flex items-center gap-2">
-                    <!-- Photo attach button -->
-                    <button type="button" onclick="document.getElementById('feed-image-input').click()" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition-all">
-                      <i data-lucide="image" class="w-4 h-4 text-emerald-400"></i>
-                      <span>Ảnh / Video</span>
+                <div class="flex flex-wrap items-center gap-2.5 mt-3 text-xs">
+                  <!-- Accurate GPS Location -->
+                  <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 text-slate-300">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+                    <span id="profile-card-location" class="font-medium text-white">Đang xác định vị trí...</span>
+                    <button type="button" onclick="window.feed.detectRealLocation(true)" title="Cập nhật vị trí GPS chính xác" class="text-cyan-400 hover:text-cyan-300 ml-1 p-0.5 hover:bg-white/10 rounded">
+                      <i data-lucide="locate-fixed" class="w-3 h-3"></i>
                     </button>
-                    <input type="file" id="feed-image-input" accept="image/*" class="hidden" />
+                  </span>
 
-                    <!-- Mood Emoji Selector -->
-                    <select id="feed-post-mood" class="glass-input px-3 py-1.5 rounded-xl text-xs bg-slate-900 text-white border border-white/10 focus:border-indigo-500">
-                      <option value="🌟 Vui vẻ">🌟 Vui vẻ</option>
-                      <option value="🚀 Tràn đầy năng lượng">🚀 Tràn đầy năng lượng</option>
-                      <option value="☕ Thư giãn">☕ Thư giãn</option>
-                      <option value="🔥 Hừng hực khí thế">🔥 Hừng hực khí thế</option>
-                      <option value="❤️ Đang hạnh phúc">❤️ Đang hạnh phúc</option>
-                      <option value="🌧️ Lắng đọng tâm trạng">🌧️ Lắng đọng tâm trạng</option>
-                      <option value="🎧 Chill nghe nhạc">🎧 Chill nghe nhạc</option>
-                      <option value="💻 Say mê làm việc">💻 Say mê làm việc</option>
-                    </select>
-                  </div>
+                  <!-- Accurate Post Count -->
+                  <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 text-slate-300">
+                    <i data-lucide="book-open" class="w-3.5 h-3.5 text-pink-400 shrink-0"></i>
+                    <span class="font-medium text-white"><b id="profile-stat-posts" class="font-mono text-pink-300">0</b> bài viết</span>
+                  </span>
 
-                  <!-- Submit Post Button -->
-                  <button type="submit" id="btn-submit-post" class="btn-gradient px-5 py-2 rounded-2xl text-xs font-bold text-white flex items-center gap-1.5 shadow-lg shadow-indigo-500/25 active:scale-95 transition-all">
-                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                    <span>Đăng nhật ký</span>
-                  </button>
+                  <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 text-slate-300">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
+                    <span class="font-medium text-indigo-200">Xác thực chính chủ</span>
+                  </span>
                 </div>
-              </form>
+              </div>
             </div>
 
-            <!-- 3. Feed Filter Tabs -->
-            <div class="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
-              <div class="flex items-center gap-2">
-                <button type="button" id="feed-tab-all" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
-                  🌟 Bảng tin bạn bè
-                </button>
-                <button type="button" id="feed-tab-my" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5">
-                  📖 Nhật ký của tôi
+            <!-- Profile Posts Stream -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between px-1">
+                <h3 class="font-heading font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
+                  <i data-lucide="book-open" class="w-4 h-4 text-pink-400"></i>
+                  <span>Bài Viết Của Tôi</span>
+                </h3>
+                <button onclick="window.feed.loadFeed()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all" title="Làm mới">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
-              <button onclick="window.feed.loadFeed()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all" title="Làm mới bảng tin">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-              </button>
-            </div>
 
-            <!-- 4. Posts Feed Stream -->
-            <div id="feed-posts-container" class="space-y-4">
-              <!-- Populated by js/feed.js -->
+              <div id="profile-posts-container" class="space-y-3">
+                <!-- User's own posts populated by feed.js -->
+              </div>
             </div>
 
           </div>
@@ -2167,42 +2232,37 @@
   </div>
 
   <!-- Modal: Đổi ảnh nền cuộc trò chuyện -->
-  <div id="modal-chat-wallpaper" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+  <div id="modal-chat-wallpaper" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fade-in">
     <div class="glass w-full max-w-md rounded-3xl p-6 border border-white/15 shadow-2xl space-y-4 bg-slate-900/95">
       <div class="flex items-center justify-between">
         <h3 class="font-heading font-extrabold text-base text-white flex items-center gap-2">
           <i data-lucide="image" class="w-4 h-4 text-emerald-400"></i>
-          <span>Ảnh Nền Cuộc Trò Chuyện 🖼️</span>
+          <span>Ảnh Nền Cuộc Trò Chuyện</span>
         </h3>
         <button onclick="document.getElementById('modal-chat-wallpaper').classList.add('hidden')" class="text-slate-400 hover:text-white p-1">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <p class="text-xs text-slate-400">Tùy chỉnh ảnh nền riêng biệt cho cuộc trò chuyện này. Ảnh sẽ tự động tối ưu tương phản để tin nhắn luôn rõ nét.</p>
+      <p class="text-xs text-slate-400">Tùy chỉnh ảnh nền riêng biệt cho cuộc trò chuyện này. Ảnh sắc nét, rõ ràng, tối ưu tương phản để tin nhắn luôn nổi bật.</p>
 
       <!-- Upload from computer / phone -->
       <div>
         <button type="button" onclick="document.getElementById('chat-custom-wallpaper-file').click()" class="w-full py-3 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600/30 text-indigo-300 font-bold text-xs flex items-center justify-center gap-2 transition-all">
           <i data-lucide="upload" class="w-4 h-4"></i>
-          <span>Tải ảnh từ máy / điện thoại lên</span>
+          <span>Tải ảnh từ máy / điện thoại lên (Full HD)</span>
         </button>
         <input type="file" id="chat-custom-wallpaper-file" accept="image/*" class="hidden" onchange="
           const file = this.files[0];
           if (file) {
-            const r = new FileReader();
-            r.onload = e => {
-              window.chat.setWallpaperForActiveChat(e.target.result);
-              document.getElementById('modal-chat-wallpaper').classList.add('hidden');
-            };
-            r.readAsDataURL(file);
+            window.chat.handleCustomWallpaperUpload(file);
           }
         " />
       </div>
 
       <!-- Presets -->
       <div>
-        <p class="text-xs font-semibold text-slate-300 mb-2">Hoặc chọn ảnh nền mẫu chất lượng cao:</p>
+        <p class="text-xs font-semibold text-slate-300 mb-2">Hoặc chọn ảnh nền mẫu chất lượng cao Full HD:</p>
         <div class="grid grid-cols-2 gap-2.5">
           <button type="button" onclick="window.chat.setWallpaperForActiveChat('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80'); document.getElementById('modal-chat-wallpaper').classList.add('hidden');" class="h-16 rounded-xl overflow-hidden relative group border border-white/10">
             <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-110 transition-transform" />
@@ -2235,19 +2295,20 @@
   </div>
 
   <!-- Modal: Đổi biệt danh -->
-  <div id="modal-chat-nickname" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+  <div id="modal-chat-nickname" class="hidden fixed inset-0 z-[80] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fade-in">
     <div class="glass w-full max-w-sm rounded-3xl p-6 border border-white/15 shadow-2xl space-y-4 bg-slate-900/95">
       <div class="flex items-center justify-between">
         <h3 class="font-heading font-extrabold text-base text-white flex items-center gap-2">
           <i data-lucide="edit-3" class="w-4 h-4 text-amber-400"></i>
-          <span>Đặt Biệt Danh ✏️</span>
+          <span>Đặt Biệt Danh</span>
         </h3>
         <button onclick="document.getElementById('modal-chat-nickname').classList.add('hidden')" class="text-slate-400 hover:text-white p-1">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <p class="text-xs text-slate-400">Biệt danh chỉ hiển thị trong giao diện tin nhắn của bạn để tiện phân biệt bạn bè thân thiết.</p>
+      <p id="modal-chat-nickname-target" class="text-xs text-indigo-400 font-semibold truncate"></p>
+      <p class="text-xs text-slate-400">Biệt danh hiển thị trong giao diện tin nhắn của bạn để tiện phân biệt bạn bè thân thiết.</p>
 
       <form onsubmit="
         event.preventDefault();
@@ -2271,13 +2332,13 @@
   </div>
 
   <!-- =========================================================================
-       6. GLOBAL TOAST NOTIFICATIONS PILL
+       6. GLOBAL TOAST NOTIFICATIONS PILL (COMPACT & SLEEK)
        ========================================================================= -->
-  <div id="global-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass px-5 py-3 rounded-full border border-white/10 shadow-2xl flex items-center gap-3 transition-all duration-300 translate-y-24 opacity-0 pointer-events-none">
+  <div id="global-toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] glass px-4 py-2 rounded-2xl border border-white/15 bg-slate-900/90 backdrop-blur-md shadow-2xl flex items-center gap-2.5 transition-all duration-300 -translate-y-16 opacity-0 pointer-events-none max-w-[90vw]">
     <span id="global-toast-icon-wrap" class="flex items-center justify-center shrink-0">
-      <i id="global-toast-icon" data-lucide="sparkles" class="w-5 h-5 text-indigo-400 shrink-0"></i>
+      <i id="global-toast-icon" data-lucide="sparkles" class="w-4 h-4 text-indigo-400 shrink-0"></i>
     </span>
-    <span id="global-toast-text" class="text-xs sm:text-sm font-semibold text-white"></span>
+    <span id="global-toast-text" class="text-xs font-semibold text-white truncate"></span>
   </div>
 
   <!-- Lucide Icons Library -->
@@ -2289,22 +2350,22 @@
   <!-- Real ISO/IEC 18004 QRCode Matrix Generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
-  <!-- Application Scripts (Versioned v4.7 for instant cross-device cache-busting) -->
-  <script src="js/config.js?v=4.7"></script>
-  <script src="js/sounds.js?v=4.7"></script>
-  <script src="js/intro.js?v=4.7"></script>
-  <script src="js/auth.js?v=4.7"></script>
-  <script src="js/chat.js?v=4.7"></script>
-  <script src="js/call.js?v=4.7"></script>
-  <script src="js/recorder.js?v=4.7"></script>
-  <script src="js/feed.js?v=4.7"></script>
-  <script src="js/streak.js?v=4.7"></script>
-  <script src="js/radar.js?v=4.7"></script>
-  <script src="js/qr-studio.js?v=4.7"></script>
-  <script src="js/file-hub.js?v=4.7"></script>
-  <script src="js/bubble.js?v=4.7"></script>
-  <script src="js/scheduler.js?v=4.7"></script>
-  <script src="js/app.js?v=4.7"></script>
+  <!-- Application Scripts (Versioned v4.8 for instant cross-device cache-busting) -->
+  <script src="js/config.js?v=4.8"></script>
+  <script src="js/sounds.js?v=4.8"></script>
+  <script src="js/intro.js?v=4.8"></script>
+  <script src="js/auth.js?v=4.8"></script>
+  <script src="js/chat.js?v=4.8"></script>
+  <script src="js/call.js?v=4.8"></script>
+  <script src="js/recorder.js?v=4.8"></script>
+  <script src="js/feed.js?v=4.8"></script>
+  <script src="js/streak.js?v=4.8"></script>
+  <script src="js/radar.js?v=4.8"></script>
+  <script src="js/qr-studio.js?v=4.8"></script>
+  <script src="js/file-hub.js?v=4.8"></script>
+  <script src="js/bubble.js?v=4.8"></script>
+  <script src="js/scheduler.js?v=4.8"></script>
+  <script src="js/app.js?v=4.8"></script>
   <!-- Service Worker & PWA Install Manager -->
   <script>
     let deferredPrompt = null;

@@ -1862,26 +1862,42 @@ class ChatController {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  getCurrentUser() {
+    if (window.auth?.currentUser?.id) return window.auth.currentUser;
+    try {
+      const saved = localStorage.getItem('see_lad_user');
+      if (saved) {
+        const u = JSON.parse(saved);
+        if (u && u.id) return u;
+      }
+    } catch(e) {}
+    return window.SEE_LAD_CONFIG?.currentUser || { id: '125001110', name: 'Lifetime Sin', username: '125001110' };
+  }
+
   async loadWallpapers() {
-    const currentUserId = window.auth?.currentUser?.id;
+    const currentUser = this.getCurrentUser();
+    const currentUserId = currentUser.id;
     if (!currentUserId) return;
     try {
       const res = await fetch(`/api/wallpapers?user_id=${encodeURIComponent(currentUserId)}`);
       const data = await res.json();
       if (data.wallpapers) {
         this.wallpapers = data.wallpapers;
+        if (this.activeChatId) this.applyChatWallpaper(this.activeChatId);
       }
     } catch (e) {}
   }
 
   async loadNicknames() {
-    const currentUserId = window.auth?.currentUser?.id;
+    const currentUser = this.getCurrentUser();
+    const currentUserId = currentUser.id;
     if (!currentUserId) return;
     try {
       const res = await fetch(`/api/nicknames?user_id=${encodeURIComponent(currentUserId)}`);
       const data = await res.json();
       if (data.nicknames) {
         this.nicknames = data.nicknames;
+        this.renderConversationList();
       }
     } catch (e) {}
   }
@@ -1889,23 +1905,36 @@ class ChatController {
   applyChatWallpaper(chatId) {
     const container = document.getElementById('chat-messages-container');
     if (!container) return;
-    const wp = this.wallpapers[chatId];
+    const wp = (this.wallpapers && chatId) ? this.wallpapers[chatId] : null;
     if (wp) {
-      container.style.backgroundImage = `linear-gradient(rgba(10, 15, 29, 0.78), rgba(10, 15, 29, 0.88)), url('${wp}')`;
+      // Sắc nét, rõ ràng, không mờ, không tối sầm
+      container.style.backgroundImage = `linear-gradient(rgba(10, 15, 29, 0.40), rgba(10, 15, 29, 0.50)), url('${wp}')`;
       container.style.backgroundSize = 'cover';
       container.style.backgroundPosition = 'center';
       container.style.backgroundRepeat = 'no-repeat';
+      container.style.backgroundAttachment = 'local';
+      container.style.imageRendering = '-webkit-optimize-contrast';
+      container.classList.remove('backdrop-blur-sm', 'backdrop-blur-md');
     } else {
       container.style.backgroundImage = '';
       container.style.backgroundSize = '';
       container.style.backgroundPosition = '';
+      container.style.backgroundRepeat = '';
+      container.style.backgroundAttachment = '';
+      container.style.imageRendering = '';
     }
   }
 
   async setWallpaperForActiveChat(imageUrl) {
-    if (!this.activeChatId) return;
-    const currentUserId = window.auth?.currentUser?.id;
-    if (!currentUserId) return;
+    if (!this.activeChatId && this.contacts && this.contacts.length > 0) {
+      this.activeChatId = this.contacts[0].id;
+    }
+    if (!this.activeChatId) {
+      if (window.app) window.app.showToast("Vui lòng chọn một cuộc trò chuyện để đổi ảnh nền.", "warning");
+      return;
+    }
+    const currentUser = this.getCurrentUser();
+    const currentUserId = currentUser.id;
     try {
       const res = await fetch('/api/wallpapers', {
         method: 'POST',
@@ -1918,9 +1947,10 @@ class ChatController {
       });
       const data = await res.json();
       if (data.success) {
+        if (!this.wallpapers) this.wallpapers = {};
         if (imageUrl) {
           this.wallpapers[this.activeChatId] = imageUrl;
-          if (window.app) window.app.showToast("Đã đổi ảnh nền cuộc trò chuyện thành công! 🖼️");
+          if (window.app) window.app.showToast("Đã đổi ảnh nền cuộc trò chuyện thành công!");
         } else {
           delete this.wallpapers[this.activeChatId];
           if (window.app) window.app.showToast("Đã gỡ ảnh nền, quay lại mặc định.");
@@ -1929,13 +1959,55 @@ class ChatController {
       }
     } catch (e) {
       console.error("Set wallpaper error:", e);
+      if (window.app) window.app.showToast("Lỗi khi lưu ảnh nền. Vui lòng thử lại!", "error");
     }
   }
 
+  handleCustomWallpaperUpload(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // High-resolution resize to Full HD (max 1920x1080) for sharp crisp display & fast upload
+        const maxDim = 1920;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+        const fhdDataUrl = canvas.toDataURL('image/jpeg', 0.90);
+        this.setWallpaperForActiveChat(fhdDataUrl);
+        const modal = document.getElementById('modal-chat-wallpaper');
+        if (modal) modal.classList.add('hidden');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
   async setNicknameForActiveChat(nickname) {
-    if (!this.activeChatId) return;
-    const currentUserId = window.auth?.currentUser?.id;
-    if (!currentUserId) return;
+    if (!this.activeChatId && this.contacts && this.contacts.length > 0) {
+      this.activeChatId = this.contacts[0].id;
+    }
+    if (!this.activeChatId) {
+      if (window.app) window.app.showToast("Vui lòng chọn một cuộc trò chuyện để đặt biệt danh.", "warning");
+      return;
+    }
+    const currentUser = this.getCurrentUser();
+    const currentUserId = currentUser.id;
     try {
       const res = await fetch('/api/nicknames', {
         method: 'POST',
@@ -1948,37 +2020,60 @@ class ChatController {
       });
       const data = await res.json();
       if (data.success) {
+        if (!this.nicknames) this.nicknames = {};
         if (nickname) {
           this.nicknames[this.activeChatId] = nickname;
-          if (window.app) window.app.showToast(`Đã đặt biệt danh: "${nickname}" ✏️`);
+          if (window.app) window.app.showToast(`Đã đặt biệt danh: "${nickname}"`);
         } else {
           delete this.nicknames[this.activeChatId];
           if (window.app) window.app.showToast("Đã gỡ biệt danh.");
         }
         this.renderConversationList();
-        const target = this.contacts.find(c => c.id === this.activeChatId);
-        if (target) {
-          const nameEl = document.getElementById('active-chat-name');
-          if (nameEl) nameEl.textContent = nickname ? `${nickname} (${target.name})` : target.name;
+        const target = this.contacts ? this.contacts.find(c => c.id === this.activeChatId) : null;
+        const nameEl = document.getElementById('active-chat-name');
+        if (nameEl) {
+          const originalName = target ? target.name : (nameEl.getAttribute('data-original-name') || nameEl.textContent);
+          if (target) nameEl.setAttribute('data-original-name', target.name);
+          nameEl.textContent = nickname ? `${nickname} (${originalName})` : originalName;
         }
       }
     } catch (e) {
       console.error("Set nickname error:", e);
+      if (window.app) window.app.showToast("Lỗi khi lưu biệt danh. Vui lòng thử lại!", "error");
     }
   }
 
   openWallpaperModal() {
     const modal = document.getElementById('modal-chat-wallpaper');
+    const dropdown = document.getElementById('chat-options-dropdown');
+    if (dropdown) dropdown.classList.add('hidden');
+    if (!this.activeChatId && this.contacts && this.contacts.length > 0) {
+      this.selectChat(this.contacts[0].id);
+    }
     if (modal) modal.classList.remove('hidden');
   }
 
   openNicknameModal() {
     const modal = document.getElementById('modal-chat-nickname');
     const input = document.getElementById('chat-nickname-input');
-    const target = this.contacts.find(c => c.id === this.activeChatId);
-    if (!target) return;
-    if (input) input.value = this.nicknames[target.id] || '';
+    const targetLabel = document.getElementById('modal-chat-nickname-target');
+    const dropdown = document.getElementById('chat-options-dropdown');
+    if (dropdown) dropdown.classList.add('hidden');
+
+    if (!this.activeChatId && this.contacts && this.contacts.length > 0) {
+      this.selectChat(this.contacts[0].id);
+    }
+
+    const target = this.contacts ? this.contacts.find(c => c.id === this.activeChatId) : null;
+    const targetName = target ? target.name : (document.getElementById('active-chat-name')?.textContent || 'Bạn bè');
+
+    if (targetLabel) targetLabel.textContent = `Đang đặt biệt danh cho: ${targetName}`;
+    if (input) {
+      input.value = (this.activeChatId && this.nicknames && this.nicknames[this.activeChatId]) || '';
+      input.placeholder = `Nhập biệt danh cho ${targetName}...`;
+    }
     if (modal) modal.classList.remove('hidden');
+    if (input) setTimeout(() => input.focus(), 100);
   }
 }
 

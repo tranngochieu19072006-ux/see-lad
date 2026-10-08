@@ -2606,8 +2606,14 @@ def api_get_posts():
         ''', (pid,))
         p['comments'] = [dict(cr) for cr in c.fetchall()]
 
+    my_post_count = 0
+    if active_uid:
+        c.execute('SELECT COUNT(*) FROM posts WHERE user_id = ?', (active_uid,))
+        cnt_row = c.fetchone()
+        my_post_count = cnt_row[0] if cnt_row else 0
+
     conn.close()
-    return jsonify({'success': True, 'posts': posts})
+    return jsonify({'success': True, 'posts': posts, 'my_post_count': my_post_count})
 
 @app.route('/api/posts', methods=['POST'])
 def api_create_post():
@@ -2648,16 +2654,21 @@ def api_create_post():
         target_username = author_username if (author_username and not author_username.startswith('user_')) else ("125001110" if "61175642" in user_id else f"user_{user_id[-8:]}")
         target_avatar = author_avatar if (author_avatar and 'dicebear' not in author_avatar) else "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za"
 
-        # Ensure author exists in users table with real identity
+        # Ensure author exists in users table with real identity and prevent username collision
         c.execute('SELECT id, name, username, avatar FROM users WHERE id = ?', (user_id,))
         existing_user = c.fetchone()
+
+        c.execute('SELECT id FROM users WHERE username = ? AND id != ?', (target_username, user_id))
+        clash = c.fetchone()
+        safe_username = f"user_{user_id[-8:]}" if clash else target_username
+
         if not existing_user:
             c.execute('''
                 INSERT INTO users (id, username, password_hash, name, avatar, bio, status)
                 VALUES (?, ?, ?, ?, ?, ?, 'online')
             ''', (
                 user_id,
-                target_username,
+                safe_username,
                 hash_pw("123456"),
                 target_name,
                 target_avatar,
@@ -2667,8 +2678,8 @@ def api_create_post():
         else:
             if target_name and existing_user['name'] != target_name and target_name != 'Người dùng SEE LAD':
                 c.execute('UPDATE users SET name = ? WHERE id = ?', (target_name, user_id))
-            if target_username and not target_username.startswith('user_'):
-                c.execute('UPDATE users SET username = ? WHERE id = ?', (target_username, user_id))
+            if not clash and safe_username and not safe_username.startswith('user_'):
+                c.execute('UPDATE users SET username = ? WHERE id = ?', (safe_username, user_id))
             if target_avatar and 'dicebear' not in target_avatar:
                 c.execute('UPDATE users SET avatar = ? WHERE id = ?', (target_avatar, user_id))
             conn.commit()

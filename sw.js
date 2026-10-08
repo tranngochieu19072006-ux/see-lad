@@ -1,5 +1,5 @@
 // SEE LAD - Modern Service Worker (PWA) with Instant Live Updates
-const CACHE_NAME = 'seelad-v4.7.0';
+const CACHE_NAME = 'seelad-v4.8.0';
 
 self.addEventListener('install', (event) => {
   console.log('[SEE LAD SW] Installed version:', CACHE_NAME);

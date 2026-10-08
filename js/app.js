@@ -107,6 +107,7 @@ class AppController {
     const views = {
       'chat': document.getElementById('tab-view-chat'),
       'feed': document.getElementById('tab-view-feed'),
+      'profile': document.getElementById('tab-view-profile'),
       'streak': document.getElementById('tab-view-streak'),
       'radar': document.getElementById('tab-view-radar'),
       'hub': document.getElementById('tab-view-hub'),
@@ -136,7 +137,12 @@ class AppController {
 
     if (tabName === 'feed' && window.feed) {
       window.feed.loadFeed();
+    }
+
+    if (tabName === 'profile' && window.feed) {
       window.feed.renderProfileCard();
+      window.feed.renderProfilePosts();
+      window.feed.detectRealLocation();
     }
 
     // Special trigger for Leaflet when radar becomes visible
@@ -177,23 +183,23 @@ class AppController {
     if (iconWrap) {
       const iconName = type === 'warning' ? 'alert-circle' : (type === 'error' ? 'alert-triangle' : 'sparkles');
       const iconColor = type === 'warning' ? 'text-amber-400' : (type === 'error' ? 'text-rose-400' : 'text-indigo-400');
-      iconWrap.innerHTML = `<i id="global-toast-icon" data-lucide="${iconName}" class="w-5 h-5 ${iconColor} shrink-0"></i>`;
+      iconWrap.innerHTML = `<i id="global-toast-icon" data-lucide="${iconName}" class="w-4 h-4 ${iconColor} shrink-0"></i>`;
       if (window.lucide) window.lucide.createIcons();
     } else if (toastIcon) {
       try {
-        const cls = type === 'warning' ? 'w-5 h-5 text-amber-400 shrink-0' : 'w-5 h-5 text-indigo-400 shrink-0';
+        const cls = type === 'warning' ? 'w-4 h-4 text-amber-400 shrink-0' : 'w-4 h-4 text-indigo-400 shrink-0';
         toastIcon.setAttribute('class', cls);
       } catch (err) {
         console.warn("Could not set toastIcon class:", err);
       }
     }
 
-    toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+    toast.classList.remove('-translate-y-16', 'opacity-0', 'pointer-events-none');
     toast.classList.add('translate-y-0', 'opacity-100');
 
     if (this.toastTimeout) clearTimeout(this.toastTimeout);
     this.toastTimeout = setTimeout(() => {
-      toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('-translate-y-16', 'opacity-0', 'pointer-events-none');
       toast.classList.remove('translate-y-0', 'opacity-100');
     }, 3200);
   }

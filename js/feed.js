@@ -13,6 +13,8 @@ class FeedController {
     this.bindEvents();
     await this.loadFeed();
     this.renderProfileCard();
+    this.renderProfilePosts();
+    this.detectRealLocation();
   }
 
   getCurrentUser() {
@@ -178,10 +180,12 @@ class FeedController {
       const data = await res.json();
       if (res.ok && data.success && data.post) {
         this.posts.unshift(data.post);
+        if (typeof this.serverMyPostCount === 'number') this.serverMyPostCount++;
         if (contentInput) contentInput.value = '';
         this.clearImagePreview();
         this.renderPosts();
         this.renderProfileCard();
+        this.renderProfilePosts();
         if (window.app) window.app.showToast("Đã chia sẻ nhật ký mới thành công! 🌟");
       } else {
         const errMsg = data.error || `Không thể đăng bài (${res.status})`;
@@ -196,7 +200,7 @@ class FeedController {
     } finally {
       if (btnSubmit) {
         btnSubmit.disabled = false;
-        btnSubmit.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> Đăng nhật ký`;
+        btnSubmit.innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i> <span>Đăng</span>`;
         if (window.lucide) window.lucide.createIcons();
       }
     }
@@ -215,8 +219,12 @@ class FeedController {
       const data = await res.json();
       if (data.success && Array.isArray(data.posts)) {
         this.posts = data.posts;
+        if (typeof data.my_post_count === 'number') {
+          this.serverMyPostCount = data.my_post_count;
+        }
         this.renderPosts();
         this.renderProfileCard();
+        this.renderProfilePosts();
       }
     } catch (e) {
       console.warn("Could not load posts:", e);
@@ -249,49 +257,49 @@ class FeedController {
       const formattedTime = this.formatTimeAgo(post.created_at);
 
       return `
-        <article class="glass rounded-2xl p-4 sm:p-4.5 border border-white/10 hover:border-white/20 transition-all shadow-md mb-3 space-y-2.5" id="post-card-${post.id}">
+        <article class="glass rounded-2xl p-3 sm:p-3.5 border border-white/10 hover:border-white/20 transition-all shadow-md mb-2.5 space-y-2" id="post-card-${post.id}">
           <!-- Post Author Header (Compact & Crisp) -->
-          <div class="flex items-center justify-between gap-2.5">
+          <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="window.feed.viewAuthorProfile('${post.user_id}')">
               <img src="${post.author_avatar || 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za'}" 
                    onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" 
-                   class="w-10 h-10 rounded-xl object-cover border border-white/15 shrink-0 shadow-sm" />
+                   class="w-9 h-9 rounded-xl object-cover border border-white/15 shrink-0 shadow-sm" />
               <div class="min-w-0">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <h4 class="font-bold text-[13.5px] text-white truncate hover:text-indigo-400 transition-colors">${this.escapeHtml(post.author_name || 'Thành viên')}</h4>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/25 shrink-0">${this.escapeHtml(post.mood || '🌟 Vui vẻ')}</span>
+                <div class="flex items-center gap-1.5 flex-wrap leading-tight">
+                  <h4 class="font-bold text-[13px] text-white truncate hover:text-indigo-400 transition-colors">${this.escapeHtml(post.author_name || 'Thành viên')}</h4>
+                  <span class="px-2 py-0.5 rounded-full text-[9.5px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/25 shrink-0">${this.escapeHtml(post.mood || '🌟 Vui vẻ')}</span>
                 </div>
-                <p class="text-[11px] text-slate-400">@${this.escapeHtml(post.author_username || 'user')} • ${formattedTime}</p>
+                <p class="text-[10.5px] text-slate-400 mt-0.5">@${this.escapeHtml(post.author_username || 'user')} • ${formattedTime}</p>
               </div>
             </div>
 
             ${isMine ? `
-              <button onclick="window.feed.deletePost('${post.id}')" class="p-1.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Xóa bài viết">
+              <button onclick="window.feed.deletePost('${post.id}')" class="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Xóa bài viết">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             ` : ''}
           </div>
 
           <!-- Post Content -->
-          <div class="text-[13.5px] text-slate-100 whitespace-pre-wrap leading-relaxed select-text">
+          <div class="text-[13px] sm:text-[13.5px] text-slate-100 whitespace-pre-wrap leading-relaxed select-text">
             ${this.escapeHtml(post.content)}
           </div>
 
           <!-- Post Image (Khớp 100% với ảnh, không viền đen thừa, chế độ FHD sắc nét, bấm để phóng to) -->
           ${post.image_url ? `
-            <div class="pt-1 flex justify-center w-full">
-              <div class="relative group cursor-pointer overflow-hidden rounded-2xl border border-white/10 shadow-lg inline-flex max-w-full bg-slate-900/40" 
+            <div class="pt-0.5 flex justify-center w-full">
+              <div class="relative group cursor-pointer overflow-hidden rounded-xl border border-white/10 shadow-md inline-flex max-w-full bg-slate-900/40" 
                    onclick="window.feed.openLightbox('${this.escapeHtml(post.image_url)}', '${this.escapeHtml(post.author_name || 'Người dùng')}')" 
                    title="Bấm để xem ảnh Full HD sắc nét">
                 <img src="${post.image_url}" 
                      alt="Ảnh nhật ký Full HD" 
-                     class="block max-w-full max-h-[520px] w-auto h-auto rounded-2xl object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.01]" 
+                     class="block max-w-full max-h-[480px] w-auto h-auto rounded-xl object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.01]" 
                      loading="lazy" />
                 
                 <!-- FHD 1080p Badge & Nút Xem Ảnh -->
-                <div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/20 text-white text-[11px] font-semibold flex items-center gap-1.5 shadow-md group-hover:bg-indigo-600 transition-all">
-                  <span class="text-[9px] font-black tracking-wider uppercase bg-amber-400/20 text-amber-300 px-1 py-0.5 rounded border border-amber-400/30">FHD 1080p</span>
-                  <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                <div class="absolute bottom-2.5 right-2.5 px-2 py-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/20 text-white text-[10.5px] font-semibold flex items-center gap-1 shadow-md group-hover:bg-indigo-600 transition-all">
+                  <span class="text-[9px] font-black uppercase bg-amber-400/20 text-amber-300 px-1 py-0.5 rounded border border-amber-400/30">FHD 1080p</span>
+                  <i data-lucide="maximize-2" class="w-3 h-3"></i>
                   <span>Xem ảnh</span>
                 </div>
               </div>
@@ -299,43 +307,43 @@ class FeedController {
           ` : ''}
 
           <!-- Post Reaction Stats & Actions Bar -->
-          <div class="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
-            <div class="flex items-center gap-2.5">
+          <div class="flex items-center justify-between pt-1.5 border-t border-white/10 text-xs">
+            <div class="flex items-center gap-2">
               <!-- Like Button -->
-              <button onclick="window.feed.toggleLike('${post.id}')" id="like-btn-${post.id}" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-white/5 font-bold transition-all ${post.has_liked ? 'text-rose-500 scale-105' : 'text-slate-400 hover:text-rose-400'}">
-                <i data-lucide="heart" class="w-4 h-4 ${post.has_liked ? 'fill-rose-500' : ''}"></i>
+              <button onclick="window.feed.toggleLike('${post.id}')" id="like-btn-${post.id}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-white/5 font-bold transition-all ${post.has_liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-400'}">
+                <i data-lucide="heart" class="w-3.5 h-3.5 ${post.has_liked ? 'fill-rose-500' : ''}"></i>
                 <span id="like-count-${post.id}">${post.likes_count || 0}</span>
                 <span class="hidden sm:inline">Thích</span>
               </button>
 
               <!-- Comment Toggle Button -->
-              <button onclick="window.feed.toggleCommentBox('${post.id}')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-white/5 font-semibold text-slate-400 hover:text-cyan-400 transition-colors">
-                <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <button onclick="window.feed.toggleCommentBox('${post.id}')" class="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-white/5 font-semibold text-slate-400 hover:text-cyan-400 transition-colors">
+                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
                 <span id="comment-count-${post.id}">${(post.comments || []).length}</span>
                 <span class="hidden sm:inline">Bình luận</span>
               </button>
             </div>
 
-            <button onclick="window.feed.sharePost('${post.id}')" class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors" title="Chia sẻ liên kết">
-              <i data-lucide="share-2" class="w-4 h-4"></i>
+            <button onclick="window.feed.sharePost('${post.id}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors" title="Chia sẻ liên kết">
+              <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
             </button>
           </div>
 
           <!-- Comments Section (Gọn gàng & Tinh tế) -->
-          <div id="comments-box-${post.id}" class="space-y-2 pt-2 border-t border-white/5">
+          <div id="comments-box-${post.id}" class="hidden space-y-1.5 pt-1.5 border-t border-white/5">
             <!-- List of existing comments -->
-            <div class="space-y-1.5 max-h-56 overflow-y-auto custom-scrollbar" id="comments-list-${post.id}">
+            <div class="space-y-1 max-h-56 overflow-y-auto custom-scrollbar" id="comments-list-${post.id}">
               ${(post.comments || []).map(c => `
-                <div class="flex items-start gap-2 bg-white/[0.03] px-3 py-1.5 rounded-xl border border-white/5 text-xs">
+                <div class="flex items-start gap-2 bg-white/[0.03] px-2.5 py-1.5 rounded-xl border border-white/5 text-xs">
                   <img src="${c.author_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}" 
                        onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" 
-                       class="w-6 h-6 rounded-lg object-cover shrink-0 mt-0.5" />
+                       class="w-5 h-5 rounded-lg object-cover shrink-0 mt-0.5" />
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between gap-1">
                       <span class="font-bold text-white text-[11px] truncate">${this.escapeHtml(c.author_name || 'Bạn bè')}</span>
-                      <span class="text-[9.5px] text-slate-500">${this.formatTimeAgo(c.created_at)}</span>
+                      <span class="text-[9px] text-slate-500">${this.formatTimeAgo(c.created_at)}</span>
                     </div>
-                    <p class="text-slate-300 text-[11.5px] leading-snug break-words">${this.escapeHtml(c.content)}</p>
+                    <p class="text-slate-300 text-[11px] leading-snug break-words">${this.escapeHtml(c.content)}</p>
                   </div>
                 </div>
               `).join('')}
@@ -517,8 +525,10 @@ class FeedController {
       const data = await res.json();
       if (data.success) {
         this.posts = this.posts.filter(p => p.id !== postId);
+        if (typeof this.serverMyPostCount === 'number' && this.serverMyPostCount > 0) this.serverMyPostCount--;
         this.renderPosts();
         this.renderProfileCard();
+        this.renderProfilePosts();
         if (window.app) window.app.showToast("Đã xóa bài viết thành công.");
       }
     } catch (e) {
@@ -554,20 +564,220 @@ class FeedController {
     const locationEl = document.getElementById('profile-card-location');
     const statPostsEl = document.getElementById('profile-stat-posts');
 
-    if (coverEl && user.cover_image) {
-      coverEl.style.backgroundImage = `url('${user.cover_image}')`;
+    if (coverEl) {
+      if (user.cover_image) {
+        coverEl.style.backgroundImage = `url('${user.cover_image}')`;
+      } else {
+        coverEl.style.backgroundImage = `url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80')`;
+      }
+      coverEl.style.imageRendering = '-webkit-optimize-contrast';
+      coverEl.style.backgroundSize = 'cover';
+      coverEl.style.backgroundPosition = 'center';
     }
     if (avatarEl) {
       avatarEl.src = user.avatar;
+      avatarEl.style.imageRendering = '-webkit-optimize-contrast';
       avatarEl.onerror = () => { avatarEl.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'; };
     }
     if (nameEl) nameEl.textContent = user.name;
     if (handleEl) handleEl.textContent = `@${user.username || 'user'}`;
-    if (bioEl) bioEl.textContent = user.bio || 'Thành viên kết nối chính thức 🌟';
-    if (locationEl) locationEl.textContent = user.location_name || 'Việt Nam';
+    if (bioEl) bioEl.textContent = user.bio || 'Thành viên kết nối chính thức qua Facebook 🌟';
+    
+    const cachedLoc = sessionStorage.getItem('seelad_detected_location');
+    if (locationEl) {
+      locationEl.textContent = cachedLoc || user.location_name || 'Việt Nam';
+    }
 
-    const myPostCount = this.posts.filter(p => p.user_id === user.id || p.author_username === user.username || (user.id && p.user_id && (p.user_id.includes('61175642') || p.user_id.includes('1791424965072')))).length;
+    const myPostCount = (this.serverMyPostCount !== undefined)
+      ? this.serverMyPostCount
+      : this.posts.filter(p => p.user_id === user.id || p.author_username === user.username).length;
     if (statPostsEl) statPostsEl.textContent = myPostCount;
+  }
+
+  renderProfilePosts() {
+    const container = document.getElementById('profile-posts-container');
+    if (!container) return;
+    const user = this.getCurrentUser();
+    const myPosts = this.posts.filter(p => p.user_id === user.id || p.author_username === user.username);
+    
+    if (myPosts.length === 0) {
+      container.innerHTML = `
+        <div class="glass p-6 rounded-2xl text-center border border-white/10 my-2">
+          <div class="w-12 h-12 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center mx-auto mb-2 text-xl">📖</div>
+          <h4 class="font-bold text-sm text-white mb-1">Bạn chưa có bài viết nào</h4>
+          <p class="text-xs text-slate-400 mb-3">Hãy chia sẻ trạng thái đầu tiên trên trang cá nhân của bạn!</p>
+          <button onclick="window.app.switchTab('feed')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md">
+            Đến viết bài ngay
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = myPosts.map(post => {
+      const formattedTime = this.formatTimeAgo(post.created_at);
+      return `
+        <article class="glass rounded-2xl p-3 sm:p-3.5 border border-white/10 hover:border-white/20 transition-all shadow-md space-y-2" id="profile-post-card-${post.id}">
+          <div class="flex items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img src="${post.author_avatar || user.avatar}" 
+                   onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" 
+                   class="w-9 h-9 rounded-xl object-cover border border-white/15 shrink-0 shadow-sm" />
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap leading-tight">
+                  <h4 class="font-bold text-xs sm:text-sm text-white truncate">${this.escapeHtml(post.author_name || user.name)}</h4>
+                  <span class="px-2 py-0.5 rounded-full text-[9.5px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/25 shrink-0">${this.escapeHtml(post.mood || '🌟 Vui vẻ')}</span>
+                </div>
+                <p class="text-[10.5px] text-slate-400 mt-0.5">${formattedTime}</p>
+              </div>
+            </div>
+            <button onclick="window.feed.deletePost('${post.id}')" class="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Xóa bài viết">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <div class="text-xs sm:text-sm text-slate-100 whitespace-pre-wrap leading-relaxed select-text">
+            ${this.escapeHtml(post.content)}
+          </div>
+
+          ${post.image_url ? `
+            <div class="pt-0.5 flex justify-center w-full">
+              <div class="relative group cursor-pointer overflow-hidden rounded-xl border border-white/10 shadow-md inline-flex max-w-full bg-slate-900/40" 
+                   onclick="window.feed.openLightbox('${this.escapeHtml(post.image_url)}', '${this.escapeHtml(post.author_name || user.name)}')" 
+                   title="Bấm để xem ảnh Full HD sắc nét">
+                <img src="${post.image_url}" 
+                     alt="Ảnh bài viết" 
+                     class="block max-w-full max-h-[460px] w-auto h-auto rounded-xl object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.01]" 
+                     loading="lazy" />
+                <div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/20 text-white text-[10.5px] font-semibold flex items-center gap-1 shadow-md group-hover:bg-indigo-600 transition-all">
+                  <span class="text-[9px] font-black uppercase bg-amber-400/20 text-amber-300 px-1 py-0.5 rounded border border-amber-400/30">FHD 1080p</span>
+                  <i data-lucide="maximize-2" class="w-3 h-3"></i>
+                  <span>Xem ảnh</span>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="flex items-center justify-between pt-1.5 border-t border-white/10 text-xs">
+            <div class="flex items-center gap-2">
+              <button onclick="window.feed.toggleLike('${post.id}')" class="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/5 font-bold transition-all ${post.has_liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-400'}">
+                <i data-lucide="heart" class="w-3.5 h-3.5 ${post.has_liked ? 'fill-rose-500' : ''}"></i>
+                <span>${post.likes_count || 0}</span>
+              </button>
+              <button onclick="window.feed.toggleCommentBox('${post.id}')" class="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/5 font-semibold text-slate-400 hover:text-cyan-400 transition-colors">
+                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                <span>${(post.comments || []).length}</span>
+              </button>
+            </div>
+            <button onclick="window.feed.sharePost('${post.id}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/5" title="Chia sẻ liên kết">
+              <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  openProfileAvatarLightbox() {
+    const user = this.getCurrentUser();
+    if (user.avatar) {
+      this.openLightbox(user.avatar, `${user.name} - Ảnh đại diện Full HD`);
+    }
+  }
+
+  openProfileCoverLightbox() {
+    const user = this.getCurrentUser();
+    const coverUrl = user.cover_image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80';
+    this.openLightbox(coverUrl, `${user.name} - Ảnh bìa Full HD`);
+  }
+
+  async detectRealLocation(force = false) {
+    const locationEl = document.getElementById('profile-card-location');
+
+    if (!force) {
+      const cached = sessionStorage.getItem('seelad_detected_location');
+      if (cached) {
+        if (locationEl) locationEl.textContent = cached;
+        return;
+      }
+    }
+
+    if (locationEl) locationEl.textContent = 'Đang định vị GPS...';
+
+    if (!navigator.geolocation) {
+      this.fallbackIpLocation(force);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`, {
+            headers: { 'Accept-Language': 'vi,en' }
+          });
+          const data = await res.json();
+          const addr = data.address || {};
+          const city = addr.city || addr.town || addr.province || addr.state || addr.county || 'Việt Nam';
+          const district = addr.suburb || addr.quarter || addr.district || '';
+          const displayLoc = district ? `${district}, ${city}` : city;
+
+          sessionStorage.setItem('seelad_detected_location', displayLoc);
+          if (locationEl) locationEl.textContent = displayLoc;
+
+          const user = this.getCurrentUser();
+          if (user && user.id) {
+            user.location_name = displayLoc;
+            if (window.auth?.currentUser) window.auth.currentUser.location_name = displayLoc;
+            fetch('/api/users/update_profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user_id: user.id, location_name: displayLoc })
+            }).catch(() => {});
+          }
+          if (force && window.app) window.app.showToast(`Đã định vị: ${displayLoc}`);
+        } catch (e) {
+          console.warn("Reverse geocode error:", e);
+          this.fallbackIpLocation(force);
+        }
+      },
+      (err) => {
+        console.warn("GPS error:", err);
+        this.fallbackIpLocation(force);
+      },
+      { timeout: 7000, enableHighAccuracy: true, maximumAge: 120000 }
+    );
+  }
+
+  async fallbackIpLocation(force = false) {
+    const locationEl = document.getElementById('profile-card-location');
+    try {
+      const res = await fetch('https://ipapi.co/json/');
+      const data = await res.json();
+      if (data && (data.city || data.region)) {
+        const city = data.city || data.region;
+        const displayLoc = `${city}, Việt Nam`;
+        sessionStorage.setItem('seelad_detected_location', displayLoc);
+        if (locationEl) locationEl.textContent = displayLoc;
+        const user = this.getCurrentUser();
+        if (user && user.id) {
+          user.location_name = displayLoc;
+          if (window.auth?.currentUser) window.auth.currentUser.location_name = displayLoc;
+          fetch('/api/users/update_profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: user.id, location_name: displayLoc })
+          }).catch(() => {});
+        }
+        if (force && window.app) window.app.showToast(`Đã xác định vị trí: ${displayLoc}`);
+        return;
+      }
+    } catch (e) {}
+    const user = this.getCurrentUser();
+    if (locationEl) locationEl.textContent = user.location_name || 'Việt Nam';
   }
 
   openEditProfileModal() {
@@ -626,30 +836,54 @@ class FeedController {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = async (evt) => {
-      const base64Cover = evt.target.result;
-      const user = this.getCurrentUser();
-      try {
-        const res = await fetch('/api/users/update_profile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_id: user.id,
-            cover_image: base64Cover
-          })
-        });
-        const data = await res.json();
-        if (data.success) {
-          if (window.auth && window.auth.currentUser) {
-            window.auth.currentUser.cover_image = base64Cover;
+    reader.onload = (evt) => {
+      const img = new Image();
+      img.onload = async () => {
+        const maxDim = 1920;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
           }
-          const coverEl = document.getElementById('profile-card-cover');
-          if (coverEl) coverEl.style.backgroundImage = `url('${base64Cover}')`;
-          if (window.app) window.app.showToast("Đã cập nhật ảnh bìa mới! 🖼️");
         }
-      } catch (err) {
-        console.error("Cover upload error:", err);
-      }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+        const base64Cover = canvas.toDataURL('image/jpeg', 0.90);
+        const user = this.getCurrentUser();
+        try {
+          const res = await fetch('/api/users/update_profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: user.id,
+              cover_image: base64Cover
+            })
+          });
+          const data = await res.json();
+          if (data.success) {
+            if (window.auth && window.auth.currentUser) {
+              window.auth.currentUser.cover_image = base64Cover;
+            }
+            user.cover_image = base64Cover;
+            const coverEl = document.getElementById('profile-card-cover');
+            if (coverEl) coverEl.style.backgroundImage = `url('${base64Cover}')`;
+            if (window.app) window.app.showToast("Đã cập nhật ảnh bìa Full HD thành công!");
+          }
+        } catch (err) {
+          console.error("Cover upload error:", err);
+          if (window.app) window.app.showToast("Lỗi khi tải ảnh bìa lên. Vui lòng thử lại!", "error");
+        }
+      };
+      img.src = evt.target.result;
     };
     reader.readAsDataURL(file);
   }
