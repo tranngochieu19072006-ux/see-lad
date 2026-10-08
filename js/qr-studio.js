@@ -49,7 +49,7 @@ class QRStudioController {
       id: 'user',
       username: 'seelad_user',
       name: 'Người dùng SEE LAD',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
       bio: 'Thành viên kết nối trên SEE LAD 🌟',
       location_name: 'TP. Hồ Chí Minh'
     };
@@ -780,7 +780,7 @@ class QRStudioController {
     const addBtnText = document.getElementById('btn-shared-profile-add-text');
 
     if (avatarEl) {
-      avatarEl.src = profileUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+      avatarEl.src = profileUser.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80';
     }
     if (nameEl) nameEl.textContent = profileUser.name || 'Người dùng SEE LAD';
     if (usernameEl) usernameEl.textContent = `@${(profileUser.username || 'user').replace(/^@/, '')}`;

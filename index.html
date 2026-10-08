@@ -369,7 +369,7 @@
           <div class="flex items-center gap-1.5 whitespace-nowrap leading-none">
             <span class="font-heading font-black text-[17px] sm:text-xl tracking-tight text-white">SEE</span>
             <span class="font-heading font-black text-[17px] sm:text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#38e1e8] via-indigo-400 to-pink-400">LAD</span>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-400/30 text-[#38e1e8] text-[9px] font-extrabold tracking-wider uppercase">v4.9 PRO</span>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-400/30 text-[#38e1e8] text-[9px] font-extrabold tracking-wider uppercase">v5.1 PRO</span>
           </div>
           <div class="flex items-center gap-1.5 mt-1 whitespace-nowrap">
             <span class="w-1.5 h-1.5 rounded-full bg-[#38e1e8] shadow-[0_0_6px_#38e1e8]"></span>
@@ -415,7 +415,7 @@
         <div class="relative shrink-0">
           <button id="current-status-btn" class="flex items-center gap-2 p-1 sm:p-1.5 sm:pr-3 rounded-xl glass hover:bg-white/10 border border-[var(--border-color)] transition-all shrink-0">
             <div class="relative w-7 h-7 sm:w-8 sm:h-8 shrink-0">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" class="w-7 h-7 sm:w-8 sm:h-8 min-w-[28px] rounded-lg object-cover user-display-avatar shrink-0" alt="Avatar" />
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://ui-avatars.com/api/?name=User&background=random&color=fff&size=150'" class="w-7 h-7 sm:w-8 sm:h-8 min-w-[28px] rounded-lg object-cover user-display-avatar shrink-0" alt="Avatar" />
               <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[var(--bg-secondary)] user-status-dot status-online"></span>
             </div>
             <div class="text-left hidden sm:block whitespace-nowrap">
@@ -555,7 +555,7 @@
 
         <!-- Bottom Quick Info (Desktop only) -->
         <div class="hidden xl:block p-2.5 rounded-2xl bg-black/25 border border-white/5 text-center">
-          <p class="text-[11px] font-bold text-cyan-400">SEE LAD v4.9 PRO</p>
+          <p class="text-[11px] font-bold text-cyan-400">SEE LAD v5.1 PRO</p>
           <p class="text-[10px] text-slate-400 mt-0.5">Realtime Nexus</p>
         </div>
       </nav>
@@ -576,7 +576,7 @@
               <div class="flex p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-pink-900/30 border border-indigo-500/30 items-center justify-between gap-2 shadow-md">
                 <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
                   <div class="relative shrink-0 cursor-pointer group" onclick="document.getElementById('quick-avatar-upload-input').click()" title="Bấm để đổi ảnh đại diện">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl object-cover border-2 border-indigo-500/80 user-display-avatar shadow-md" alt="Avatar" />
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://ui-avatars.com/api/?name=User&background=random&color=fff&size=150'" class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl object-cover border-2 border-indigo-500/80 user-display-avatar shadow-md" alt="Avatar" />
                     <div class="absolute inset-0 rounded-lg sm:rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
                       <i data-lucide="camera" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                     </div>
@@ -653,7 +653,7 @@
                 </button>
                 <div class="flex items-center gap-2.5 min-w-0 cursor-pointer group/header hover:opacity-90 transition-opacity" onclick="if (window.chat && window.chat.activeChatId && !window.chat.contacts?.find(c => c.id === window.chat.activeChatId)?.isGroup && window.feed) { window.feed.openUserProfile(window.chat.activeChatId); }" title="Bấm để xem trang cá nhân">
                   <div class="relative shrink-0">
-                    <img id="active-chat-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl object-cover border border-white/10 group-hover/header:scale-105 transition-transform" />
+                    <img id="active-chat-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://ui-avatars.com/api/?name=Duc+Kiet&background=random&color=fff&size=150'" class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl object-cover border border-white/10 group-hover/header:scale-105 transition-transform" />
                     <span id="active-chat-status-dot" class="status-dot absolute -bottom-0.5 -right-0.5 status-online"></span>
                   </div>
                   <div class="min-w-0 flex-1">
@@ -1104,7 +1104,7 @@
                         </div>
                       </div>
 
-                      <img id="profile-card-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900 group-hover:scale-105 transition-transform" />
+                      <img id="profile-card-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://ui-avatars.com/api/?name=User&background=random&color=fff&size=200'" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900 group-hover:scale-105 transition-transform" />
                       <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-900 shadow" title="Đang trực tuyến"></span>
                       <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <i data-lucide="maximize-2" class="w-5 h-5 text-white"></i>
@@ -2123,22 +2123,22 @@
   </div>
 
   <!-- =========================================================================
-       MODAL: DANH SÁCH LỜI MỜI KẾT BẠN (FRIEND REQUESTS WITH MESSAGES)
+       MODAL: TÌM KIẾM BẠN BÈ & QUẢN LÝ LỜI MỜI (FRIEND DISCOVERY & REQUESTS)
        ========================================================================= -->
-  <div id="modal-friend-requests" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-    <div class="relative w-full max-w-lg bg-[#0c1017] border border-[#1f293d] rounded-[28px] p-6 sm:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+  <div id="modal-friend-requests" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md">
+    <div class="relative w-full max-w-lg bg-[#0c1017] border border-[#1f293d] rounded-[28px] p-5 sm:p-6 shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
       <!-- Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-[#1f293d] shrink-0">
+      <div class="flex items-center justify-between pb-3.5 border-b border-[#1f293d] shrink-0">
         <div class="flex items-center gap-2.5">
-          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 shrink-0">
             <i data-lucide="user-plus" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="font-bold text-lg text-white flex items-center gap-2">
-              <span>Lời mời kết bạn</span>
-              <span id="friend-requests-count-badge" class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 text-xs font-bold">0</span>
+            <h3 class="font-bold text-base sm:text-lg text-white flex items-center gap-2">
+              <span>Tìm bạn bè & Khám phá</span>
+              <span id="friend-requests-count-badge" class="hidden px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 text-xs font-bold">0</span>
             </h3>
-            <p class="text-xs text-slate-400">Những người muốn kết nối và trò chuyện với bạn trên SEE LAD</p>
+            <p class="text-[11px] sm:text-xs text-slate-400">Khám phá thành viên mới & xem trang cá nhân mọi người</p>
           </div>
         </div>
         <button type="button" id="btn-close-friend-requests" class="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-white/10 transition-colors">
@@ -2146,9 +2146,35 @@
         </button>
       </div>
 
-      <!-- List of Requests -->
-      <div id="friend-requests-list" class="flex-1 overflow-y-auto py-4 space-y-3">
-        <!-- Rendered dynamically via js/chat.js -->
+      <!-- Navigation Tabs (Khám phá bạn mới / Lời mời đã nhận) -->
+      <div class="flex p-1 bg-[#121824] rounded-2xl border border-[#1f293d] mt-3 mb-2 shrink-0">
+        <button type="button" id="tab-btn-discover-friends" class="flex-1 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white transition-all flex items-center justify-center gap-1.5 shadow">
+          <i data-lucide="compass" class="w-4 h-4"></i>
+          <span>Khám phá bạn mới</span>
+        </button>
+        <button type="button" id="tab-btn-pending-requests" class="flex-1 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5">
+          <i data-lucide="bell" class="w-4 h-4"></i>
+          <span>Lời mời kết bạn</span>
+          <span id="tab-pending-badge" class="hidden px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold">0</span>
+        </button>
+      </div>
+
+      <!-- Tab Content 1: Khám phá thành viên & Tìm kiếm -->
+      <div id="view-discover-friends" class="flex-1 flex flex-col min-h-0">
+        <div class="relative my-2 shrink-0">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" id="input-discover-search" class="w-full bg-[#121824] border border-[#1f293d] focus:border-indigo-500 text-white placeholder-slate-500 pl-10 pr-4 py-2.5 rounded-xl text-xs focus:outline-none transition-all" placeholder="Tìm theo tên hoặc @username..." />
+        </div>
+        <div id="discover-members-list" class="flex-1 overflow-y-auto py-1 space-y-2 custom-scrollbar min-h-[250px]">
+          <!-- dynamic member cards rendered by js/chat.js -->
+        </div>
+      </div>
+
+      <!-- Tab Content 2: Lời mời kết bạn đã nhận -->
+      <div id="view-pending-requests" class="hidden flex-1 overflow-y-auto py-2 space-y-3 custom-scrollbar min-h-0">
+        <div id="friend-requests-list" class="space-y-3">
+          <!-- Rendered dynamically via js/chat.js -->
+        </div>
       </div>
     </div>
   </div>
@@ -2245,7 +2271,7 @@
       <div class="px-6 pb-6 pt-0 text-center relative">
         <!-- Overlapping Avatar -->
         <div class="relative -mt-14 mb-3 inline-block">
-          <img id="shared-profile-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80" alt="Avatar" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover ring-4 ring-[#0b101e] shadow-2xl bg-slate-800" />
+          <img id="shared-profile-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://ui-avatars.com/api/?name=User&background=random&color=fff&size=200'" alt="Avatar" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover ring-4 ring-[#0b101e] shadow-2xl bg-slate-800" />
           <span id="shared-profile-status-dot" class="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-emerald-400 ring-4 ring-[#0b101e]"></span>
         </div>
 

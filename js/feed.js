@@ -407,7 +407,7 @@ class FeedController {
               ${(post.comments || []).map(c => `
                 <div class="flex items-start gap-2 bg-white/[0.03] px-2.5 py-1.5 rounded-xl border border-white/5 text-xs">
                   <img src="${c.author_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}" 
-                       onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" 
+                       onerror="this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'" 
                        class="w-5 h-5 rounded-lg object-cover shrink-0 mt-0.5 cursor-pointer hover:scale-105 transition-transform" 
                        onclick="if('${c.user_id}') window.feed.openUserProfile('${c.user_id}')" 
                        title="Xem trang cá nhân" />
@@ -982,7 +982,7 @@ class FeedController {
               ${(post.comments || []).map(c => `
                 <div class="flex items-start gap-2 bg-white/[0.03] px-2.5 py-1.5 rounded-xl border border-white/5 text-xs">
                   <img src="${c.author_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}" 
-                       onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" 
+                       onerror="this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'" 
                        class="w-5 h-5 rounded-lg object-cover shrink-0 mt-0.5 cursor-pointer hover:scale-105 transition-transform" 
                        onclick="if('${c.user_id}') window.feed.openUserProfile('${c.user_id}')" 
                        title="Xem trang cá nhân" />

@@ -46,6 +46,13 @@ def get_db():
 def hash_pw(pw):
     return hashlib.sha256(pw.encode('utf-8')).hexdigest()
 
+def sanitize_avatar(avatar, name='User'):
+    raw = (avatar or '').strip()
+    if not raw or 'platform-lookaside.fbsbx.com' in raw or 'photo-1535713875002-d1d0cf377fde' in raw:
+        safe_name = urllib.parse.quote(name or 'User')
+        return f"https://ui-avatars.com/api/?name={safe_name}&background=random&color=fff&size=256&bold=true"
+    return raw
+
 def init_db():
     conn = get_db()
     c = conn.cursor()
@@ -267,29 +274,35 @@ def init_db():
     c.execute('''
         INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', ("user_1791396467957", "duckiet8146", "b30a96947d4ea66803f633a6dacf4ff51aa13ed83baa9b9954cbeff8a64ccdd6", "Đức Kiệt", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80", "Thành viên năng động trên SEE LAD 🚀", "online", "+84 900 123 456", "duckiet8146@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
+    ''', ("user_1791396467957", "duckiet8146", "b30a96947d4ea66803f633a6dacf4ff51aa13ed83baa9b9954cbeff8a64ccdd6", "Đức Kiệt", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", "Thành viên năng động trên SEE LAD 🚀", "online", "+84 900 123 456", "duckiet8146@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
 
     c.execute('''
         INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', ("user_1791424965072", "fb_122128466805379955", hash_pw("123456"), "Lifetime Sin", "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
+    ''', ("user_1791424965072", "fb_122128466805379955", hash_pw("123456"), "Lifetime Sin", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
 
     c.execute('''
         INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', ("user_1791461175642", "125001110", hash_pw("123456"), "Lifetime Sin", "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
+    ''', ("user_1791461175642", "125001110", hash_pw("123456"), "Lifetime Sin", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
 
-    # Update any placeholder users to Lifetime Sin safely
+    # Update users to distinct, working avatars
     try:
         c.execute('''
             UPDATE users SET 
                 name = 'Lifetime Sin', 
-                avatar = 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za'
-            WHERE id IN ('user_1791461175642', 'user_1791424965072') OR username = 'user_61175642' OR (name = 'Người dùng SEE LAD' AND id LIKE '%61175642%')
+                avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
+            WHERE (id IN ('user_1791461175642', 'user_1791424965072') OR username = 'user_61175642' OR (name = 'Người dùng SEE LAD' AND id LIKE '%61175642%') OR username = '125001110')
+              AND (avatar LIKE '%platform-lookaside.fbsbx.com%' OR avatar LIKE '%photo-1535713875002-d1d0cf377fde%' OR avatar IS NULL)
+        ''')
+        c.execute('''
+            UPDATE users SET avatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+            WHERE (username = 'duckiet8146' OR id = 'user_1791396467957')
+              AND (avatar LIKE '%photo-1535713875002-d1d0cf377fde%' OR avatar IS NULL)
         ''')
         c.execute("UPDATE users SET username = '125001110' WHERE id = 'user_1791461175642'")
     except Exception as ue:
-        print("Username update safe note:", ue)
+        print("Avatar update safe note:", ue)
 
     # Seed friendship between them
     c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791395608431', 'user_1791396467957', 'accepted')")
@@ -472,7 +485,7 @@ def api_register():
     email = data.get('email', '').strip().lower()
     raw_username = data.get('username', '').strip().replace('@', '').lower()
     password = data.get('password', '123456')
-    avatar = data.get('avatar') or 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+    avatar = sanitize_avatar(data.get('avatar'), name)
 
     if not name or (not email and not raw_username):
         return jsonify({'error': 'Vui lòng nhập họ và tên cùng địa chỉ email'}), 400
@@ -535,6 +548,7 @@ def api_login():
         conn.close()
 
         del u['password_hash']
+        u['avatar'] = sanitize_avatar(u.get('avatar'), u.get('name'))
         u['status'] = 'online'
         broadcast_status(u['id'], 'online')
         return jsonify({'success': True, 'user': u, 'is_new': False})
@@ -643,7 +657,7 @@ def api_social_auth():
             elif provider == 'facebook':
                 avatar = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
             else:
-                avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
+                avatar = sanitize_avatar('', name)
 
         provider_labels = {'google': 'Google', 'facebook': 'Facebook', 'github': 'GitHub'}
         bio = f"Thành viên kết nối qua {provider_labels.get(provider, 'Mạng Xã Hội')} 🌐"
@@ -781,6 +795,7 @@ def api_auth_me():
         return jsonify({'success': False}), 401
     u = dict(row)
     del u['password_hash']
+    u['avatar'] = sanitize_avatar(u.get('avatar'), u.get('name'))
     return jsonify({'success': True, 'user': u})
 
 @app.route('/api/auth/quick-login', methods=['POST'])
@@ -1480,6 +1495,7 @@ def api_search_users():
     rows = [dict(r) for r in c.fetchall()]
 
     for u in rows:
+        u['avatar'] = sanitize_avatar(u.get('avatar'), u.get('name'))
         uid = u['id']
         c.execute('SELECT COUNT(*) FROM friendships WHERE user1_id = ? AND user2_id = ? AND status = "accepted"', (current_user_id, uid))
         if c.fetchone()[0] > 0:
@@ -1523,6 +1539,7 @@ def api_get_user_public_profile(identifier):
 
     u = dict(row)
     uid = u['id']
+    u['avatar'] = sanitize_avatar(u.get('avatar'), u.get('name'))
     u['is_online'] = (uid in active_clients and len(active_clients[uid]) > 0) or u.get('status') == 'online'
 
     c.execute('SELECT COUNT(*) FROM friendships WHERE user1_id = ? AND status = "accepted"', (uid,))
@@ -1544,6 +1561,7 @@ def api_get_user_public_profile(identifier):
     posts = [dict(p) for p in c.fetchall()]
 
     for post in posts:
+        post['author_avatar'] = sanitize_avatar(post.get('author_avatar'), post.get('author_name'))
         pid = post['id']
         c.execute('SELECT COUNT(*) FROM post_likes WHERE post_id = ?', (pid,))
         post['likes_count'] = c.fetchone()[0]
@@ -1558,13 +1576,16 @@ def api_get_user_public_profile(identifier):
             SELECT pc.id, pc.post_id, pc.user_id, pc.content, pc.created_at,
                    COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
                    COALESCE(u.username, 'seelad_user') as author_username,
-                   COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
+                   u.avatar as author_avatar
             FROM post_comments pc
             LEFT JOIN users u ON pc.user_id = u.id
             WHERE pc.post_id = ?
             ORDER BY pc.created_at ASC
         ''', (pid,))
-        post['comments'] = [dict(cr) for cr in c.fetchall()]
+        comments = [dict(cr) for cr in c.fetchall()]
+        for cr in comments:
+            cr['author_avatar'] = sanitize_avatar(cr.get('author_avatar'), cr.get('author_name'))
+        post['comments'] = comments
     u['posts'] = posts
 
     u['relationship'] = 'none'
@@ -1651,6 +1672,8 @@ def api_get_friend_requests():
     ''', (user_id,))
     rows = [dict(r) for r in c.fetchall()]
     conn.close()
+    for r in rows:
+        r['avatar'] = sanitize_avatar(r.get('avatar'), r.get('name'))
 
     return jsonify({'requests': rows, 'count': len(rows)})
 
@@ -1719,6 +1742,7 @@ def api_get_friends():
     friends = [dict(r) for r in c.fetchall()]
 
     for f in friends:
+        f['avatar'] = sanitize_avatar(f.get('avatar'), f.get('name'))
         f['isGroup'] = False
         f['location'] = {
             'lat': f['lat'],
@@ -2618,7 +2642,7 @@ def api_get_posts():
             SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
                    COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
                    COALESCE(u.username, 'seelad_user') as author_username,
-                   COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
+                   u.avatar as author_avatar
             FROM posts p
             LEFT JOIN users u ON p.user_id = u.id
             WHERE p.user_id = ?
@@ -2630,7 +2654,7 @@ def api_get_posts():
             SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
                    COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
                    COALESCE(u.username, 'seelad_user') as author_username,
-                   COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
+                   u.avatar as author_avatar
             FROM posts p
             LEFT JOIN users u ON p.user_id = u.id
             ORDER BY p.created_at DESC
@@ -2639,6 +2663,7 @@ def api_get_posts():
     posts = [dict(r) for r in c.fetchall()]
 
     for p in posts:
+        p['author_avatar'] = sanitize_avatar(p.get('author_avatar'), p.get('author_name'))
         pid = p['id']
         p['has_liked'] = False
         if current_user_id:
@@ -2649,13 +2674,16 @@ def api_get_posts():
             SELECT pc.id, pc.post_id, pc.user_id, pc.content, pc.created_at,
                    COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
                    COALESCE(u.username, 'seelad_user') as author_username,
-                   COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
+                   u.avatar as author_avatar
             FROM post_comments pc
             LEFT JOIN users u ON pc.user_id = u.id
             WHERE pc.post_id = ?
             ORDER BY pc.created_at ASC
         ''', (pid,))
-        p['comments'] = [dict(cr) for cr in c.fetchall()]
+        comments = [dict(cr) for cr in c.fetchall()]
+        for cr in comments:
+            cr['author_avatar'] = sanitize_avatar(cr.get('author_avatar'), cr.get('author_name'))
+        p['comments'] = comments
 
     my_post_count = 0
     if active_uid:
@@ -2745,7 +2773,7 @@ def api_create_post():
             SELECT p.id, p.user_id, p.content, p.image_url, p.mood, p.likes_count, p.created_at,
                    COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
                    COALESCE(u.username, 'seelad_user') as author_username,
-                   COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
+                   u.avatar as author_avatar
             FROM posts p
             LEFT JOIN users u ON p.user_id = u.id
             WHERE p.id = ?
@@ -2756,6 +2784,7 @@ def api_create_post():
             return jsonify({'error': 'Không thể tạo bài viết!'}), 500
 
         new_post = dict(row)
+        new_post['author_avatar'] = sanitize_avatar(new_post.get('author_avatar'), new_post.get('author_name'))
         new_post['has_liked'] = False
         new_post['comments'] = []
         conn.close()
@@ -2850,7 +2879,7 @@ def api_add_post_comment(post_id):
         SELECT pc.id, pc.post_id, pc.user_id, pc.content, pc.created_at,
                COALESCE(u.name, 'Người dùng SEE LAD') as author_name,
                COALESCE(u.username, 'seelad_user') as author_username,
-               COALESCE(u.avatar, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') as author_avatar
+               u.avatar as author_avatar
         FROM post_comments pc
         LEFT JOIN users u ON pc.user_id = u.id
         WHERE pc.id = ?
@@ -2861,6 +2890,7 @@ def api_add_post_comment(post_id):
         return jsonify({'error': 'Không thể tạo bình luận!'}), 500
 
     comment = dict(row)
+    comment['author_avatar'] = sanitize_avatar(comment.get('author_avatar'), comment.get('author_name'))
     conn.close()
 
     broadcast_to_all({'type': 'post_comment_added', 'post_id': post_id, 'comment': comment})

@@ -143,10 +143,10 @@ class ChatController {
     if (searchInput) {
       searchInput.addEventListener('input', async (e) => {
         const query = e.target.value.toLowerCase().trim();
-        if (query.length >= 2) {
+        if (query.length >= 1) {
           await this.searchAndShowUsers(query);
         } else {
-          this.renderConversationList(query);
+          this.renderConversationList('');
         }
       });
     }
@@ -428,20 +428,40 @@ class ChatController {
       });
     }
 
-    // 8. Lời mời kết bạn: Mở modal danh sách lời mời
+    // 8. Lời mời kết bạn & Khám phá bạn bè
     const btnOpenReqSidebar = document.getElementById('btn-open-friend-requests');
     const btnOpenReqHeader = document.getElementById('btn-header-friend-requests');
     const btnCloseReq = document.getElementById('btn-close-friend-requests');
     const modalReq = document.getElementById('modal-friend-requests');
 
     if (btnOpenReqSidebar) {
-      btnOpenReqSidebar.addEventListener('click', () => this.openFriendRequestsModal());
+      btnOpenReqSidebar.addEventListener('click', () => this.openFriendRequestsModal('discover'));
     }
     if (btnOpenReqHeader) {
-      btnOpenReqHeader.addEventListener('click', () => this.openFriendRequestsModal());
+      btnOpenReqHeader.addEventListener('click', () => this.openFriendRequestsModal('requests'));
     }
     if (btnCloseReq && modalReq) {
       btnCloseReq.addEventListener('click', () => modalReq.classList.add('hidden'));
+    }
+
+    const tabBtnDiscover = document.getElementById('tab-btn-discover-friends');
+    const tabBtnPending = document.getElementById('tab-btn-pending-requests');
+    if (tabBtnDiscover) {
+      tabBtnDiscover.addEventListener('click', () => this.switchFriendModalTab('discover'));
+    }
+    if (tabBtnPending) {
+      tabBtnPending.addEventListener('click', () => this.switchFriendModalTab('requests'));
+    }
+
+    const inputDiscover = document.getElementById('input-discover-search');
+    if (inputDiscover) {
+      let discoverTimer = null;
+      inputDiscover.addEventListener('input', (e) => {
+        clearTimeout(discoverTimer);
+        discoverTimer = setTimeout(() => {
+          this.loadDiscoverMembers(e.target.value.trim());
+        }, 200);
+      });
     }
 
     // 9. Gửi lời mời kết bạn (kèm lời nhắn)
@@ -705,78 +725,226 @@ class ChatController {
     }
   }
 
-  async openFriendRequestsModal() {
-    const modal = document.getElementById('modal-friend-requests');
-    const listEl = document.getElementById('friend-requests-list');
-    if (!modal || !listEl) return;
+  switchFriendModalTab(tabName) {
+    const btnDiscover = document.getElementById('tab-btn-discover-friends');
+    const btnPending = document.getElementById('tab-btn-pending-requests');
+    const viewDiscover = document.getElementById('view-discover-friends');
+    const viewPending = document.getElementById('view-pending-requests');
 
-    modal.classList.remove('hidden');
+    if (tabName === 'discover') {
+      btnDiscover?.classList.add('bg-indigo-600', 'text-white', 'shadow');
+      btnDiscover?.classList.remove('text-slate-400');
+      btnPending?.classList.remove('bg-indigo-600', 'text-white', 'shadow');
+      btnPending?.classList.add('text-slate-400');
+
+      viewDiscover?.classList.remove('hidden');
+      viewPending?.classList.add('hidden');
+    } else {
+      btnPending?.classList.add('bg-indigo-600', 'text-white', 'shadow');
+      btnPending?.classList.remove('text-slate-400');
+      btnDiscover?.classList.remove('bg-indigo-600', 'text-white', 'shadow');
+      btnDiscover?.classList.add('text-slate-400');
+
+      viewPending?.classList.remove('hidden');
+      viewDiscover?.classList.add('hidden');
+    }
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  async loadDiscoverMembers(query = '') {
+    const listEl = document.getElementById('discover-members-list');
+    if (!listEl) return;
+
     listEl.innerHTML = `
-      <div class="p-6 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+      <div class="p-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
         <div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-        <span>Đang tải danh sách lời mời...</span>
+        <span>Đang tìm kiếm thành viên...</span>
       </div>
     `;
 
-    const requests = await this.loadFriendRequests();
+    const currentUserId = window.auth?.currentUser?.id || 'user_guest';
+    try {
+      const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}&current_user_id=${currentUserId}`);
+      const data = await res.json();
+      const users = data.users || [];
 
-    if (requests.length === 0) {
-      listEl.innerHTML = `
-        <div class="p-8 text-center flex flex-col items-center justify-center my-4">
-          <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-3">
-            <i data-lucide="user-check" class="w-8 h-8 text-indigo-400"></i>
+      if (users.length === 0) {
+        listEl.innerHTML = `
+          <div class="p-8 text-center flex flex-col items-center justify-center my-3">
+            <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-2.5 text-slate-400">
+              <i data-lucide="user-x" class="w-7 h-7"></i>
+            </div>
+            <h4 class="text-sm font-bold text-white mb-1">Không tìm thấy thành viên nào</h4>
+            <p class="text-xs text-slate-400 max-w-[260px] leading-relaxed">
+              ${query ? `Không có người dùng nào khớp với "${this.escapeHtml(query)}"` : 'Chưa có thành viên nào khác trên hệ thống.'}
+            </p>
           </div>
-          <h4 class="text-sm font-bold text-white mb-1">Không có lời mời kết bạn nào</h4>
-          <p class="text-xs text-slate-400 max-w-[240px] leading-relaxed">
-            Khi có ai đó gửi lời mời kết bạn và lời nhắn cho bạn, lời mời sẽ xuất hiện ở đây!
-          </p>
-        </div>
-      `;
-      if (window.lucide) window.lucide.createIcons();
-      return;
-    }
+        `;
+        if (window.lucide) window.lucide.createIcons();
+        return;
+      }
 
-    listEl.innerHTML = requests.map(req => {
-      const msgHtml = req.message ? `
-        <div class="mt-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-indigo-200 flex items-start gap-2">
-          <i data-lucide="message-square" class="w-3.5 h-3.5 text-indigo-400 mt-0.5 shrink-0"></i>
-          <div class="min-w-0 flex-1">
-            <span class="text-[10px] text-slate-400 font-bold block mb-0.5">Lời nhắn kèm theo:</span>
-            <p class="italic text-slate-200 break-words">"${this.escapeHtml(req.message)}"</p>
+      listEl.innerHTML = users.map(u => {
+        const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'User')}&background=random&color=fff&size=160&bold=true`;
+        const avatarUrl = u.avatar || fallbackAvatar;
+
+        const noteBadge = u.profile_note ? `
+          <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-medium mt-1">
+            <span class="animate-bounce inline-block text-[11px]">💭</span>
+            <span class="truncate max-w-[170px] sm:max-w-[220px]">${this.escapeHtml(u.profile_note)}</span>
           </div>
-        </div>
-      ` : `
-        <div class="mt-1 text-[11px] text-slate-400 italic">Không có lời nhắn kèm theo</div>
-      `;
+        ` : '';
 
-      return `
-        <div class="p-3.5 rounded-2xl bg-[#121824] border border-[#1f293d] hover:border-indigo-500/30 transition-all">
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3 min-w-0">
-              <img src="${req.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + req.sender_id}" class="w-12 h-12 rounded-2xl object-cover border border-white/10 shrink-0" />
-              <div class="min-w-0">
-                <h4 class="font-bold text-sm text-white truncate">${this.escapeHtml(req.name)}</h4>
-                <p class="text-xs text-slate-400 truncate">@${this.escapeHtml(req.username || 'user')}</p>
-                <p class="text-[10px] text-slate-500 mt-0.5">${new Date(req.created_at).toLocaleString('vi-VN')}</p>
+        let actionBtn = '';
+        if (u.relationship === 'friend') {
+          actionBtn = `
+            <button type="button" onclick="window.chat.selectChat('${u.id}'); document.getElementById('modal-friend-requests')?.classList.add('hidden');" class="px-3 py-1.5 rounded-xl bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer">
+              <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+              <span>Nhắn tin</span>
+            </button>
+          `;
+        } else if (u.relationship === 'pending_sent') {
+          actionBtn = `
+            <span class="px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-semibold flex items-center gap-1">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+              <span>Đã gửi</span>
+            </span>
+          `;
+        } else if (u.relationship === 'pending_received') {
+          actionBtn = `
+            <button type="button" onclick="window.chat.switchFriendModalTab('requests')" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1 shadow-sm transition-all cursor-pointer">
+              <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+              <span>Xem lời mời</span>
+            </button>
+          `;
+        } else {
+          actionBtn = `
+            <button type="button" onclick="window.chat.openSendFriendRequestModal('${u.id}', '${this.escapeHtml(u.name)}', '${avatarUrl}', '${u.username || ''}')" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-indigo-600/25 transition-all cursor-pointer">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+              <span>Kết bạn</span>
+            </button>
+          `;
+        }
+
+        const isOnline = u.status === 'online';
+
+        return `
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-[#121824] hover:bg-[#161f30] border border-[#1f293d] hover:border-indigo-500/30 transition-all group">
+            <div class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group/user" onclick="if(window.feed) { window.feed.openUserProfile('${u.id}'); document.getElementById('modal-friend-requests')?.classList.add('hidden'); }" title="Xem trang cá nhân của ${this.escapeHtml(u.name)}">
+              <div class="relative shrink-0">
+                <img src="${avatarUrl}" onerror="this.onerror=null; this.src='${fallbackAvatar}';" class="w-12 h-12 rounded-2xl object-cover border border-white/10 group-hover/user:scale-105 group-hover/user:border-indigo-400 transition-all shadow-md" alt="${this.escapeHtml(u.name)}" />
+                <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#121824] ${isOnline ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
+              </div>
+              <div class="min-w-0 flex-1 pr-2">
+                <div class="flex items-center gap-1.5">
+                  <h4 class="font-bold text-xs sm:text-sm text-white truncate group-hover/user:text-cyan-400 transition-colors">${this.escapeHtml(u.name)}</h4>
+                  <i data-lucide="external-link" class="w-3 h-3 text-slate-500 group-hover/user:text-cyan-400 opacity-0 group-hover/user:opacity-100 transition-opacity shrink-0"></i>
+                </div>
+                <p class="text-[10px] font-mono text-cyan-400/90 truncate">@${this.escapeHtml(u.username || 'user')}</p>
+                ${u.bio ? `<p class="text-[10px] text-slate-400 truncate mt-0.5 leading-snug">${this.escapeHtml(u.bio)}</p>` : ''}
+                ${noteBadge}
               </div>
             </div>
-
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button onclick="window.chat.respondFriendRequest(${req.id}, 'accept')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1 shadow-sm transition-all">
-                <i data-lucide="check" class="w-3.5 h-3.5"></i>
-                <span>Đồng ý</span>
-              </button>
-              <button onclick="window.chat.respondFriendRequest(${req.id}, 'reject')" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-rose-400 text-xs font-semibold transition-all" title="Từ chối">
-                <i data-lucide="x" class="w-3.5 h-3.5"></i>
-              </button>
+            <div class="shrink-0">
+              ${actionBtn}
             </div>
           </div>
+        `;
+      }).join('');
 
-          ${msgHtml}
-        </div>
-      `;
-    }).join('');
+      if (window.lucide) window.lucide.createIcons();
+    } catch (e) {
+      console.warn("Discover members load error:", e);
+      listEl.innerHTML = `<div class="p-6 text-center text-xs text-rose-400">Không thể tải danh sách thành viên.</div>`;
+    }
+  }
 
+  async openFriendRequestsModal(initialTab = 'discover') {
+    const modal = document.getElementById('modal-friend-requests');
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+
+    // Load friend requests
+    const requests = await this.loadFriendRequests();
+
+    // Update tab badge
+    const tabBadge = document.getElementById('tab-pending-badge');
+    if (tabBadge) {
+      if (requests.length > 0) {
+        tabBadge.textContent = requests.length;
+        tabBadge.classList.remove('hidden');
+      } else {
+        tabBadge.classList.add('hidden');
+      }
+    }
+
+    // Auto-decide tab if initialTab is requests or there are pending requests
+    const decidedTab = (initialTab === 'requests' && requests.length > 0) ? 'requests' : initialTab;
+    this.switchFriendModalTab(decidedTab);
+
+    // Load members
+    await this.loadDiscoverMembers('');
+
+    // Render requests
+    const listEl = document.getElementById('friend-requests-list');
+    if (listEl) {
+      if (requests.length === 0) {
+        listEl.innerHTML = `
+          <div class="p-8 text-center flex flex-col items-center justify-center my-4">
+            <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-3">
+              <i data-lucide="user-check" class="w-8 h-8 text-indigo-400"></i>
+            </div>
+            <h4 class="text-sm font-bold text-white mb-1">Không có lời mời kết bạn nào</h4>
+            <p class="text-xs text-slate-400 max-w-[240px] leading-relaxed">
+              Khi có ai đó gửi lời mời kết bạn và lời nhắn cho bạn, lời mời sẽ xuất hiện ở đây!
+            </p>
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = requests.map(req => {
+          const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(req.name || 'User')}&background=random&color=fff&size=160&bold=true`;
+          const avatarUrl = req.avatar || fallbackAvatar;
+          const msgHtml = req.message ? `
+            <div class="mt-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-indigo-200 flex items-start gap-2">
+              <i data-lucide="message-square" class="w-3.5 h-3.5 text-indigo-400 mt-0.5 shrink-0"></i>
+              <div class="min-w-0 flex-1">
+                <span class="text-[10px] text-slate-400 font-bold block mb-0.5">Lời nhắn kèm theo:</span>
+                <p class="italic text-slate-200 break-words">"${this.escapeHtml(req.message)}"</p>
+              </div>
+            </div>
+          ` : `
+            <div class="mt-1 text-[11px] text-slate-400 italic">Không có lời nhắn kèm theo</div>
+          `;
+
+          return `
+            <div class="p-3.5 rounded-2xl bg-[#121824] border border-[#1f293d] hover:border-indigo-500/30 transition-all">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0 cursor-pointer flex-1" onclick="if(window.feed) { window.feed.openUserProfile('${req.sender_id}'); document.getElementById('modal-friend-requests')?.classList.add('hidden'); }" title="Xem trang cá nhân">
+                  <img src="${avatarUrl}" onerror="this.onerror=null; this.src='${fallbackAvatar}';" class="w-12 h-12 rounded-2xl object-cover border border-white/10 shrink-0" />
+                  <div class="min-w-0 flex-1">
+                    <h4 class="font-bold text-sm text-white truncate hover:text-cyan-400 transition-colors">${this.escapeHtml(req.name)}</h4>
+                    <p class="text-xs text-slate-400 truncate">@${this.escapeHtml(req.username || 'user')}</p>
+                    <p class="text-[10px] text-slate-500 mt-0.5">${new Date(req.created_at).toLocaleString('vi-VN')}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button onclick="window.chat.respondFriendRequest(${req.id}, 'accept')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1 shadow-sm transition-all">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                    <span>Đồng ý</span>
+                  </button>
+                  <button onclick="window.chat.respondFriendRequest(${req.id}, 'reject')" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-rose-400 text-xs font-semibold transition-all" title="Từ chối">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+              ${msgHtml}
+            </div>
+          `;
+        }).join('');
+      }
+    }
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -1245,14 +1413,17 @@ class ChatController {
       container.innerHTML = `
         <div class="h-full flex flex-col items-center justify-center text-center p-4 sm:p-8 animate-fade-in">
           <div class="max-w-md w-full glass p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl flex flex-col items-center">
-            <div class="relative mb-3">
-              <img src="${contactAvatar}" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-xl" alt="${contactName}" />
+            <div class="relative mb-3 cursor-pointer group/avatar" onclick="if(window.feed && window.chat && window.chat.activeChatId && !window.chat.contacts?.find(c => c.id === window.chat.activeChatId)?.isGroup) window.feed.openUserProfile(window.chat.activeChatId)" title="Bấm để xem trang cá nhân của ${contactName}">
+              <img src="${contactAvatar}" onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${contactName}') + '&background=random&color=fff&size=160&bold=true'" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-indigo-500/50 group-hover/avatar:border-cyan-400 group-hover/avatar:scale-105 shadow-xl transition-all" alt="${contactName}" />
               <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-[#0f172a] flex items-center justify-center">
                 <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
               </div>
             </div>
             
-            <h4 class="font-bold text-base sm:text-lg text-white mb-1">Bắt đầu trò chuyện với ${contactName}</h4>
+            <h4 class="font-bold text-base sm:text-lg text-white mb-1 cursor-pointer hover:text-cyan-400 transition-colors flex items-center gap-1.5" onclick="if(window.feed && window.chat && window.chat.activeChatId && !window.chat.contacts?.find(c => c.id === window.chat.activeChatId)?.isGroup) window.feed.openUserProfile(window.chat.activeChatId)" title="Bấm để xem trang cá nhân">
+              <span>Bắt đầu trò chuyện với ${contactName}</span>
+              <i data-lucide="external-link" class="w-4 h-4 text-cyan-400 opacity-60"></i>
+            </h4>
             <p class="text-xs text-slate-400 mb-5 leading-relaxed">Kết nối nhanh chóng, tin nhắn được mã hóa và đồng bộ thời gian thực siêu tốc trên SEE LAD.</p>
             
             <div class="w-full text-left">
@@ -1910,7 +2081,7 @@ class ChatController {
       return window.auth.currentUser.avatar;
     }
     const c = this.contacts.find(x => x.id === senderId);
-    return c ? c.avatar : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+    return (c && c.avatar) ? c.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent((c && (c.nickname || c.name)) || 'User')}&background=random&color=fff&size=150&bold=true`;
   }
 
   escapeHtml(str) {

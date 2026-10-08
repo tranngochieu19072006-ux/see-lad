@@ -12,7 +12,7 @@ window.SEE_LAD_CONFIG = {
     id: "user_guest",
     name: "Người dùng SEE LAD",
     username: "@seelad_user",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
     bio: "Chào mừng bạn đến với mạng xã hội SEE LAD!",
     status: "online", // 'online' | 'busy' | 'offline'
     phone: "+84 900 888 999",
@@ -36,7 +36,7 @@ window.SEE_LAD_CONFIG = {
       id: "user_1791396467957",
       name: "Đức Kiệt",
       username: "@duckiet8146",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
       status: "online",
       statusText: "Đang hoạt động (Online)",
       unread: 0,
