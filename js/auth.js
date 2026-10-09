@@ -28,12 +28,12 @@ class AuthController {
           this.currentUser = JSON.parse(savedUser);
           this.status = this.currentUser.status || 'online';
 
-          // Tự động làm sạch và sửa avatar bị hỏng hoặc chứa mã "US" / Facebook 401
+          // Tự động làm sạch và sửa avatar bị hỏng hoặc chứa mã ui-avatars / Facebook 401
           const rawAv = (this.currentUser.avatar || '').trim();
-          if (!rawAv || rawAv.includes('platform-lookaside.fbsbx.com') || rawAv.includes('photo-1535713875002-d1d0cf377fde') || rawAv.includes('name=User')) {
-            this.currentUser.avatar = (this.currentUser.name === 'Lifetime Sin' || this.currentUser.username === 'fb_122128466805379955' || this.currentUser.username === '125001110')
-              ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(this.currentUser.name || 'User')}&background=4f46e5&color=fff&size=256&bold=true`;
+          if (!rawAv || rawAv.includes('ui-avatars.com') || rawAv.includes('platform-lookaside.fbsbx.com') || rawAv.includes('photo-1535713875002-d1d0cf377fde')) {
+            this.currentUser.avatar = (this.currentUser.name && (this.currentUser.name.includes('Kiệt') || this.currentUser.name.includes('kiet')))
+              ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+              : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
             this.saveUser();
           }
 
@@ -44,7 +44,7 @@ class AuthController {
               .then(data => {
                 if (data && data.success && data.user) {
                   const u = data.user;
-                  if (u.avatar && u.avatar !== this.currentUser.avatar && !u.avatar.includes('platform-lookaside.fbsbx.com') && !u.avatar.includes('photo-1535713875002-d1d0cf377fde') && !u.avatar.includes('name=User')) {
+                  if (u.avatar && u.avatar !== this.currentUser.avatar && !u.avatar.includes('platform-lookaside.fbsbx.com') && !u.avatar.includes('photo-1535713875002-d1d0cf377fde') && !u.avatar.includes('ui-avatars.com')) {
                     this.currentUser.avatar = u.avatar;
                     this.saveUser();
                     document.querySelectorAll('.user-display-avatar').forEach(el => el.src = u.avatar);
@@ -390,14 +390,14 @@ class AuthController {
 
     let name = 'Trần Ngọc Hiếu';
     let email = 'tranngochieu19072006@gmail.com';
-    let avatar = 'https://ui-avatars.com/api/?name=Trần+Ngọc+Hiếu&background=4285F4&color=fff&size=200&bold=true';
+    let avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
 
     // Nếu người dùng đã gõ email riêng vào ô email thì dùng email đó
     if (enteredEmail && enteredEmail.includes('@')) {
       email = enteredEmail;
       const raw = email.split('@')[0];
       name = raw.charAt(0).toUpperCase() + raw.slice(1);
-      avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=38e1e8&color=000&size=200&bold=true`;
+      avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
     }
 
     const providerNames = { google: 'Google', facebook: 'Facebook', github: 'GitHub' };
@@ -640,10 +640,11 @@ class AuthController {
   updateUserUI() {
     if (!this.currentUser) return;
 
-    if (!this.currentUser.avatar || this.currentUser.avatar.includes('platform-lookaside.fbsbx.com') || this.currentUser.avatar.includes('photo-1535713875002-d1d0cf377fde') || this.currentUser.avatar.includes('name=User')) {
-      this.currentUser.avatar = (this.currentUser.name === 'Lifetime Sin' || this.currentUser.username === 'fb_122128466805379955' || this.currentUser.username === '125001110')
-        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
-        : `https://ui-avatars.com/api/?name=${encodeURIComponent(this.currentUser.name || 'User')}&background=4f46e5&color=fff&size=256&bold=true`;
+    const rawAv = (this.currentUser.avatar || '').trim();
+    if (!rawAv || rawAv.includes('ui-avatars.com') || rawAv.includes('platform-lookaside.fbsbx.com') || rawAv.includes('photo-1535713875002-d1d0cf377fde')) {
+      this.currentUser.avatar = (this.currentUser.name && (this.currentUser.name.includes('Kiệt') || this.currentUser.name.includes('kiet')))
+        ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+        : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
       this.saveUser();
     }
 

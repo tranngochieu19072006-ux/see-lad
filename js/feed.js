@@ -717,7 +717,9 @@ class FeedController {
 
     // Avatar
     const avatarEl = document.getElementById('profile-card-avatar');
-    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=4f46e5&color=fff&bold=true`;
+    const fallbackAvatar = (user.name && (user.name.includes('Kiệt') || user.name.includes('kiet')))
+      ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+      : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
     if (avatarEl) {
       avatarEl.src = user.avatar || fallbackAvatar;
       avatarEl.style.imageRendering = '-webkit-optimize-contrast';
@@ -1026,7 +1028,9 @@ class FeedController {
     const currentUser = this.getCurrentUser();
     const isGuest = !!(this.viewingUserId && this.viewingUser && this.viewingUserId !== currentUser.id);
     const user = isGuest ? this.viewingUser : currentUser;
-    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=4f46e5&color=fff&bold=true`;
+    const fallbackAvatar = (user.name && (user.name.includes('Kiệt') || user.name.includes('kiet')))
+      ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+      : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
     const avatarUrl = user.avatar || fallbackAvatar;
     this.openLightbox(avatarUrl, `${user.name || 'Người dùng'} - Ảnh đại diện Full HD`);
   }

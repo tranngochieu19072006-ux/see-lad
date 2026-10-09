@@ -653,7 +653,7 @@
                 </button>
                 <div class="flex items-center gap-2.5 min-w-0 cursor-pointer group/header hover:opacity-90 transition-opacity" onclick="if (window.chat && window.chat.activeChatId && !window.chat.contacts?.find(c => c.id === window.chat.activeChatId)?.isGroup && window.feed) { window.feed.openUserProfile(window.chat.activeChatId); }" title="Bấm để xem trang cá nhân">
                   <div class="relative shrink-0">
-                    <img id="active-chat-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://ui-avatars.com/api/?name=Duc+Kiet&background=random&color=fff&size=150'" class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl object-cover border border-white/10 group-hover/header:scale-105 transition-transform" />
+                    <img id="active-chat-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80';" class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl object-cover border border-white/10 group-hover/header:scale-105 transition-transform" />
                     <span id="active-chat-status-dot" class="status-dot absolute -bottom-0.5 -right-0.5 status-online"></span>
                   </div>
                   <div class="min-w-0 flex-1">
@@ -2271,7 +2271,7 @@
       <div class="px-6 pb-6 pt-0 text-center relative">
         <!-- Overlapping Avatar -->
         <div class="relative -mt-14 mb-3 inline-block">
-          <img id="shared-profile-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" onerror="this.src='https://ui-avatars.com/api/?name=User&background=random&color=fff&size=200'" alt="Avatar" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover ring-4 ring-[#0b101e] shadow-2xl bg-slate-800" />
+          <img id="shared-profile-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80';" alt="Avatar" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover ring-4 ring-[#0b101e] shadow-2xl bg-slate-800" />
           <span id="shared-profile-status-dot" class="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-emerald-400 ring-4 ring-[#0b101e]"></span>
         </div>
 

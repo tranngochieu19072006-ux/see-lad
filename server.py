@@ -46,11 +46,25 @@ def get_db():
 def hash_pw(pw):
     return hashlib.sha256(pw.encode('utf-8')).hexdigest()
 
+PORTRAIT_AVATARS = [
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80",
+]
+
 def sanitize_avatar(avatar, name='User'):
     raw = (avatar or '').strip()
-    if not raw or 'platform-lookaside.fbsbx.com' in raw or 'photo-1535713875002-d1d0cf377fde' in raw:
-        safe_name = urllib.parse.quote(name or 'User')
-        return f"https://ui-avatars.com/api/?name={safe_name}&background=random&color=fff&size=256&bold=true"
+    if not raw or 'platform-lookaside.fbsbx.com' in raw or 'photo-1535713875002-d1d0cf377fde' in raw or 'ui-avatars.com' in raw:
+        lower_name = (name or '').lower()
+        if 'kiet' in lower_name:
+            return "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
+        if 'lifetime' in lower_name or 'sin' in lower_name:
+            return "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"
+        idx = abs(hash(name or 'User')) % len(PORTRAIT_AVATARS)
+        return PORTRAIT_AVATARS[idx]
     return raw
 
 def init_db():
@@ -299,6 +313,11 @@ def init_db():
             WHERE username = 'duckiet8146' OR id = 'user_1791396467957'
         ''')
         c.execute("UPDATE users SET username = '125001110' WHERE id = 'user_1791461175642'")
+        c.execute('''
+            UPDATE users SET avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
+            WHERE avatar LIKE '%platform-lookaside.fbsbx.com%' OR avatar LIKE '%ui-avatars.com%' OR avatar LIKE '%photo-1535713875002-d1d0cf377fde%'
+        ''')
+        conn.commit()
     except Exception as ue:
         print("Avatar update safe note:", ue)
 
@@ -568,7 +587,7 @@ def api_login():
         if c.fetchone()[0] > 0:
             username = f"{raw_username}_{str(int(time.time() % 1000))}"
 
-        avatar = f"https://ui-avatars.com/api/?name={urllib.parse.quote(name)}&background=38e1e8&color=000&size=200&bold=true"
+        avatar = sanitize_avatar('', name)
         bio = 'Thành viên mới trên SEE LAD 🌟'
 
         c.execute('''
@@ -597,7 +616,7 @@ def api_guest_login():
     name = f"Khách #{guest_num}"
     username = f"guest_{guest_num}"
     email = f"guest_{guest_num}@seelad.com"
-    avatar = f"https://ui-avatars.com/api/?name={urllib.parse.quote(name)}&background=06b6d4&color=fff&size=200&bold=true"
+    avatar = sanitize_avatar('', name)
     bio = "Thành viên trải nghiệm tự do trên SEE LAD 🚀"
 
     conn = get_db()
@@ -924,8 +943,7 @@ def api_oauth_grant(provider):
             username = f"{raw_username}_{str(int(time.time() % 1000))}"
 
         if not avatar:
-            bg = "4285F4" if provider == 'google' else ("1877F2" if provider == 'facebook' else "2ea44f")
-            avatar = f"https://ui-avatars.com/api/?name={urllib.parse.quote(name)}&background={bg}&color=fff&size=200&bold=true"
+            avatar = sanitize_avatar('', name)
 
         bio = f"Thành viên kết nối chính thức qua {provider_labels.get(provider, 'OAuth')} 🌟"
         c.execute('''
@@ -973,7 +991,7 @@ def render_social_consent_page(provider, redirect_uri, has_official_config=False
                 u_email = r['email'] or ''
                 if u_email == 'testgoogle@gmail.com':
                     continue
-                u_avatar = r['avatar'] or f"https://ui-avatars.com/api/?name={urllib.parse.quote(u_name)}&background=4285F4&color=fff"
+                u_avatar = sanitize_avatar(r.get('avatar'), u_name)
                 items.append(f'''
                 <form method="POST" action="/api/oauth/grant/{provider}" style="margin:0;">
                   <input type="hidden" name="identifier" value="{u_email}" />

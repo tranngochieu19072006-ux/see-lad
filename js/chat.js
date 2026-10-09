@@ -557,7 +557,9 @@ class ChatController {
               `;
             }
 
-            const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'User')}&background=4f46e5&color=fff&bold=true`;
+            const fallbackAvatar = (u.name && (u.name.includes('Kiệt') || u.name.includes('kiet')))
+              ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+              : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
             const avatarUrl = u.avatar || fallbackAvatar;
             const noteBadge = u.profile_note ? `
               <span class="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-full bg-cyan-400 text-[9px] text-black font-extrabold shadow flex items-center gap-0.5" title="${this.escapeHtml(u.profile_note)}">
@@ -785,7 +787,9 @@ class ChatController {
       }
 
       listEl.innerHTML = users.map(u => {
-        const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'User')}&background=random&color=fff&size=160&bold=true`;
+        const fallbackAvatar = (u.name && (u.name.includes('Kiệt') || u.name.includes('kiet')))
+          ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+          : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
         const avatarUrl = u.avatar || fallbackAvatar;
 
         const noteBadge = u.profile_note ? `
@@ -903,7 +907,9 @@ class ChatController {
         `;
       } else {
         listEl.innerHTML = requests.map(req => {
-          const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(req.name || 'User')}&background=random&color=fff&size=160&bold=true`;
+          const fallbackAvatar = (req.name && (req.name.includes('Kiệt') || req.name.includes('kiet')))
+            ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+            : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
           const avatarUrl = req.avatar || fallbackAvatar;
           const msgHtml = req.message ? `
             <div class="mt-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-indigo-200 flex items-start gap-2">
@@ -1414,7 +1420,7 @@ class ChatController {
         <div class="h-full flex flex-col items-center justify-center text-center p-4 sm:p-8 animate-fade-in">
           <div class="max-w-md w-full glass p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl flex flex-col items-center">
             <div class="relative mb-3 cursor-pointer group/avatar" onclick="if(window.feed && window.chat && window.chat.activeChatId && !window.chat.contacts?.find(c => c.id === window.chat.activeChatId)?.isGroup) window.feed.openUserProfile(window.chat.activeChatId)" title="Bấm để xem trang cá nhân của ${contactName}">
-              <img src="${contactAvatar}" onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${contactName}') + '&background=random&color=fff&size=160&bold=true'" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-indigo-500/50 group-hover/avatar:border-cyan-400 group-hover/avatar:scale-105 shadow-xl transition-all" alt="${contactName}" />
+              <img src="${contactAvatar}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-indigo-500/50 group-hover/avatar:border-cyan-400 group-hover/avatar:scale-105 shadow-xl transition-all" alt="${contactName}" />
               <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-[#0f172a] flex items-center justify-center">
                 <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
               </div>
@@ -2081,7 +2087,11 @@ class ChatController {
       return window.auth.currentUser.avatar;
     }
     const c = this.contacts.find(x => x.id === senderId);
-    return (c && c.avatar) ? c.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent((c && (c.nickname || c.name)) || 'User')}&background=random&color=fff&size=150&bold=true`;
+    if (c && c.avatar) return c.avatar;
+    const name = (c && (c.nickname || c.name)) || '';
+    return (name.includes('Kiệt') || name.includes('kiet'))
+      ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+      : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
   }
 
   escapeHtml(str) {
