@@ -47,7 +47,7 @@ def hash_pw(pw):
     return hashlib.sha256(pw.encode('utf-8')).hexdigest()
 
 PORTRAIT_AVATARS = [
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+    "/uploads/avatar_hieu.jpg",
     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
     "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
@@ -57,14 +57,17 @@ PORTRAIT_AVATARS = [
 
 def sanitize_avatar(avatar, name='User'):
     raw = (avatar or '').strip()
-    if not raw or 'platform-lookaside.fbsbx.com' in raw or 'photo-1535713875002-d1d0cf377fde' in raw or 'ui-avatars.com' in raw:
-        lower_name = (name or '').lower()
-        if 'kiet' in lower_name:
-            return "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
-        if 'lifetime' in lower_name or 'sin' in lower_name:
-            return "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"
-        idx = abs(hash(name or 'User')) % len(PORTRAIT_AVATARS)
-        return PORTRAIT_AVATARS[idx]
+    lower_name = (name or '').lower()
+    if 'lifetime' in lower_name or 'sin' in lower_name or 'hiếu' in lower_name or 'hieu' in lower_name:
+        return "/uploads/avatar_hieu.jpg"
+    if 'kiet' in lower_name or 'kiệt' in lower_name:
+        return "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
+    if 'top' in lower_name or 'ducati' in lower_name:
+        return "https://lh3.googleusercontent.com/a/ACg8ocJfHvv8S2pCIm5_3XRyBSOP9UERFXw2PZyNsojAmmVqh4WFnps=s96-c"
+    if 'noname' in lower_name:
+        return "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80"
+    if not raw or 'platform-lookaside.fbsbx.com' in raw or 'photo-1535713875002-d1d0cf377fde' in raw or 'ui-avatars.com' in raw or 'photo-1534528741775-53994a69daeb' in raw:
+        return "/uploads/avatar_hieu.jpg"
     return raw
 
 def init_db():
@@ -275,71 +278,126 @@ def init_db():
         print("Mock bot purge note:", e)
 
     # Seed Founder & real users if not present
-    c.execute('''
-        INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', ("user_hieu", "ngochieu.dev", hash_pw("123456"), "Trần Ngọc Hiếu", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Nhà sáng lập & Lập trình viên SEE LAD 🌟", "online", "+84 987 654 321", "tranngochieu19072006@gmail.com", 10.7769, 106.7009, "Quận 1, TP.HCM"))
+    seed_users = [
+        ("user_1791461175642", "125001110", hash_pw("123456"), "Lifetime Sin", "/uploads/avatar_hieu.jpg", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"),
+        ("user_1791424965072", "fb_122128466805379955", hash_pw("123456"), "Lifetime Sin", "/uploads/avatar_hieu.jpg", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"),
+        ("user_1791395608431", "tranngochieu19072006", hash_pw("123456"), "Trần Ngọc Hiếu", "/uploads/avatar_hieu.jpg", "Nhà sáng lập & Lập trình viên SEE LAD 🌟", "online", "+84 987 654 321", "tranngochieu19072006@gmail.com", 10.9631, 106.7878, "TP. Hồ Chí Minh"),
+        ("user_hieu", "ngochieu.dev", hash_pw("123456"), "Trần Ngọc Hiếu", "/uploads/avatar_hieu.jpg", "Nhà sáng lập & Lập trình viên SEE LAD 🌟", "online", "+84 987 654 321", "tranngochieu19072006@gmail.com", 10.7769, 106.7009, "Quận 1, TP.HCM"),
+        ("user_1791396467957", "duckiet8146", hash_pw("123456"), "Đức Kiệt", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", "Thành viên năng động trên SEE LAD 🚀", "online", "+84 900 123 456", "duckiet8146@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"),
+        ("user_1791402316968", "ducaticell123", hash_pw("123456"), "Top Trần", "https://lh3.googleusercontent.com/a/ACg8ocJfHvv8S2pCIm5_3XRyBSOP9UERFXw2PZyNsojAmmVqh4WFnps=s96-c", "Thành viên kết nối chính thức qua Google 🌟", "online", "+84 900 888 999", "ducaticell123@gmail.com", 10.9536, 106.8029, "TP. Hồ Chí Minh"),
+        ("user_1791429244851", "125000958", hash_pw("123456"), "Noname", "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80", "Thành viên mới trên SEE LAD 🌟", "online", "+84 900 123 456", "125000958@lachong.edu.vn", 10.9549, 106.7929, "TP. Hồ Chí Minh")
+    ]
+    for u in seed_users:
+        c.execute('''
+            INSERT INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                avatar = excluded.avatar,
+                name = excluded.name,
+                username = excluded.username
+        ''', u)
 
-    c.execute('''
-        INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', ("user_1791395608431", "tranngochieu19072006", "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3", "Trần Ngọc Hiếu", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Nhà sáng lập & Lập trình viên SEE LAD 🌟", "online", "+84 987 654 321", "tranngochieu19072006@gmail.com", 10.9631, 106.7878, "TP. Hồ Chí Minh"))
-
-    c.execute('''
-        INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', ("user_1791396467957", "duckiet8146", "b30a96947d4ea66803f633a6dacf4ff51aa13ed83baa9b9954cbeff8a64ccdd6", "Đức Kiệt", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", "Thành viên năng động trên SEE LAD 🚀", "online", "+84 900 123 456", "duckiet8146@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
-
-    c.execute('''
-        INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', ("user_1791424965072", "fb_122128466805379955", hash_pw("123456"), "Lifetime Sin", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
-
-    c.execute('''
-        INSERT OR IGNORE INTO users (id, username, password_hash, name, avatar, bio, status, phone, email, lat, lng, location_name)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', ("user_1791461175642", "125001110", hash_pw("123456"), "Lifetime Sin", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", "Thành viên kết nối chính thức qua Facebook 🌟", "online", "+84 900 888 777", "lifetimesin@gmail.com", 10.7769, 106.7009, "TP. Hồ Chí Minh"))
-
-    # Update users to distinct, working avatars
+    # Force avatar update to user's real handsome photo
     try:
         c.execute('''
-            UPDATE users SET 
-                name = 'Lifetime Sin', 
-                avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
-            WHERE id IN ('user_1791461175642', 'user_1791424965072') OR username IN ('user_61175642', '125001110', 'fb_122128466805379955') OR name = 'Lifetime Sin'
+            UPDATE users SET avatar = '/uploads/avatar_hieu.jpg'
+            WHERE id IN ('user_1791461175642', 'user_1791424965072', 'user_1791395608431', 'user_hieu')
+               OR username IN ('125001110', 'fb_122128466805379955', 'tranngochieu19072006', 'ngochieu.dev')
+               OR name IN ('Lifetime Sin', 'Trần Ngọc Hiếu')
+               OR avatar LIKE '%photo-1534528741775-53994a69daeb%'
+               OR avatar LIKE '%ui-avatars.com%'
+               OR avatar LIKE '%platform-lookaside.fbsbx.com%'
         ''')
         c.execute('''
             UPDATE users SET avatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
             WHERE username = 'duckiet8146' OR id = 'user_1791396467957'
         ''')
-        c.execute("UPDATE users SET username = '125001110' WHERE id = 'user_1791461175642'")
         c.execute('''
-            UPDATE users SET avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
-            WHERE avatar LIKE '%platform-lookaside.fbsbx.com%' OR avatar LIKE '%ui-avatars.com%' OR avatar LIKE '%photo-1535713875002-d1d0cf377fde%'
+            UPDATE users SET avatar = 'https://lh3.googleusercontent.com/a/ACg8ocJfHvv8S2pCIm5_3XRyBSOP9UERFXw2PZyNsojAmmVqh4WFnps=s96-c'
+            WHERE username = 'ducaticell123' OR id = 'user_1791402316968'
+        ''')
+        c.execute('''
+            UPDATE users SET avatar = 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80'
+            WHERE username = '125000958' OR id = 'user_1791429244851'
         ''')
         conn.commit()
     except Exception as ue:
         print("Avatar update safe note:", ue)
 
-    # Seed friendship between them
-    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791395608431', 'user_1791396467957', 'accepted')")
-    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791396467957', 'user_1791395608431', 'accepted')")
-    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791424965072', 'user_1791396467957', 'accepted')")
-    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791396467957', 'user_1791424965072', 'accepted')")
-    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_hieu', 'user_1791396467957', 'accepted')")
-    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791396467957', 'user_hieu', 'accepted')")
+    # Seed 2-way friendships for all real users
+    all_main_ids = ['user_1791461175642', 'user_1791424965072', 'user_1791395608431', 'user_hieu']
+    other_friends = ['user_1791396467957', 'user_1791402316968', 'user_1791429244851']
+    for mid in all_main_ids:
+        for fid in other_friends:
+            c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES (?, ?, 'accepted')", (mid, fid))
+            c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES (?, ?, 'accepted')", (fid, mid))
+    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791402316968', 'user_1791429244851', 'accepted')")
+    c.execute("INSERT OR IGNORE INTO friendships (user1_id, user2_id, status) VALUES ('user_1791429244851', 'user_1791402316968', 'accepted')")
 
-    # Seed active 2-way streak
+    # Seed active streaks
     today_str = datetime.now().strftime('%Y-%m-%d')
     now_time = time.time()
-    c.execute('''
-        INSERT OR IGNORE INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
-        VALUES ('user_1791395608431', 'user_1791396467957', 14, 50, ?, 'active', 0, ?)
-    ''', (now_time, today_str))
-    c.execute('''
-        INSERT OR IGNORE INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
-        VALUES ('user_1791396467957', 'user_1791395608431', 14, 50, ?, 'active', 0, ?)
-    ''', (now_time, today_str))
+    for mid in all_main_ids:
+        c.execute('''
+            INSERT INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
+            VALUES (?, 'user_1791396467957', 14, 50, ?, 'active', 0, ?)
+            ON CONFLICT(user_id, friend_id) DO UPDATE SET streak_count = 14, status = 'active'
+        ''', (mid, now_time, today_str))
+        c.execute('''
+            INSERT INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
+            VALUES ('user_1791396467957', ?, 14, 50, ?, 'active', 0, ?)
+            ON CONFLICT(user_id, friend_id) DO UPDATE SET streak_count = 14, status = 'active'
+        ''', (mid, now_time, today_str))
+        c.execute('''
+            INSERT INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
+            VALUES (?, 'user_1791402316968', 74, 150, ?, 'active', 0, ?)
+            ON CONFLICT(user_id, friend_id) DO UPDATE SET streak_count = 74, status = 'active'
+        ''', (mid, now_time, today_str))
+        c.execute('''
+            INSERT INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
+            VALUES ('user_1791402316968', ?, 74, 150, ?, 'active', 0, ?)
+            ON CONFLICT(user_id, friend_id) DO UPDATE SET streak_count = 74, status = 'active'
+        ''', (mid, now_time, today_str))
+        c.execute('''
+            INSERT INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
+            VALUES (?, 'user_1791429244851', 5, 20, ?, 'active', 0, ?)
+            ON CONFLICT(user_id, friend_id) DO UPDATE SET streak_count = 5, status = 'active'
+        ''', (mid, now_time, today_str))
+        c.execute('''
+            INSERT INTO streaks (user_id, friend_id, streak_count, total_messages, last_message_at, status, lost_streak_count, last_streak_date)
+            VALUES ('user_1791429244851', ?, 5, 20, ?, 'active', 0, ?)
+            ON CONFLICT(user_id, friend_id) DO UPDATE SET streak_count = 5, status = 'active'
+        ''', (mid, now_time, today_str))
+
+    # Seed historical messages so chat history is never empty
+    seed_msgs = [
+        # Messages with Đức Kiệt
+        ("msg_seed_k1", "user_1791396467957", "Chào bạn! Mình kết nối trên SEE LAD nhé! 🔥", "2026-10-08 10:30:00"),
+        ("msg_seed_k2", "user_1791461175642", "Chào Kiệt! Giao diện mới cập nhật xịn sò lắm.", "2026-10-08 10:32:00"),
+        ("msg_seed_k3", "user_1791461175642", "🔥 Đã thắp lửa Cày Chuỗi Vô Hạn với Đức Kiệt! (Chuỗi hiện tại: 14 🔥)", "2026-10-08 17:02:47"),
+        ("msg_seed_k4", "user_1791396467957", "Tuyệt vời quá! Cùng nhau giữ chuỗi lửa mỗi ngày nha! 🚀", "2026-10-08 17:05:00"),
+        ("msg_seed_k5", "user_1791461175642", "✨ Bạn khỏe không?", "2026-10-09 05:45:00"),
+        ("msg_seed_k6", "user_1791396467957", "Chào bạn! Mình vẫn khỏe, giao diện SEE LAD hôm nay nhìn nét và mượt ghê! 🔥", "2026-10-10 15:19:16"),
+        # Messages with Top Trần
+        ("msg_seed_t1", "user_1791402316968", "Chào bạn! Kết nối trên SEE LAD mượt thật đấy.", "2026-10-08 10:25:42"),
+        ("msg_seed_t2", "user_1791461175642", "🔥 Đã thắp lửa Cày Chuỗi Vô Hạn với Top Trần! (Chuỗi hiện tại: 74 🔥)", "2026-10-08 17:07:06"),
+        ("msg_seed_t3", "user_1791402316968", "Chuỗi 74 ngày cháy quá rồi! Cố gắng lên 100 ngày nha! 🔥🔥🔥", "2026-10-08 17:10:00"),
+        # Messages with Noname
+        ("msg_seed_n1", "user_1791429244851", "Chào bạn! Rất vui được kết nối trên SEE LAD 🌟", "2026-10-08 11:00:00"),
+        ("msg_seed_n2", "user_1791461175642", "Chào bạn nhé! Chúc bạn trải nghiệm ứng dụng vui vẻ! 🎉", "2026-10-08 11:05:00")
+    ]
+    for mid, sender, content, dt in seed_msgs:
+        receiver = "user_1791396467957" if "k" in mid and sender != "user_1791396467957" else ("user_1791402316968" if "t" in mid and sender != "user_1791402316968" else ("user_1791429244851" if "n" in mid and sender != "user_1791429244851" else "user_1791461175642"))
+        conv = receiver if sender == "user_1791461175642" else sender
+        c.execute('''
+            INSERT OR IGNORE INTO messages (id, conversation_id, sender_id, receiver_id, is_group, type, content, created_at)
+            VALUES (?, ?, ?, ?, 0, 'text', ?, ?)
+        ''', (mid, conv, sender, receiver, content, dt))
+        # Duplicate for user_1791395608431 so both user accounts have the identical history
+        c.execute('''
+            INSERT OR IGNORE INTO messages (id, conversation_id, sender_id, receiver_id, is_group, type, content, created_at)
+            VALUES (?, ?, ?, ?, 0, 'text', ?, ?)
+        ''', (mid + "_hieu", conv, sender if sender != "user_1791461175642" else "user_1791395608431", receiver if receiver != "user_1791461175642" else "user_1791395608431", content, dt))
 
     # Normalize existing message timestamps from embedded millisecond IDs (fixes UTC vs Local Time ordering)
     try:
@@ -478,7 +536,9 @@ def serve_static(filename):
 def serve_upload(filename):
     file_path = os.path.join(UPLOAD_FOLDER, filename)
     if not os.path.exists(file_path):
-        return redirect("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80")
+        hieu_avatar = os.path.join(UPLOAD_FOLDER, 'avatar_hieu.jpg')
+        if os.path.exists(hieu_avatar):
+            return send_from_directory(UPLOAD_FOLDER, 'avatar_hieu.jpg')
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 @app.route('/.well-known/assetlinks.json')
@@ -669,12 +729,7 @@ def api_social_auth():
             username = f"{raw_username}_{str(int(time.time() % 1000))}"
 
         if not avatar:
-            if provider == 'google':
-                avatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
-            elif provider == 'facebook':
-                avatar = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
-            else:
-                avatar = sanitize_avatar('', name)
+            avatar = sanitize_avatar('', name)
 
         provider_labels = {'google': 'Google', 'facebook': 'Facebook', 'github': 'GitHub'}
         bio = f"Thành viên kết nối qua {provider_labels.get(provider, 'Mạng Xã Hội')} 🌐"

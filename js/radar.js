@@ -142,7 +142,7 @@ class RadarController {
     this.friendMarkers.forEach(m => this.map.removeLayer(m));
     this.friendMarkers = [];
 
-    const userAvatar = window.auth?.currentUser?.avatar || window.SEE_LAD_CONFIG?.currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+    const userAvatar = window.auth?.currentUser?.avatar || window.SEE_LAD_CONFIG?.currentUser?.avatar || '/uploads/avatar_hieu.jpg';
     const userIcon = L.divIcon({
       className: 'radar-user-icon',
       html: `

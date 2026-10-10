@@ -6,6 +6,8 @@ oauth_config.json
 *.db
 uploads/*
 !uploads/.gitkeep
+!uploads/avatar_hieu.jpg
+!uploads/1791426112912__nh_t_i.jpg
 
 # Cloudflare & Temp
 cloudflared.exe

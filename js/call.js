@@ -552,7 +552,7 @@ class CallController {
 
     if (btnTest) btnTest.classList.remove('hidden');
 
-    const avatarSrc = contact.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80';
+    const avatarSrc = contact.avatar || '/uploads/avatar_hieu.jpg';
     if (nameEl) nameEl.textContent = contact.name;
     if (avatarEl) avatarEl.src = avatarSrc;
     if (remoteAvatarEl) remoteAvatarEl.src = avatarSrc;
@@ -631,7 +631,7 @@ class CallController {
       this.incomingCaller = {
         id: sender_id,
         name: payload?.callerName || 'Người dùng SEE LAD',
-        avatar: payload?.callerAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+        avatar: payload?.callerAvatar || '/uploads/avatar_hieu.jpg',
         type: payload?.type || 'voice',
         sdp: payload?.sdp,
         remoteFilter: payload?.filter

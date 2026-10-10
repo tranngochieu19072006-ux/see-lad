@@ -49,7 +49,7 @@ class QRStudioController {
       id: 'user',
       username: 'seelad_user',
       name: 'Người dùng SEE LAD',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      avatar: '/uploads/avatar_hieu.jpg',
       bio: 'Thành viên kết nối trên SEE LAD 🌟',
       location_name: 'TP. Hồ Chí Minh'
     };

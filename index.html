@@ -415,7 +415,7 @@
         <div class="relative shrink-0">
           <button id="current-status-btn" class="flex items-center gap-2 p-1 sm:p-1.5 sm:pr-3 rounded-xl glass hover:bg-white/10 border border-[var(--border-color)] transition-all shrink-0">
             <div class="relative w-7 h-7 sm:w-8 sm:h-8 shrink-0">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';" class="w-7 h-7 sm:w-8 sm:h-8 min-w-[28px] rounded-lg object-cover user-display-avatar shrink-0" alt="Avatar" />
+              <img src="/uploads/avatar_hieu.jpg" onerror="this.onerror=null; this.src='/uploads/avatar_hieu.jpg';" class="w-7 h-7 sm:w-8 sm:h-8 min-w-[28px] rounded-lg object-cover user-display-avatar shrink-0" alt="Avatar" />
               <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[var(--bg-secondary)] user-status-dot status-online"></span>
             </div>
             <div class="text-left hidden sm:block whitespace-nowrap">
@@ -576,7 +576,7 @@
               <div class="flex p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-pink-900/30 border border-indigo-500/30 items-center justify-between gap-2 shadow-md">
                 <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
                   <div class="relative shrink-0 cursor-pointer group" onclick="document.getElementById('quick-avatar-upload-input').click()" title="Bấm để đổi ảnh đại diện">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';" class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl object-cover border-2 border-indigo-500/80 user-display-avatar shadow-md" alt="Avatar" />
+                    <img src="/uploads/avatar_hieu.jpg" onerror="this.onerror=null; this.src='/uploads/avatar_hieu.jpg';" class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl object-cover border-2 border-indigo-500/80 user-display-avatar shadow-md" alt="Avatar" />
                     <div class="absolute inset-0 rounded-lg sm:rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
                       <i data-lucide="camera" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                     </div>
@@ -935,7 +935,8 @@
             <div class="glass rounded-2xl p-3 sm:p-3.5 border border-white/10 shadow-md">
               <form id="feed-composer-form" class="space-y-2.5">
                 <div class="flex items-start gap-2.5">
-                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" 
+                  <img src="/uploads/avatar_hieu.jpg" 
+                       onerror="this.onerror=null; this.src='/uploads/avatar_hieu.jpg';"
                        class="w-9 h-9 rounded-xl object-cover user-display-avatar shrink-0 border border-white/15 cursor-pointer shadow-sm hover:scale-105 transition-transform" 
                        onclick="window.app.switchTab('profile')" 
                        title="Bấm để vào Trang cá nhân" />
@@ -1104,7 +1105,7 @@
                         </div>
                       </div>
 
-                      <img id="profile-card-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900 group-hover:scale-105 transition-transform" />
+                      <img id="profile-card-avatar" src="/uploads/avatar_hieu.jpg" onerror="this.onerror=null; this.src='/uploads/avatar_hieu.jpg';" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900 group-hover:scale-105 transition-transform" />
                       <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-900 shadow" title="Đang trực tuyến"></span>
                       <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <i data-lucide="maximize-2" class="w-5 h-5 text-white"></i>
@@ -1762,7 +1763,7 @@
         <div id="call-remote-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#0f172a]/90 to-[#070b14]/95 pointer-events-none transition-opacity duration-300">
           <div class="relative mb-3">
             <div class="absolute -inset-2 rounded-full bg-indigo-500/25 animate-ping"></div>
-            <img id="call-video-remote-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-cyan-400 shadow-2xl" />
+            <img id="call-video-remote-avatar" src="/uploads/avatar_hieu.jpg" class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-cyan-400 shadow-2xl" />
           </div>
           <p id="call-remote-placeholder-text" class="text-xs font-semibold text-slate-300">Đang đổ chuông tới đối phương...</p>
         </div>

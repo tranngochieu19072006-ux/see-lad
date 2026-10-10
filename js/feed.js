@@ -332,8 +332,8 @@ class FeedController {
           <!-- Post Author Header (Compact & Crisp) -->
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="window.feed.viewAuthorProfile('${post.user_id}')">
-              <img src="${post.author_avatar || 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=122128466805379955&height=400&width=400&ext=1794016963&hash=Afta4ttski_csNqAIQEYN9za'}" 
-                   onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" 
+              <img src="${post.author_avatar || '/uploads/avatar_hieu.jpg'}" 
+                   onerror="this.src='/uploads/avatar_hieu.jpg'" 
                    class="w-9 h-9 rounded-xl object-cover border border-white/15 shrink-0 shadow-sm" />
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5 flex-wrap leading-tight">
@@ -406,8 +406,8 @@ class FeedController {
             <div class="space-y-1 max-h-56 overflow-y-auto custom-scrollbar" id="comments-list-${post.id}">
               ${(post.comments || []).map(c => `
                 <div class="flex items-start gap-2 bg-white/[0.03] px-2.5 py-1.5 rounded-xl border border-white/5 text-xs">
-                  <img src="${c.author_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}" 
-                       onerror="this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'" 
+                  <img src="${c.author_avatar || '/uploads/avatar_hieu.jpg'}" 
+                       onerror="this.src='/uploads/avatar_hieu.jpg'" 
                        class="w-5 h-5 rounded-lg object-cover shrink-0 mt-0.5 cursor-pointer hover:scale-105 transition-transform" 
                        onclick="if('${c.user_id}') window.feed.openUserProfile('${c.user_id}')" 
                        title="Xem trang cá nhân" />
@@ -571,7 +571,7 @@ class FeedController {
           const div = document.createElement('div');
           div.className = "flex items-start gap-2 bg-white/[0.03] px-3 py-1.5 rounded-xl border border-white/5 text-xs animate-fade-in";
           div.innerHTML = `
-            <img src="${data.comment.author_avatar || currentUser.avatar}" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" class="w-6 h-6 rounded-lg object-cover shrink-0 mt-0.5" />
+            <img src="${data.comment.author_avatar || currentUser.avatar}" onerror="this.src='/uploads/avatar_hieu.jpg'" class="w-6 h-6 rounded-lg object-cover shrink-0 mt-0.5" />
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-1">
                 <span class="font-bold text-white text-[11px] truncate">${this.escapeHtml(data.comment.author_name || currentUser.name)}</span>
@@ -719,7 +719,7 @@ class FeedController {
     const avatarEl = document.getElementById('profile-card-avatar');
     const fallbackAvatar = (user.name && (user.name.includes('Kiệt') || user.name.includes('kiet')))
       ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
-      : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+      : '/uploads/avatar_hieu.jpg';
     if (avatarEl) {
       avatarEl.src = user.avatar || fallbackAvatar;
       avatarEl.style.imageRendering = '-webkit-optimize-contrast';
@@ -922,8 +922,8 @@ class FeedController {
         <article class="glass rounded-2xl p-3 sm:p-3.5 border border-white/10 hover:border-white/20 transition-all shadow-md space-y-2" id="profile-post-card-${post.id}">
           <div class="flex items-center justify-between gap-2.5">
             <div class="flex items-center gap-2.5 min-w-0">
-              <img src="${post.author_avatar || user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}" 
-                   onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'" 
+              <img src="${post.author_avatar || user.avatar || '/uploads/avatar_hieu.jpg'}" 
+                   onerror="this.src='/uploads/avatar_hieu.jpg'" 
                    class="w-9 h-9 rounded-xl object-cover border border-white/15 shrink-0 shadow-sm" />
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5 flex-wrap leading-tight">
@@ -983,8 +983,8 @@ class FeedController {
             <div class="space-y-1 max-h-56 overflow-y-auto custom-scrollbar" id="comments-list-${post.id}">
               ${(post.comments || []).map(c => `
                 <div class="flex items-start gap-2 bg-white/[0.03] px-2.5 py-1.5 rounded-xl border border-white/5 text-xs">
-                  <img src="${c.author_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}" 
-                       onerror="this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'" 
+                  <img src="${c.author_avatar || '/uploads/avatar_hieu.jpg'}" 
+                       onerror="this.src='/uploads/avatar_hieu.jpg'" 
                        class="w-5 h-5 rounded-lg object-cover shrink-0 mt-0.5 cursor-pointer hover:scale-105 transition-transform" 
                        onclick="if('${c.user_id}') window.feed.openUserProfile('${c.user_id}')" 
                        title="Xem trang cá nhân" />
@@ -1030,7 +1030,7 @@ class FeedController {
     const user = isGuest ? this.viewingUser : currentUser;
     const fallbackAvatar = (user.name && (user.name.includes('Kiệt') || user.name.includes('kiet')))
       ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
-      : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+      : '/uploads/avatar_hieu.jpg';
     const avatarUrl = user.avatar || fallbackAvatar;
     this.openLightbox(avatarUrl, `${user.name || 'Người dùng'} - Ảnh đại diện Full HD`);
   }
@@ -1518,7 +1518,7 @@ class FeedController {
   openAvatarAdjustModal(imageSrc = null) {
     if (this.viewingUserId && this.viewingUserId !== this.getCurrentUser().id) return;
     const user = this.getCurrentUser();
-    const src = imageSrc || user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+    const src = imageSrc || user.avatar || '/uploads/avatar_hieu.jpg';
     const modal = document.getElementById('modal-avatar-adjuster');
     const previewImg = document.getElementById('avatar-crop-preview-img');
     const slider = document.getElementById('avatar-zoom-slider');

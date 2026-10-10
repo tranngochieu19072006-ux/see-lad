@@ -12,7 +12,7 @@ window.SEE_LAD_CONFIG = {
     id: "user_guest",
     name: "Người dùng SEE LAD",
     username: "@seelad_user",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+    avatar: "/uploads/avatar_hieu.jpg",
     bio: "Chào mừng bạn đến với mạng xã hội SEE LAD!",
     status: "online", // 'online' | 'busy' | 'offline'
     phone: "+84 900 888 999",

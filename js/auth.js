@@ -28,12 +28,12 @@ class AuthController {
           this.currentUser = JSON.parse(savedUser);
           this.status = this.currentUser.status || 'online';
 
-          // Tự động làm sạch và sửa avatar bị hỏng hoặc chứa mã ui-avatars / Facebook 401
+          // Tự động làm sạch và sửa avatar bị hỏng hoặc chứa mã ui-avatars / Facebook 401 / ảnh bot AI cũ
           const rawAv = (this.currentUser.avatar || '').trim();
-          if (!rawAv || rawAv.includes('ui-avatars.com') || rawAv.includes('platform-lookaside.fbsbx.com') || rawAv.includes('photo-1535713875002-d1d0cf377fde')) {
+          if (!rawAv || rawAv.includes('ui-avatars.com') || rawAv.includes('platform-lookaside.fbsbx.com') || rawAv.includes('photo-1535713875002-d1d0cf377fde') || rawAv.includes('photo-1534528741775-53994a69daeb')) {
             this.currentUser.avatar = (this.currentUser.name && (this.currentUser.name.includes('Kiệt') || this.currentUser.name.includes('kiet')))
               ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
-              : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+              : '/uploads/avatar_hieu.jpg';
             this.saveUser();
           }
 
@@ -390,14 +390,14 @@ class AuthController {
 
     let name = 'Trần Ngọc Hiếu';
     let email = 'tranngochieu19072006@gmail.com';
-    let avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+    let avatar = '/uploads/avatar_hieu.jpg';
 
     // Nếu người dùng đã gõ email riêng vào ô email thì dùng email đó
     if (enteredEmail && enteredEmail.includes('@')) {
       email = enteredEmail;
       const raw = email.split('@')[0];
       name = raw.charAt(0).toUpperCase() + raw.slice(1);
-      avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+      avatar = '/uploads/avatar_hieu.jpg';
     }
 
     const providerNames = { google: 'Google', facebook: 'Facebook', github: 'GitHub' };
@@ -641,10 +641,10 @@ class AuthController {
     if (!this.currentUser) return;
 
     const rawAv = (this.currentUser.avatar || '').trim();
-    if (!rawAv || rawAv.includes('ui-avatars.com') || rawAv.includes('platform-lookaside.fbsbx.com') || rawAv.includes('photo-1535713875002-d1d0cf377fde')) {
+    if (!rawAv || rawAv.includes('ui-avatars.com') || rawAv.includes('platform-lookaside.fbsbx.com') || rawAv.includes('photo-1535713875002-d1d0cf377fde') || rawAv.includes('photo-1534528741775-53994a69daeb')) {
       this.currentUser.avatar = (this.currentUser.name && (this.currentUser.name.includes('Kiệt') || this.currentUser.name.includes('kiet')))
         ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
-        : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+        : '/uploads/avatar_hieu.jpg';
       this.saveUser();
     }
 
@@ -655,7 +655,7 @@ class AuthController {
       el.src = currentAv;
       el.onerror = () => {
         el.onerror = null;
-        el.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+        el.src = '/uploads/avatar_hieu.jpg';
       };
     });
 
