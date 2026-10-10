@@ -3149,6 +3149,8 @@ def api_update_user_profile():
     avatar = data.get('avatar', '').strip()
     location_name = data.get('location_name', '').strip()
     profile_note = data.get('profile_note')
+    raw_username = data.get('username')
+    username = raw_username.strip().replace('@', '').lower() if raw_username else None
 
     if not user_id:
         return jsonify({'error': 'user_id required'}), 400
@@ -3157,6 +3159,15 @@ def api_update_user_profile():
     c = conn.cursor()
     updates = []
     params = []
+
+    if username:
+        c.execute('SELECT id FROM users WHERE lower(username) = ? AND id != ?', (username, user_id))
+        if c.fetchone():
+            conn.close()
+            return jsonify({'error': f'ID / Tên người dùng @{username} đã có người sử dụng. Vui lòng chọn tên khác.'}), 400
+        updates.append('username = ?')
+        params.append(username)
+
     if name:
         updates.append('name = ?')
         params.append(name)

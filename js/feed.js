@@ -848,12 +848,12 @@ class FeedController {
       } else {
         // Own profile
         actionsContainer.innerHTML = `
-          <button type="button" id="btn-edit-profile-modal" onclick="window.feed.openEditProfileModal()" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-white/10 shadow-sm cursor-pointer">
+          <button type="button" id="btn-edit-profile-modal" onclick="window.feed.openEditProfileModal()" class="px-3.5 py-1.5 sm:py-2 rounded-xl bg-white/10 hover:bg-white/15 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 transition-all border border-white/15 shadow-sm hover:border-amber-400/50 hover:shadow-amber-500/10 backdrop-blur-md cursor-pointer">
             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-400"></i>
             <span>Chỉnh sửa hồ sơ</span>
           </button>
-          <button type="button" onclick="window.app.switchTab('feed')" class="px-3.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 text-xs font-bold flex items-center gap-1.5 transition-all border border-indigo-500/30 shadow-sm cursor-pointer">
-            <i data-lucide="book-heart" class="w-3.5 h-3.5"></i>
+          <button type="button" onclick="window.app.switchTab('feed')" class="px-3.5 py-1.5 sm:py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 active:scale-95 text-indigo-200 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all border border-indigo-500/30 shadow-sm backdrop-blur-md cursor-pointer">
+            <i data-lucide="book-heart" class="w-3.5 h-3.5 text-indigo-400"></i>
             <span>Đến Nhật ký</span>
           </button>
         `;
@@ -1199,30 +1199,60 @@ class FeedController {
     if (locationEl) locationEl.textContent = user.location_name || 'Việt Nam';
   }
 
+  copyUserHandle() {
+    const isGuest = !!(this.viewingUserId && this.viewingUser && this.viewingUserId !== this.getCurrentUser().id);
+    const user = isGuest ? this.viewingUser : this.getCurrentUser();
+    const handle = user.username ? (user.username.startsWith('@') ? user.username : '@' + user.username) : '@user';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(handle).then(() => {
+        if (window.app) window.app.showToast(`Đã sao chép ID: ${handle} 📋`);
+      }).catch(() => {
+        if (window.app) window.app.showToast(`ID người dùng: ${handle}`);
+      });
+    } else {
+      if (window.app) window.app.showToast(`ID người dùng: ${handle}`);
+    }
+  }
+
   openEditProfileModal() {
     const user = this.getCurrentUser();
     const nameInput = document.getElementById('edit-profile-name');
+    const usernameInput = document.getElementById('edit-profile-username');
     const bioInput = document.getElementById('edit-profile-bio');
     const locInput = document.getElementById('edit-profile-location');
+    const noteInput = document.getElementById('edit-profile-note');
     const modal = document.getElementById('modal-edit-profile');
 
     if (nameInput) nameInput.value = user.name || '';
+    if (usernameInput) usernameInput.value = (user.username || '').toString().replace(/^@/, '');
     if (bioInput) bioInput.value = user.bio || '';
     if (locInput) locInput.value = user.location_name || '';
-    if (modal) modal.classList.remove('hidden');
+    if (noteInput) noteInput.value = user.profile_note || '';
+
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      modal.style.zIndex = '9999';
+    }
+    if (window.lucide) window.lucide.createIcons();
   }
 
   closeEditProfileModal() {
     const modal = document.getElementById('modal-edit-profile');
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    }
   }
 
   async handleSaveProfile(e) {
     e.preventDefault();
     const user = this.getCurrentUser();
     const name = document.getElementById('edit-profile-name')?.value.trim();
+    const username = document.getElementById('edit-profile-username')?.value.trim().replace(/^@/, '');
     const bio = document.getElementById('edit-profile-bio')?.value.trim();
     const location = document.getElementById('edit-profile-location')?.value.trim();
+    const note = document.getElementById('edit-profile-note')?.value.trim();
 
     try {
       const res = await fetch('/api/users/update_profile', {
@@ -1231,22 +1261,32 @@ class FeedController {
         body: JSON.stringify({
           user_id: user.id,
           name: name,
+          username: username,
           bio: bio,
-          location_name: location
+          location_name: location,
+          profile_note: note
         })
       });
       const data = await res.json();
+      if (!res.ok || data.error) {
+        if (window.app) window.app.showToast(data.error || "Không thể cập nhật hồ sơ", "error");
+        else alert(data.error || "Không thể cập nhật hồ sơ");
+        return;
+      }
+
       if (data.success && data.user) {
         if (window.auth && window.auth.currentUser) {
           Object.assign(window.auth.currentUser, data.user);
           localStorage.setItem('see_lad_user', JSON.stringify(window.auth.currentUser));
+          window.auth.updateUserUI();
         }
         this.renderProfileCard();
         this.closeEditProfileModal();
-        if (window.app) window.app.showToast("Đã cập nhật trang cá nhân thành công! ✨");
+        if (window.app) window.app.showToast("Đã lưu thông tin trang cá nhân thành công! ✨");
       }
-    } catch (e) {
-      console.error("Save profile error:", e);
+    } catch (err) {
+      console.error("Save profile error:", err);
+      if (window.app) window.app.showToast("Lỗi kết nối máy chủ", "error");
     }
   }
 
