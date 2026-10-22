@@ -17,6 +17,7 @@ from datetime import datetime
 import collections
 import requests
 import secrets
+import threading
 from flask import Flask, request, jsonify, Response, send_from_directory, render_template, redirect
 
 # Initialize Flask app
@@ -503,6 +504,34 @@ def api_get_public_url():
             except Exception:
                 pass
     return jsonify({'public_url': public_url})
+
+@app.route('/ping')
+@app.route('/api/health')
+def api_ping():
+    return jsonify({
+        'status': 'ok',
+        'service': 'SEE LAD',
+        'time': time.time(),
+        'uptime_message': 'Server is actively running 24/7'
+    })
+
+def keep_alive_ping_worker():
+    """Background worker to keep Render free tier alive 24/7 by pinging itself"""
+    time.sleep(60)
+    render_url = os.environ.get('RENDER_EXTERNAL_URL') or 'https://see-lad.onrender.com'
+    ping_url = f"{render_url.rstrip('/')}/ping"
+    while True:
+        try:
+            time.sleep(600)
+            res = requests.get(ping_url, timeout=20)
+            print(f"[Keep-Alive] Pinged {ping_url} -> Status {res.status_code}")
+        except Exception as e:
+            print(f"[Keep-Alive] Ping note: {e}")
+
+try:
+    threading.Thread(target=keep_alive_ping_worker, daemon=True).start()
+except Exception:
+    pass
 
 @app.route('/api/qr/matrix', methods=['GET'])
 def api_get_qr_matrix():
