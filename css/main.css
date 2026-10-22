@@ -477,17 +477,35 @@ html, body {
 
 /* Leaflet Map Dark/Light styling overrides */
 .leaflet-container {
-  background-color: var(--bg-primary) !important;
+  background-color: #0f172a !important;
   font-family: var(--font-main) !important;
 }
 
-[data-theme="dark"] .leaflet-tile {
-  filter: brightness(0.6) invert(1) contrast(2.5) hue-rotate(200deg) saturate(0.4) brightness(0.75) !important;
+.leaflet-tile {
+  filter: contrast(1.04) saturate(1.08) !important;
 }
 
-[data-theme="light"] .leaflet-tile {
-  filter: none !important;
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.96) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(99, 102, 241, 0.35) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;
 }
+
+@keyframes eq-bar {
+  0%, 100% { height: 4px; }
+  50% { height: 14px; }
+}
+.music-eq-bar {
+  width: 2.5px;
+  background: #22d3ee;
+  border-radius: 999px;
+  animation: eq-bar 0.7s ease-in-out infinite;
+}
+.music-eq-bar:nth-child(2) { animation-delay: 0.2s; }
+.music-eq-bar:nth-child(3) { animation-delay: 0.4s; }
 
 /* Theme switch slider */
 .theme-toggle-slider {
@@ -652,7 +670,28 @@ html, body {
   animation: noteFloat 3.6s ease-in-out infinite;
   transform-origin: bottom center;
 }
+/* ==========================================================================
+   MOBILE STREAK & HORIZONTAL SCROLL UTILITIES
+   ========================================================================== */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
+@keyframes flamePulseGlow {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.6));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.9));
+  }
+}
 
-
-
+.flame-pulse-anim {
+  animation: flamePulseGlow 2.2s ease-in-out infinite;
+}

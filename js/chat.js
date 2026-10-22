@@ -1328,7 +1328,30 @@ class ChatController {
   async selectChat(chatId) {
     this.activeChatId = chatId;
     localStorage.setItem('seelad_active_chat_id', chatId);
-    const target = this.contacts.find(c => c.id === chatId);
+    let target = this.contacts.find(c => c.id === chatId);
+    if (!target) {
+      await this.loadContacts();
+      target = this.contacts.find(c => c.id === chatId);
+    }
+    if (!target) {
+      try {
+        const uRes = await fetch(`/api/users/profile/${encodeURIComponent(chatId)}`);
+        if (uRes.ok) {
+          const uData = await uRes.json();
+          if (uData && (uData.id || uData.username)) {
+            target = {
+              id: uData.id || chatId,
+              name: uData.name || 'Bạn bè',
+              username: uData.username || 'user',
+              avatar: uData.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${chatId}`,
+              status: uData.status || 'online',
+              isGroup: false
+            };
+            this.contacts.push(target);
+          }
+        }
+      } catch (err) {}
+    }
     if (!target) return;
 
     this.syncResponsiveChatLayout();
@@ -1365,6 +1388,7 @@ class ChatController {
       }
     }
 
+    this.updateActiveChatStreakBadge();
     this.updateBlockUI();
     this.updatePinnedBannerUI();
     this.applyActiveChatTheme(target.chatTheme || 'theme-cyber-indigo');
@@ -1372,6 +1396,45 @@ class ChatController {
 
     await this.fetchMessagesForChat(chatId, target.isGroup);
     if (window.lucide) window.lucide.createIcons();
+  }
+
+  updateActiveChatStreakBadge() {
+    const activeStreakBadge = document.getElementById('active-chat-streak-badge');
+    const activeStreakCount = document.getElementById('active-chat-streak-count');
+    if (!activeStreakBadge) return;
+
+    if (!this.activeChatId) {
+      activeStreakBadge.classList.add('hidden');
+      return;
+    }
+
+    const target = this.contacts.find(c => c.id === this.activeChatId);
+    if (!target || target.isGroup) {
+      activeStreakBadge.classList.add('hidden');
+      return;
+    }
+
+    const userStreak = window.streak?.streaks?.find(s => s.friend_id === target.id);
+    const streakCount = userStreak ? (userStreak.streak_count || 0) : (target.streak_count || 0);
+    const streakStatus = userStreak ? userStreak.status : (target.streak_status || 'active');
+
+    if (streakStatus === 'lost') {
+      activeStreakBadge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 shrink-0';
+      if (activeStreakCount) activeStreakCount.textContent = 'Khôi phục';
+      activeStreakBadge.title = 'Chuỗi bị gián đoạn quá 48h • Bấm để khôi phục';
+      activeStreakBadge.classList.remove('hidden');
+    } else if (streakCount > 0) {
+      const tier = window.streak ? window.streak.getFlameTier(streakCount) : { badgeBg: 'bg-orange-500/20 text-orange-300 border-orange-400/40', name: 'Chuỗi lửa' };
+      activeStreakBadge.className = `inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer border shadow-sm ${tier.badgeBg} hover:opacity-90 shrink-0`;
+      if (activeStreakCount) activeStreakCount.textContent = `${streakCount} ngày`;
+      activeStreakBadge.title = `Chuỗi lửa tương tác 2 chiều: ${streakCount} ngày (${tier.name}) • Bấm để mở Bảng Xếp Hạng`;
+      activeStreakBadge.classList.remove('hidden');
+    } else {
+      activeStreakBadge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold cursor-pointer bg-slate-800/60 text-slate-400 border border-slate-700/60 hover:text-orange-300 shrink-0';
+      if (activeStreakCount) activeStreakCount.textContent = '0 ngày';
+      activeStreakBadge.title = 'Chưa có chuỗi • Nhắn tin qua lại hàng ngày để tạo chuỗi!';
+      activeStreakBadge.classList.remove('hidden');
+    }
   }
 
   closeMobileChat() {
@@ -1391,12 +1454,32 @@ class ChatController {
     }
   }
 
+  getDeletedMsgIdsForChat(chatId) {
+    try {
+      const map = JSON.parse(localStorage.getItem('see_lad_deleted_msg_ids_v1') || '{}');
+      return new Set(map[chatId] || []);
+    } catch (e) {
+      return new Set();
+    }
+  }
+
+  getArchivedMessagesForChatLocal(chatId) {
+    try {
+      const map = JSON.parse(localStorage.getItem('see_lad_archived_chats_v1') || '{}');
+      return Array.isArray(map[chatId]) ? map[chatId] : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   async fetchMessagesForChat(chatId, isGroup = false) {
     const currentUserId = window.auth?.currentUser?.id || 'user_hieu';
     try {
       const res = await fetch(`/api/messages?user_id=${currentUserId}&target_id=${chatId}&is_group=${isGroup ? 'true' : 'false'}`);
       const data = await res.json();
-      this.messages[chatId] = data.messages || [];
+      const rawMsgs = data.messages || [];
+      const deletedSet = this.getDeletedMsgIdsForChat(chatId);
+      this.messages[chatId] = rawMsgs.filter(m => !deletedSet.has(String(m.id)));
       this.renderMessages();
     } catch (e) {
       console.warn("Could not fetch messages from DB:", e);
@@ -1408,19 +1491,36 @@ class ChatController {
     const container = document.getElementById('chat-messages-container');
     if (!container) return;
 
-    const msgs = this.messages[this.activeChatId] || [];
+    const deletedSet = this.getDeletedMsgIdsForChat(this.activeChatId);
+    const msgs = (this.messages[this.activeChatId] || []).filter(m => !deletedSet.has(String(m.id)));
     const currentUserId = window.auth?.currentUser?.id || 'user_hieu';
 
     if (msgs.length === 0) {
       const activeContact = this.contacts.find(c => c.id === this.activeChatId);
       const contactName = activeContact ? (activeContact.nickname || activeContact.name) : 'Người dùng';
-      const contactAvatar = activeContact ? activeContact.avatar : '/uploads/avatar_hieu.jpg';
+      const contactAvatar = activeContact ? activeContact.avatar : (window.HIEU_REAL_AVATAR || '/uploads/avatar_hieu.jpg');
+      const archivedLocal = this.getArchivedMessagesForChatLocal(this.activeChatId);
+      const archivedBannerHtml = archivedLocal.length > 0 ? `
+        <div class="w-full mb-4 p-3 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-between gap-2 text-left">
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+              <i data-lucide="archive" class="w-3.5 h-3.5 shrink-0"></i>
+              <span>Đã lưu ${archivedLocal.length} tin nhắn cũ</span>
+            </p>
+            <p class="text-[10px] text-slate-300 mt-0.5">Đoạn chat đã được làm mới, toàn bộ tin nhắn cũ vẫn được lưu trữ an toàn.</p>
+          </div>
+          <button type="button" onclick="window.chat.openArchivedMessagesModal()" class="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-[11px] font-bold shrink-0 shadow cursor-pointer transition-all">
+            Xem tin cũ
+          </button>
+        </div>
+      ` : '';
 
       container.innerHTML = `
         <div class="h-full flex flex-col items-center justify-center text-center p-4 sm:p-8 animate-fade-in">
           <div class="max-w-md w-full glass p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl flex flex-col items-center">
+            ${archivedBannerHtml}
             <div class="relative mb-3 cursor-pointer group/avatar" onclick="if(window.feed && window.chat && window.chat.activeChatId && !window.chat.contacts?.find(c => c.id === window.chat.activeChatId)?.isGroup) window.feed.openUserProfile(window.chat.activeChatId)" title="Bấm để xem trang cá nhân của ${contactName}">
-              <img src="${contactAvatar}" onerror="this.onerror=null; this.src='/uploads/avatar_hieu.jpg';" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-indigo-500/50 group-hover/avatar:border-cyan-400 group-hover/avatar:scale-105 shadow-xl transition-all" alt="${contactName}" />
+              <img src="${contactAvatar}" onerror="this.onerror=null; this.src=(window.HIEU_REAL_AVATAR || '/uploads/avatar_hieu.jpg');" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-indigo-500/50 group-hover/avatar:border-cyan-400 group-hover/avatar:scale-105 shadow-xl transition-all" alt="${contactName}" />
               <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-[#0f172a] flex items-center justify-center">
                 <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
               </div>
@@ -1878,6 +1978,7 @@ class ChatController {
         this.renderMessages();
         this.renderConversationList();
         if (window.streak) window.streak.loadStreaks();
+        this.updateActiveChatStreakBadge();
       }
     } catch (e) {
       console.error("Message send error:", e);
@@ -1940,6 +2041,7 @@ class ChatController {
     }
 
     if (window.streak) window.streak.loadStreaks();
+    this.updateActiveChatStreakBadge();
 
     if (this.activeChatId === convId) {
       this.renderMessages();
@@ -2311,6 +2413,209 @@ class ChatController {
     }
     if (modal) modal.classList.remove('hidden');
     if (input) setTimeout(() => input.focus(), 100);
+  }
+
+  /**
+   * Xóa đoạn chat hiện tại và tự động lưu toàn bộ tin nhắn cũ vào Kho lưu trữ
+   */
+  async deleteAndArchiveActiveChat() {
+    const dropdown = document.getElementById('chat-options-dropdown');
+    if (dropdown) dropdown.classList.add('hidden');
+
+    if (!this.activeChatId && this.contacts && this.contacts.length > 0) {
+      this.activeChatId = this.contacts[0].id;
+    }
+    const chatId = this.activeChatId;
+    if (!chatId) {
+      if (window.app) window.app.showToast('Vui lòng chọn một cuộc trò chuyện!', 'warning');
+      return;
+    }
+
+    const currentUser = this.getCurrentUser();
+    const currentMsgs = this.messages[chatId] || [];
+
+    // 1. Lưu toàn bộ tin nhắn hiện tại vào Kho tin nhắn cũ trên thiết bị (localStorage)
+    try {
+      const archiveMap = JSON.parse(localStorage.getItem('see_lad_archived_chats_v1') || '{}');
+      const existingArchive = Array.isArray(archiveMap[chatId]) ? archiveMap[chatId] : [];
+      const existingIds = new Set(existingArchive.map(m => String(m.id)));
+      const nowLabel = new Date().toLocaleString('vi-VN');
+
+      currentMsgs.forEach(m => {
+        if (!existingIds.has(String(m.id))) {
+          existingArchive.push({
+            ...m,
+            archived_at: nowLabel
+          });
+          existingIds.add(String(m.id));
+        }
+      });
+      archiveMap[chatId] = existingArchive;
+      localStorage.setItem('see_lad_archived_chats_v1', JSON.stringify(archiveMap));
+
+      // Đánh dấu các ID tin nhắn đã xóa khỏi khung chat chính
+      const deletedMap = JSON.parse(localStorage.getItem('see_lad_deleted_msg_ids_v1') || '{}');
+      const delSet = new Set(deletedMap[chatId] || []);
+      currentMsgs.forEach(m => delSet.add(String(m.id)));
+      deletedMap[chatId] = Array.from(delSet);
+      localStorage.setItem('see_lad_deleted_msg_ids_v1', JSON.stringify(deletedMap));
+    } catch (err) {
+      console.warn('Archive localStorage error:', err);
+    }
+
+    // 2. Đồng bộ lưu trữ & xóa đoạn chat trên Server SQLite
+    try {
+      await fetch('/api/messages/delete_and_archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: currentUser.id,
+          target_id: chatId
+        })
+      });
+    } catch (e) {
+      console.warn('Server archive chat fallback:', e);
+    }
+
+    // 3. Làm trống khung chat hiện tại và cập nhật giao diện
+    this.messages[chatId] = [];
+    const contact = this.contacts.find(c => c.id === chatId);
+    if (contact) {
+      contact.lastMessage = '📦 Đã xóa đoạn chat (Đã lưu tin cũ)';
+    }
+    this.renderConversationList();
+    this.renderMessages();
+
+    if (window.app) {
+      window.app.showToast('Đã xóa đoạn chat và lưu toàn bộ tin nhắn cũ vào Kho lưu trữ! 📦');
+    }
+  }
+
+  /**
+   * Mở Kho tin nhắn cũ đã lưu của cuộc trò chuyện hiện tại
+   */
+  async openArchivedMessagesModal() {
+    const dropdown = document.getElementById('chat-options-dropdown');
+    if (dropdown) dropdown.classList.add('hidden');
+
+    if (!this.activeChatId && this.contacts && this.contacts.length > 0) {
+      this.activeChatId = this.contacts[0].id;
+    }
+    const chatId = this.activeChatId;
+    const modal = document.getElementById('modal-archived-messages');
+    const listEl = document.getElementById('archived-messages-list');
+    const targetNameEl = document.getElementById('archived-chat-target-name');
+    if (!modal || !listEl) return;
+
+    const contact = this.contacts ? this.contacts.find(c => c.id === chatId) : null;
+    const contactName = contact ? contact.name : 'Bạn bè';
+    if (targetNameEl) {
+      targetNameEl.textContent = `Cuộc trò chuyện với ${contactName} • Tự động bảo toàn khi xóa chat`;
+    }
+
+    modal.classList.remove('hidden');
+    listEl.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">Đang tải kho tin nhắn cũ đã lưu...</div>`;
+
+    const currentUser = this.getCurrentUser();
+    let serverArchived = [];
+    try {
+      const res = await fetch(`/api/messages/archived?user_id=${encodeURIComponent(currentUser.id)}&target_id=${encodeURIComponent(chatId || '')}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.messages)) {
+          serverArchived = data.messages;
+        }
+      }
+    } catch (e) {}
+
+    const localArchived = this.getArchivedMessagesForChatLocal(chatId);
+    const mergedMap = new Map();
+    [...serverArchived, ...localArchived].forEach(m => {
+      if (m && (m.id || m.content || m.text || m.file_url)) {
+        const key = String(m.id || `${m.sender_id}_${m.timestamp}_${m.content}`);
+        mergedMap.set(key, m);
+      }
+    });
+
+    const archivedList = Array.from(mergedMap.values());
+    if (archivedList.length === 0) {
+      listEl.innerHTML = `
+        <div class="p-8 text-center space-y-2">
+          <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-slate-400">
+            <i data-lucide="archive" class="w-6 h-6"></i>
+          </div>
+          <p class="text-xs font-bold text-white">Chưa có tin nhắn cũ nào trong kho lưu trữ</p>
+          <p class="text-[11px] text-slate-400">Khi bạn bấm "Xóa đoạn chat", toàn bộ tin nhắn cũ sẽ tự động được lưu lại tại đây.</p>
+        </div>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    listEl.innerHTML = archivedList.map(m => {
+      const isMe = (m.sender_id || m.senderId) === currentUser.id;
+      const senderLabel = isMe ? 'Bạn' : contactName;
+      const text = m.content || m.text || (m.file_name ? `[Tệp đính kèm: ${m.file_name}]` : '[Đa phương tiện]');
+      const timeLabel = m.timestamp || m.archived_at || '';
+
+      return `
+        <div class="p-3 rounded-2xl ${isMe ? 'bg-indigo-600/20 border border-indigo-500/30 ml-6' : 'bg-white/[0.04] border border-white/10 mr-6'} space-y-1">
+          <div class="flex items-center justify-between gap-2 text-[10px]">
+            <span class="font-bold ${isMe ? 'text-indigo-300' : 'text-cyan-300'}">${this.escapeHtml(senderLabel)}</span>
+            <span class="text-slate-400 font-mono">${this.escapeHtml(timeLabel)}</span>
+          </div>
+          <p class="text-xs text-slate-100 break-words leading-relaxed">${this.escapeHtml(text)}</p>
+        </div>
+      `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  /**
+   * Khôi phục toàn bộ tin nhắn cũ đã lưu trở lại khung chat chính
+   */
+  async restoreArchivedMessagesToChat() {
+    const chatId = this.activeChatId;
+    if (!chatId) return;
+
+    const currentUser = this.getCurrentUser();
+    const localArchived = this.getArchivedMessagesForChatLocal(chatId);
+
+    try {
+      const deletedMap = JSON.parse(localStorage.getItem('see_lad_deleted_msg_ids_v1') || '{}');
+      delete deletedMap[chatId];
+      localStorage.setItem('see_lad_deleted_msg_ids_v1', JSON.stringify(deletedMap));
+    } catch (e) {}
+
+    try {
+      await fetch('/api/messages/restore_archived', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: currentUser.id,
+          target_id: chatId
+        })
+      });
+    } catch (e) {}
+
+    if (localArchived.length > 0) {
+      const existing = this.messages[chatId] || [];
+      const existingIds = new Set(existing.map(m => String(m.id)));
+      localArchived.forEach(m => {
+        if (!existingIds.has(String(m.id))) {
+          existing.push(m);
+        }
+      });
+      this.messages[chatId] = existing;
+    }
+
+    await this.fetchMessagesForChat(chatId, false);
+    this.renderMessages();
+
+    const modal = document.getElementById('modal-archived-messages');
+    if (modal) modal.classList.add('hidden');
+    if (window.app) window.app.showToast('Đã khôi phục toàn bộ tin nhắn cũ về lại khung chat! ✨');
   }
 }
 

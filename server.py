@@ -1804,14 +1804,14 @@ def api_get_friends():
     conn = get_db()
     c = conn.cursor()
 
-    # Get only real accepted friends of this user (new accounts start completely empty)
+    # Get only real accepted friends of this user (bidirectional)
     c.execute('''
-    SELECT u.id, u.username, u.name, u.avatar, u.bio, u.status, u.phone, u.lat, u.lng, u.location_name
+    SELECT DISTINCT u.id, u.username, u.name, u.avatar, u.bio, u.status, u.phone, u.lat, u.lng, u.location_name
     FROM users u
-    JOIN friendships f ON f.user2_id = u.id
-    WHERE f.user1_id = ? AND f.status = 'accepted'
+    JOIN friendships f ON ((f.user1_id = u.id AND f.user2_id = ?) OR (f.user2_id = u.id AND f.user1_id = ?))
+    WHERE f.status = 'accepted' AND u.id != ?
     ORDER BY u.last_seen DESC
-    ''', (user_id,))
+    ''', (user_id, user_id, user_id))
     friends = [dict(r) for r in c.fetchall()]
 
     for f in friends:
@@ -2088,14 +2088,17 @@ def api_get_streaks():
     conn = get_db()
     c = conn.cursor()
 
-    # Lấy danh sách bạn bè thật đã kết bạn
+    # Lấy danh sách bạn bè thật đã kết bạn (2 chiều)
     c.execute('''
-        SELECT u.id, u.name, u.username, u.avatar, u.status as user_status
+        SELECT DISTINCT u.id, u.name, u.username, u.avatar, u.status as user_status
         FROM users u
-        JOIN friendships f ON f.user2_id = u.id
-        WHERE f.user1_id = ? AND f.status = 'accepted'
-    ''', (user_id,))
+        JOIN friendships f ON ((f.user1_id = u.id AND f.user2_id = ?) OR (f.user2_id = u.id AND f.user1_id = ?))
+        WHERE f.status = 'accepted' AND u.id != ?
+    ''', (user_id, user_id, user_id))
     friends = [dict(r) for r in c.fetchall()]
+
+    for f in friends:
+        f['avatar'] = sanitize_avatar(f.get('avatar'), f.get('name'))
 
     streaks_list = []
     for f in friends:
@@ -2105,6 +2108,23 @@ def api_get_streaks():
             WHERE is_group = 0 AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))
         ''', (user_id, fid, fid, user_id))
         real_msg_cnt = c.fetchone()['cnt'] or 0
+
+        # Kiểm tra xem cả hai người đã cùng nhắn tin trong ngày hôm nay chưa
+        c.execute('''
+            SELECT COUNT(*) as cnt FROM messages
+            WHERE is_group = 0 AND sender_id = ? AND receiver_id = ?
+            AND date(created_at) = date('now')
+        ''', (user_id, fid))
+        user_sent_today = (c.fetchone()['cnt'] or 0) > 0
+
+        c.execute('''
+            SELECT COUNT(*) as cnt FROM messages
+            WHERE is_group = 0 AND sender_id = ? AND receiver_id = ?
+            AND date(created_at) = date('now')
+        ''', (fid, user_id))
+        friend_sent_today = (c.fetchone()['cnt'] or 0) > 0
+
+        has_messaged_today = user_sent_today and friend_sent_today
 
         c.execute('SELECT * FROM streaks WHERE user_id = ? AND friend_id = ?', (user_id, fid))
         st = c.fetchone()
@@ -2150,6 +2170,7 @@ def api_get_streaks():
             'minutes_left': minutes_left,
             'seconds_left': seconds_left,
             'status': status,
+            'has_messaged_today': has_messaged_today,
             'flame_tier': get_flame_tier(streak_count)
         })
 

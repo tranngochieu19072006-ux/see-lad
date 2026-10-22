@@ -133,6 +133,7 @@ class StreakController {
 
   updateSidebarBadge() {
     const navBadge = document.getElementById('nav-streak-total-badge');
+    const mobileBadge = document.getElementById('nav-streak-mobile-badge');
     const totalActive = this.streaks.reduce((acc, s) => acc + (s.status === 'active' ? (s.streak_count || 0) : 0), 0);
     if (navBadge) {
       if (totalActive > 0) {
@@ -141,6 +142,16 @@ class StreakController {
       } else {
         navBadge.classList.add('hidden');
       }
+    }
+    if (mobileBadge) {
+      if (totalActive > 0) {
+        mobileBadge.classList.remove('hidden');
+      } else {
+        mobileBadge.classList.add('hidden');
+      }
+    }
+    if (window.chat && typeof window.chat.updateActiveChatStreakBadge === 'function') {
+      window.chat.updateActiveChatStreakBadge();
     }
   }
 
@@ -163,11 +174,11 @@ class StreakController {
 
     if (this.streaks.length === 0) {
       leaderboardEl.innerHTML = `
-        <div class="glass p-8 rounded-3xl text-center border border-white/10">
-          <div class="w-16 h-16 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center mx-auto mb-3 text-3xl">🔥</div>
-          <h4 class="font-bold text-base text-white mb-1">Chưa có bạn bè để tạo chuỗi</h4>
-          <p class="text-xs text-slate-400 mb-4">Hãy kết bạn và cùng nhau nhắn tin qua lại hàng ngày để thắp sáng chuỗi lửa!</p>
-          <button onclick="window.app.switchTab('chat')" class="btn-gradient px-5 py-2.5 rounded-2xl text-xs font-bold">Mở Đoạn Chat</button>
+        <div class="glass p-6 sm:p-8 rounded-3xl text-center border border-white/10">
+          <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center mx-auto mb-3 text-2xl sm:text-3xl">🔥</div>
+          <h4 class="font-bold text-sm sm:text-base text-white mb-1">Chưa có bạn bè để tạo chuỗi</h4>
+          <p class="text-xs text-slate-400 mb-4 max-w-sm mx-auto">Hãy kết bạn và cùng nhau nhắn tin qua lại hàng ngày để thắp sáng chuỗi lửa!</p>
+          <button onclick="window.app && window.app.switchTab('chat')" class="btn-gradient px-4 py-2 sm:px-5 sm:py-2.5 rounded-2xl text-xs font-bold">Mở Đoạn Chat</button>
         </div>
       `;
       if (restoreListEl) restoreListEl.innerHTML = '';
@@ -184,37 +195,37 @@ class StreakController {
       const rankMedal = rank === 1 ? '🥇 TOP 1' : rank === 2 ? '🥈 TOP 2' : rank === 3 ? '🥉 TOP 3' : `#${rank}`;
 
       return `
-        <div class="glass p-4 rounded-2xl border ${isLost ? 'border-rose-500/30 bg-rose-950/10' : (rank === 1 ? 'border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-slate-900/40 to-indigo-500/10' : 'border-white/10')} transition-all hover:border-orange-400/40 shadow-lg">
+        <div class="glass p-3 sm:p-4 rounded-2xl border ${isLost ? 'border-rose-500/30 bg-rose-950/10' : (rank === 1 ? 'border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-slate-900/40 to-indigo-500/10' : 'border-white/10')} transition-all hover:border-orange-400/40 shadow-lg">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <!-- Left: Rank + Avatar + Friend Info -->
-            <div class="flex items-center gap-3 min-w-0">
+            <div class="flex items-start sm:items-center gap-2.5 sm:gap-3 min-w-0">
               <div class="flex flex-col items-center justify-center shrink-0">
-                <span class="px-2 py-0.5 rounded-lg text-[9px] font-extrabold ${rank === 1 ? 'bg-amber-500 text-slate-950 shadow-sm' : 'bg-white/10 text-slate-300'}">${rankMedal}</span>
+                <span class="px-1.5 sm:px-2 py-0.5 rounded-lg text-[8.5px] sm:text-[9px] font-extrabold ${rank === 1 ? 'bg-amber-500 text-slate-950 shadow-sm' : 'bg-white/10 text-slate-300'}">${rankMedal}</span>
                 <div class="relative mt-1">
-                  <img src="${s.friend_avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + s.friend_id}" class="w-12 h-12 rounded-2xl object-cover border-2 ${isLost ? 'border-slate-600 grayscale' : 'border-orange-400'}" alt="${this.escapeHtml(s.friend_name)}" />
-                  <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${isLost ? 'bg-slate-700' : 'bg-orange-500'} text-white text-[10px] flex items-center justify-center shadow">
+                  <img src="${s.friend_avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + s.friend_id}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl object-cover border-2 ${isLost ? 'border-slate-600 grayscale' : 'border-orange-400'}" alt="${this.escapeHtml(s.friend_name)}" />
+                  <span class="absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full ${isLost ? 'bg-slate-700' : 'bg-orange-500'} text-white text-[9px] sm:text-[10px] flex items-center justify-center shadow">
                     ${isLost ? '❄️' : '🔥'}
                   </span>
                 </div>
               </div>
 
               <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                  <h4 class="font-extrabold text-sm sm:text-base text-white truncate">${this.escapeHtml(s.friend_name)}</h4>
-                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-sm ${isLost ? 'bg-slate-800 text-slate-400 border-slate-700' : tier.badgeBg}">
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <h4 class="font-extrabold text-xs sm:text-base text-white truncate max-w-[140px] sm:max-w-none">${this.escapeHtml(s.friend_name)}</h4>
+                  <span class="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold border shadow-sm ${isLost ? 'bg-slate-800 text-slate-400 border-slate-700' : tier.badgeBg}">
                     ${isLost ? 'Đã tắt lửa (Quá 48h)' : tier.label}
                   </span>
                 </div>
 
-                <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
-                  <span>Hôm nay: ${s.has_messaged_today ? '✅ Cả hai đã tương tác' : '⏳ Cần nhắn tin để duy trì'}</span>
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-[10px] sm:text-[11px] text-slate-400">
+                  <span>Hôm nay: ${s.has_messaged_today ? '<span class="text-emerald-400 font-semibold">✅ Cả hai đã tương tác</span>' : '<span class="text-amber-400">⏳ Cần nhắn tin để duy trì</span>'}</span>
                   <span>•</span>
                   <span>Tổng trao đổi: <b class="text-white">${s.total_messages || 0}</b></span>
                 </div>
 
                 <!-- 48-Hour Countdown Bar -->
                 <div class="mt-2 max-w-sm">
-                  <div class="flex items-center justify-between text-[10px] mb-1">
+                  <div class="flex items-center justify-between text-[9.5px] sm:text-[10px] mb-1">
                     <span class="text-slate-400 flex items-center gap-1">
                       <i data-lucide="clock" class="w-3 h-3 ${isLost ? 'text-rose-400' : 'text-amber-400'}"></i>
                       <span>${isLost ? 'Đã gián đoạn chuỗi' : 'Hết hạn sau:'}</span>
@@ -231,28 +242,28 @@ class StreakController {
             </div>
 
             <!-- Right: Dynamic Animated Flame Badge & Chat Action -->
-            <div class="flex items-center sm:flex-col sm:items-end justify-between gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
+            <div class="flex items-center sm:flex-col sm:items-end justify-between gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
               <!-- Compact Flame Tip Badge with Animated Glow -->
-              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl ${isLost ? 'bg-white/5 border border-white/10' : 'bg-slate-900/80 border border-white/15'}" style="${!isLost ? `box-shadow: 0 0 16px ${tier.glowColor}; border-color: ${tier.color};` : ''}">
+              <div class="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl ${isLost ? 'bg-white/5 border border-white/10' : 'bg-slate-900/80 border border-white/15'}" style="${!isLost ? `box-shadow: 0 0 16px ${tier.glowColor}; border-color: ${tier.color};` : ''}">
                 <!-- Animated Flame Tip Icon -->
                 <div class="relative flex items-center justify-center">
-                  <svg class="w-6 h-6 ${!isLost ? 'animate-pulse' : 'opacity-40'}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 ${!isLost ? 'animate-pulse' : 'opacity-40'}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <!-- Flame Tip Glow -->
                     <path d="M12 2C8.5 7 6 9.5 6 13.5C6 17 8.7 20 12 20C15.3 20 18 17 18 13.5C18 9.5 15.5 7 12 2Z" fill="${isLost ? '#94a3b8' : tier.color}" opacity="0.9"/>
                     <!-- Inner Flame Core Animation -->
                     <path d="M12 8C10.5 11 9 12.5 9 15C9 17 10.3 18.5 12 18.5C13.7 18.5 15 17 15 15C15 12.5 13.5 11 12 8Z" fill="#ffffff" opacity="0.75" class="${!isLost ? 'animate-ping' : ''}"/>
                   </svg>
-                  ${!isLost && streakCount >= 30 ? '<span class="absolute -top-1 -right-1 text-[10px] animate-spin">✨</span>' : ''}
+                  ${!isLost && streakCount >= 30 ? '<span class="absolute -top-1 -right-1 text-[9px] animate-spin">✨</span>' : ''}
                 </div>
                 
-                <span class="font-heading font-extrabold text-xl ${isLost ? 'text-slate-400' : 'text-white'}" style="${!isLost ? `color: ${tier.color}` : ''}">
+                <span class="font-heading font-extrabold text-lg sm:text-xl ${isLost ? 'text-slate-400' : 'text-white'}" style="${!isLost ? `color: ${tier.color}` : ''}">
                   ${streakCount}
                 </span>
-                <span class="text-[10px] font-extrabold uppercase text-slate-400">ngày</span>
+                <span class="text-[9px] sm:text-[10px] font-extrabold uppercase text-slate-400">ngày</span>
               </div>
 
-              <!-- Action: Just direct clean Chat button -->
-              <button type="button" onclick="window.streak.openChatWithFriend('${s.friend_id}')" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md active:scale-95">
+              <!-- Action: Direct clean Chat button -->
+              <button type="button" onclick="window.streak.openChatWithFriend('${s.friend_id}')" class="px-3 sm:px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer">
                 <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
                 <span>Nhắn tin</span>
               </button>
@@ -272,17 +283,17 @@ class StreakController {
         `;
       } else {
         restoreListEl.innerHTML = lostList.map(s => `
-          <div class="p-3.5 rounded-2xl bg-black/40 border border-rose-500/30 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3 min-w-0">
-              <img src="${s.friend_avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + s.friend_id}" class="w-10 h-10 rounded-2xl object-cover border border-white/10" />
+          <div class="p-3 sm:p-3.5 rounded-2xl bg-black/40 border border-rose-500/30 flex items-center justify-between gap-2.5 sm:gap-3">
+            <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <img src="${s.friend_avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + s.friend_id}" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl object-cover border border-white/10 shrink-0" />
               <div class="min-w-0">
                 <h5 class="font-bold text-xs sm:text-sm text-white truncate">${this.escapeHtml(s.friend_name)}</h5>
-                <p class="text-[11px] text-slate-400">Đã quá 48h không tương tác</p>
+                <p class="text-[10px] sm:text-[11px] text-slate-400 truncate">Quá 48h không tương tác</p>
               </div>
             </div>
-            <button onclick="window.streak.restoreStreak('${s.friend_id}')" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shrink-0 flex items-center gap-1 shadow transition-all">
+            <button onclick="window.streak.restoreStreak('${s.friend_id}')" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[11px] sm:text-xs font-bold shrink-0 flex items-center gap-1 shadow transition-all cursor-pointer">
               <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-              <span>Khôi phục chuỗi</span>
+              <span>Khôi phục</span>
             </button>
           </div>
         `).join('');
@@ -312,7 +323,12 @@ class StreakController {
 
   openChatWithFriend(friendId) {
     if (window.app) window.app.switchTab('chat');
-    if (window.chat) window.chat.selectChat(friendId);
+    if (window.chat) {
+      window.chat.selectChat(friendId);
+      if (window.innerWidth < 768) {
+        window.chat.syncResponsiveChatLayout();
+      }
+    }
   }
 
   escapeHtml(str) {

@@ -99,10 +99,19 @@
     <!-- Top Bar with Skip Button -->
     <div class="relative z-10 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-          <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+        <div class="w-10 h-10 rounded-xl bg-slate-900 border border-white/15 flex items-center justify-center shadow-lg">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" stroke="url(#intro_logo_grad)" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M8.5 10.5L12 8.5L15.5 10.5L12 12.5L8.5 14.5L12 16.5L15.5 14.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="intro_logo_grad" x1="4" y1="3" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#38bdf8"/>
+                <stop offset="1" stop-color="#818cf8"/>
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
-        <span class="font-heading font-extrabold text-2xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-indigo-400">SEE LAD</span>
+        <span class="font-heading font-extrabold text-2xl tracking-tight text-white">SEE<span class="text-sky-400">LAD</span></span>
       </div>
       <button id="btn-skip-intro" class="px-5 py-2.5 rounded-full glass hover:bg-white/10 text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-2">
         <span>Bỏ qua</span>
@@ -345,36 +354,31 @@
     <!-- Top Global Header -->
     <header class="glass sticky top-0 z-30 px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-[var(--border-color)] flex items-center justify-between gap-2 shrink-0">
       <!-- App Brand Logo & Modern Wordmark -->
-      <div class="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0">
-        <!-- High-Clarity Custom SVG Emblem (Never squished) -->
-        <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-gradient-to-br from-[#1e1b4b] via-indigo-600 to-[#06b6d4] p-[1px] shadow-lg shadow-indigo-500/25">
-          <div class="w-full h-full rounded-[11px] bg-[#0b1021]/90 flex items-center justify-center relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-tr from-indigo-500/25 via-transparent to-cyan-400/25"></div>
-            <svg class="w-5 h-5 sm:w-5.5 sm:h-5.5 relative z-10" viewBox="0 0 24 24" fill="none">
-              <path d="M4 12C4 7.58172 7.58172 4 12 4H15C18.3137 4 21 6.68629 21 10C21 13.3137 18.3137 16 15 16H11L7 19.5V16C5.20507 15.0604 4 13.635 4 12Z" stroke="url(#seelad_grad1)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M13 7.5L10.5 11.5H14L11.5 15.5" stroke="#38e1e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <defs>
-                <linearGradient id="seelad_grad1" x1="4" y1="4" x2="21" y2="19.5" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#38e1e8"/>
-                  <stop offset="0.5" stop-color="#818cf8"/>
-                  <stop offset="1" stop-color="#ec4899"/>
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
+      <div class="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0 cursor-pointer group" onclick="window.app && window.app.switchTab('chat')">
+        <!-- Refined Minimalist Architectural Emblem -->
+        <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-slate-900/95 border border-white/15 group-hover:border-sky-400/50 flex items-center justify-center relative overflow-hidden shadow-md transition-all">
+          <div class="absolute inset-0 bg-gradient-to-br from-sky-500/15 via-transparent to-indigo-500/15"></div>
+          <svg class="w-5 h-5 sm:w-5.5 sm:h-5.5 relative z-10" viewBox="0 0 24 24" fill="none">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="url(#seelad_modern_grad)" stroke-width="1.75"/>
+            <path d="M8.5 9.25C8.5 8.00736 9.50736 7 10.75 7H14.5C15.3284 7 16 7.67157 16 8.5C16 9.32843 15.3284 10 14.5 10H10.5C9.39543 10 8.5 10.8954 8.5 12C8.5 13.1046 9.39543 14 10.5 14H13.25C14.4926 14 15.5 15.0074 15.5 16.25C15.5 16.6642 15.1642 17 14.75 17H9.5" stroke="#f8fafc" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="16.5" cy="7.5" r="1.5" fill="#38bdf8"/>
+            <defs>
+              <linearGradient id="seelad_modern_grad" x1="3.5" y1="3.5" x2="20.5" y2="20.5" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#38bdf8"/>
+                <stop offset="0.55" stop-color="#6366f1"/>
+                <stop offset="1" stop-color="#a855f7"/>
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
 
-        <!-- Crisp Single-Line Brand Typography -->
+        <!-- Crisp Contemporary Typography -->
         <div class="flex flex-col justify-center min-w-0">
           <div class="flex items-center gap-1.5 whitespace-nowrap leading-none">
-            <span class="font-heading font-black text-[17px] sm:text-xl tracking-tight text-white">SEE</span>
-            <span class="font-heading font-black text-[17px] sm:text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#38e1e8] via-indigo-400 to-pink-400">LAD</span>
-            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-400/30 text-[#38e1e8] text-[9px] font-extrabold tracking-wider uppercase">v5.1 PRO</span>
+            <span class="font-heading font-extrabold text-[17px] sm:text-[19px] tracking-tight text-white">SEE<span class="text-sky-400 font-black">LAD</span></span>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white/[0.06] border border-white/10 text-slate-300 text-[9px] font-semibold tracking-wider uppercase">Social</span>
           </div>
-          <div class="flex items-center gap-1.5 mt-1 whitespace-nowrap">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#38e1e8] shadow-[0_0_6px_#38e1e8]"></span>
-            <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 leading-none">Realtime Nexus</span>
-          </div>
+          <span class="text-[10px] font-medium text-slate-400 tracking-wide leading-none mt-1 hidden sm:inline">Kết nối bạn bè & Nhật ký</span>
         </div>
       </div>
 
@@ -479,8 +483,8 @@
     <div class="flex-1 flex flex-col md:flex-row overflow-hidden w-full min-h-0 relative">
 
       <!-- Navigation Bar (Mobile Bottom Bar / Tablet Icon Rail / Desktop Full Sidebar) -->
-      <nav class="order-last md:order-first w-full md:w-[72px] xl:w-60 2xl:w-64 glass border-t md:border-t-0 md:border-r border-[var(--border-color)] px-1 py-1 sm:px-1.5 md:px-2 md:py-3.5 flex md:flex-col justify-between shrink-0 z-20 overflow-x-hidden md:overflow-y-auto">
-        <div class="flex md:flex-col gap-1 sm:gap-1.5 w-full justify-around md:justify-start items-center">
+      <nav class="order-last md:order-first w-full md:w-[72px] xl:w-60 2xl:w-64 glass border-t md:border-t-0 md:border-r border-[var(--border-color)] px-1 py-1 sm:px-1.5 md:px-2 md:py-3.5 flex md:flex-col justify-between shrink-0 z-20 overflow-x-auto no-scrollbar md:overflow-y-auto select-none">
+        <div class="flex md:flex-col gap-0.5 sm:gap-1.5 w-full justify-between md:justify-start items-center min-w-full md:min-w-0">
           
           <!-- Category 1: Giao tiếp & Cộng đồng -->
           <div class="hidden xl:block w-full px-2.5 pt-1 pb-1">
@@ -488,21 +492,21 @@
           </div>
 
           <!-- 1. Tin nhắn & Đoạn chat -->
-          <button class="app-nav-btn active flex-1 md:flex-initial w-full h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-1 xl:gap-3 px-1 py-1 xl:px-3 rounded-xl text-[9.5px] xl:text-xs font-semibold" data-tab="chat" title="Đoạn chat & Nhóm">
+          <button class="app-nav-btn active flex-1 md:flex-initial min-w-[42px] sm:min-w-[48px] h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-0.5 xl:gap-3 px-0.5 py-1 xl:px-3 rounded-xl text-[9px] xl:text-xs font-semibold" data-tab="chat" title="Đoạn chat & Nhóm">
             <i data-lucide="message-circle" class="w-4 h-4 md:w-5 md:h-5 shrink-0 text-cyan-400"></i>
             <span class="md:hidden xl:hidden text-[9px] font-bold leading-none truncate mt-0.5">Tin nhắn</span>
             <span class="hidden xl:inline whitespace-nowrap truncate font-medium">Đoạn chat & Nhóm</span>
           </button>
 
           <!-- 2. Nhật Ký -->
-          <button class="app-nav-btn flex-1 md:flex-initial w-full h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-1 xl:gap-3 px-1 py-1 xl:px-3 rounded-xl text-[9.5px] xl:text-xs font-semibold text-slate-400" data-tab="feed" title="Nhật ký">
+          <button class="app-nav-btn flex-1 md:flex-initial min-w-[42px] sm:min-w-[48px] h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-0.5 xl:gap-3 px-0.5 py-1 xl:px-3 rounded-xl text-[9px] xl:text-xs font-semibold text-slate-400" data-tab="feed" title="Nhật ký">
             <i data-lucide="book-heart" class="w-4 h-4 md:w-5 md:h-5 text-pink-400 shrink-0"></i>
             <span class="md:hidden xl:hidden text-[9px] font-bold leading-none truncate mt-0.5">Nhật ký</span>
             <span class="hidden xl:inline whitespace-nowrap truncate font-medium">Nhật ký bạn bè</span>
           </button>
 
           <!-- 3. Trang Cá Nhân -->
-          <button class="app-nav-btn flex-1 md:flex-initial w-full h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-1 xl:gap-3 px-1 py-1 xl:px-3 rounded-xl text-[9.5px] xl:text-xs font-semibold text-slate-400" data-tab="profile" title="Trang cá nhân">
+          <button class="app-nav-btn flex-1 md:flex-initial min-w-[42px] sm:min-w-[48px] h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-0.5 xl:gap-3 px-0.5 py-1 xl:px-3 rounded-xl text-[9px] xl:text-xs font-semibold text-slate-400" data-tab="profile" title="Trang cá nhân">
             <i data-lucide="user-round" class="w-4 h-4 md:w-5 md:h-5 text-indigo-400 shrink-0"></i>
             <span class="md:hidden xl:hidden text-[9px] font-bold leading-none truncate mt-0.5">Cá nhân</span>
             <span class="hidden xl:inline whitespace-nowrap truncate font-medium">Trang cá nhân</span>
@@ -514,7 +518,7 @@
           </div>
 
           <!-- 4. Cày Chuỗi Lửa -->
-          <button class="app-nav-btn relative flex-1 md:flex-initial w-full h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-1 xl:gap-3 px-1 py-1 xl:px-3 rounded-xl text-[9.5px] xl:text-xs font-semibold text-slate-400" data-tab="streak" title="Cày Chuỗi Lửa">
+          <button class="app-nav-btn relative flex-1 md:flex-initial min-w-[42px] sm:min-w-[48px] h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-0.5 xl:gap-3 px-0.5 py-1 xl:px-3 rounded-xl text-[9px] xl:text-xs font-semibold text-slate-400" data-tab="streak" title="Cày Chuỗi Lửa">
             <div class="relative flex items-center justify-center shrink-0">
               <i data-lucide="flame" class="w-4 h-4 md:w-5 md:h-5 text-orange-400 shrink-0"></i>
               <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-ping absolute -top-0.5 -right-0.5"></span>
@@ -522,31 +526,32 @@
             <span class="md:hidden xl:hidden text-[9px] font-bold leading-none truncate text-orange-300 mt-0.5">Chuỗi</span>
             <span class="hidden xl:inline whitespace-nowrap truncate font-medium">Cày Chuỗi Lửa</span>
             <span id="nav-streak-total-badge" class="hidden xl:inline-flex items-center justify-center ml-auto px-1.5 py-0.5 rounded-full bg-orange-500/20 border border-orange-400/40 text-amber-300 text-[10px] font-bold leading-none shrink-0">🔥</span>
+            <span id="nav-streak-mobile-badge" class="hidden absolute top-1 right-1.5 w-2 h-2 rounded-full bg-orange-500 ring-2 ring-slate-900 md:hidden"></span>
           </button>
 
           <!-- 5. Bản đồ Radar vị trí -->
-          <button class="app-nav-btn flex-1 md:flex-initial w-full h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-1 xl:gap-3 px-1 py-1 xl:px-3 rounded-xl text-[9.5px] xl:text-xs font-semibold text-slate-400" data-tab="radar" title="Radar vị trí">
+          <button class="app-nav-btn flex-1 md:flex-initial min-w-[42px] sm:min-w-[48px] h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-0.5 xl:gap-3 px-0.5 py-1 xl:px-3 rounded-xl text-[9px] xl:text-xs font-semibold text-slate-400" data-tab="radar" title="Radar vị trí">
             <i data-lucide="radar" class="w-4 h-4 md:w-5 md:h-5 text-emerald-400 shrink-0"></i>
             <span class="md:hidden xl:hidden text-[9px] font-bold leading-none truncate mt-0.5">Radar</span>
             <span class="hidden xl:inline whitespace-nowrap truncate font-medium">Radar vị trí</span>
           </button>
 
           <!-- 6. Hub truyền file -->
-          <button class="app-nav-btn flex-1 md:flex-initial w-full h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-1 xl:gap-3 px-1 py-1 xl:px-3 rounded-xl text-[9.5px] xl:text-xs font-semibold text-slate-400" data-tab="hub" title="Truyền file">
+          <button class="app-nav-btn flex-1 md:flex-initial min-w-[42px] sm:min-w-[48px] h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-0.5 xl:gap-3 px-0.5 py-1 xl:px-3 rounded-xl text-[9px] xl:text-xs font-semibold text-slate-400" data-tab="hub" title="Truyền file">
             <i data-lucide="send-to-back" class="w-4 h-4 md:w-5 md:h-5 text-purple-400 shrink-0"></i>
             <span class="md:hidden xl:hidden text-[9px] font-bold leading-none truncate mt-0.5">Truyền file</span>
             <span class="hidden xl:inline whitespace-nowrap truncate font-medium">Truyền file</span>
           </button>
 
           <!-- 7. QR Studio -->
-          <button class="app-nav-btn flex-1 md:flex-initial w-full h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-1 xl:gap-3 px-1 py-1 xl:px-3 rounded-xl text-[9.5px] xl:text-xs font-semibold text-slate-400" data-tab="qr" title="Mã QR Studio">
+          <button class="app-nav-btn flex-1 md:flex-initial min-w-[42px] sm:min-w-[48px] h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-0.5 xl:gap-3 px-0.5 py-1 xl:px-3 rounded-xl text-[9px] xl:text-xs font-semibold text-slate-400" data-tab="qr" title="Mã QR Studio">
             <i data-lucide="qr-code" class="w-4 h-4 md:w-5 md:h-5 text-cyan-400 shrink-0"></i>
             <span class="md:hidden xl:hidden text-[9px] font-bold leading-none truncate mt-0.5">Mã QR</span>
             <span class="hidden xl:inline whitespace-nowrap truncate font-medium">Mã QR Studio</span>
           </button>
 
           <!-- 8. Lên lịch hẹn -->
-          <button class="app-nav-btn flex-1 md:flex-initial w-full h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-1 xl:gap-3 px-1 py-1 xl:px-3 rounded-xl text-[9.5px] xl:text-xs font-semibold text-slate-400" data-tab="schedule" title="Lên lịch hẹn">
+          <button class="app-nav-btn flex-1 md:flex-initial min-w-[42px] sm:min-w-[48px] h-11 md:h-11 xl:h-10 flex flex-col md:flex-row items-center justify-center xl:justify-start gap-0.5 xl:gap-3 px-0.5 py-1 xl:px-3 rounded-xl text-[9px] xl:text-xs font-semibold text-slate-400" data-tab="schedule" title="Lên lịch hẹn">
             <i data-lucide="calendar-clock" class="w-4 h-4 md:w-5 md:h-5 text-amber-400 shrink-0"></i>
             <span class="md:hidden xl:hidden text-[9px] font-bold leading-none truncate mt-0.5">Lịch hẹn</span>
             <span class="hidden xl:inline whitespace-nowrap truncate font-medium">Lên lịch hẹn</span>
@@ -555,8 +560,8 @@
 
         <!-- Bottom Quick Info (Desktop only) -->
         <div class="hidden xl:block p-2.5 rounded-2xl bg-black/25 border border-white/5 text-center">
-          <p class="text-[11px] font-bold text-cyan-400">SEE LAD v5.1 PRO</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">Realtime Nexus</p>
+          <p class="text-[11px] font-bold text-sky-400">SEE LAD</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">Mạng xã hội & Nhắn tin</p>
         </div>
       </nav>
 
@@ -571,30 +576,23 @@
           <div id="chat-sidebar" class="w-full md:w-[280px] xl:w-[340px] glass border-r border-[var(--border-color)] flex flex-col shrink-0 h-full min-h-0">
             <!-- Header & Search -->
             <div class="p-2.5 sm:p-4 border-b border-[var(--border-color)] space-y-2 sm:space-y-3">
-              <!-- Thẻ tài khoản & Nút Đổi ảnh đại diện trực tiếp (Tối ưu gọn gàng trên mobile) -->
-              <input type="file" id="quick-avatar-upload-input" class="hidden" accept="image/*" />
-              <div class="flex p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-pink-900/30 border border-indigo-500/30 items-center justify-between gap-2 shadow-md">
-                <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                  <div class="relative shrink-0 cursor-pointer group" onclick="document.getElementById('quick-avatar-upload-input').click()" title="Bấm để đổi ảnh đại diện">
-                    <img src="/uploads/avatar_hieu.jpg" onerror="this.onerror=null; this.src='/uploads/avatar_hieu.jpg';" class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl object-cover border-2 border-indigo-500/80 user-display-avatar shadow-md" alt="Avatar" />
-                    <div class="absolute inset-0 rounded-lg sm:rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
-                      <i data-lucide="camera" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-                    </div>
+              <!-- Thẻ tài khoản gọn gàng (Bấm vào để sang Trang cá nhân) -->
+              <div class="flex p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-900/70 hover:bg-slate-800/80 border border-white/10 items-center justify-between gap-2 shadow-sm transition-colors">
+                <div class="flex items-center gap-2 sm:gap-2.5 min-w-0 cursor-pointer flex-1" onclick="window.app && window.app.switchTab('profile')" title="Bấm để mở Trang cá nhân">
+                  <div class="relative shrink-0">
+                    <img src="/uploads/avatar_hieu.jpg" onerror="this.onerror=null; this.src=(window.HIEU_REAL_AVATAR || '/uploads/avatar_hieu.jpg');" class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-cover border border-white/20 user-display-avatar shadow-sm" alt="Avatar" />
+                    <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900"></span>
                   </div>
                   <div class="min-w-0">
                     <p class="text-xs font-bold text-white truncate user-display-name">Trần Ngọc Hiếu</p>
-                    <p class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                      <span class="user-status-text">Trực tuyến</span>
+                    <p class="text-[10px] text-slate-400 font-medium flex items-center gap-1">
+                      <span class="user-status-text text-emerald-400">Trực tuyến</span>
+                      <span>• Hồ sơ</span>
                     </p>
                   </div>
                 </div>
-                <div class="flex items-center gap-1.5 shrink-0">
-                  <button type="button" onclick="document.getElementById('quick-avatar-upload-input').click()" class="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg sm:rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-[11px] font-bold flex items-center gap-1 shadow-sm transition-all shrink-0" title="Đổi ảnh đại diện">
-                    <i data-lucide="camera" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
-                    <span>Đổi ảnh</span>
-                  </button>
-                  <button type="button" onclick="window.auth.logout()" class="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 hover:text-rose-300 transition-all flex items-center justify-center shrink-0 cursor-pointer" title="Đăng xuất tài khoản ra màn hình đăng nhập">
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" onclick="window.auth.logout()" class="p-1.5 rounded-lg sm:rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 hover:text-rose-300 transition-all flex items-center justify-center shrink-0 cursor-pointer" title="Đăng xuất tài khoản">
                     <i data-lucide="log-out" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                   </button>
                 </div>
@@ -657,8 +655,12 @@
                     <span id="active-chat-status-dot" class="status-dot absolute -bottom-0.5 -right-0.5 status-online"></span>
                   </div>
                   <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1.5 flex-wrap">
                       <h4 id="active-chat-name" class="font-bold text-xs sm:text-sm text-[var(--text-primary)] truncate group-hover/header:text-cyan-400 transition-colors">Đức Kiệt</h4>
+                      <div id="active-chat-streak-badge" class="hidden items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer transition-all hover:scale-105 shrink-0" onclick="event.stopPropagation(); if(window.app) window.app.switchTab('streak');" title="Bấm để xem Bảng Xếp Hạng Chuỗi Lửa">
+                        <span class="streak-badge-flame">🔥</span>
+                        <span id="active-chat-streak-count" class="streak-badge-count">0</span>
+                      </div>
                       <i data-lucide="external-link" class="w-3 h-3 text-slate-500 opacity-0 group-hover/header:opacity-100 transition-opacity"></i>
                     </div>
                     <p id="active-chat-status-text" class="text-[10px] sm:text-xs text-[var(--text-muted)] truncate">Đang hoạt động (Online)</p>
@@ -722,6 +724,18 @@
                     </div>
 
                     <div class="border-t border-[var(--border-color)] my-1"></div>
+
+                    <!-- View Archived Old Messages -->
+                    <button id="btn-action-view-archived-chat" onclick="window.chat && window.chat.openArchivedMessagesModal()" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-cyan-500/20 text-cyan-300 text-left transition-colors">
+                      <i data-lucide="archive" class="w-4 h-4"></i>
+                      <span>Kho tin nhắn cũ đã lưu</span>
+                    </button>
+
+                    <!-- Delete Chat & Auto-Save Old Messages -->
+                    <button id="btn-action-delete-chat" onclick="window.chat && window.chat.deleteAndArchiveActiveChat()" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-rose-500/20 text-rose-400 text-left transition-colors">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      <span>Xóa đoạn chat (Lưu tin cũ)</span>
+                    </button>
 
                     <!-- Block user -->
                     <button id="btn-action-block" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs hover:bg-red-500/20 text-red-400 text-left transition-colors">
@@ -931,17 +945,53 @@
               </div>
             </div>
 
-            <!-- 2. Compact Status Composer Card (Gọn gàng & Tinh tế) -->
-            <div class="glass rounded-2xl p-3 sm:p-3.5 border border-white/10 shadow-md">
+            <!-- 2. Compact Status Composer Card (Gọn gàng & Hỗ trợ Gắn Nhạc + Tag @mention) -->
+            <div class="glass rounded-2xl p-3 sm:p-3.5 border border-white/10 shadow-md relative">
               <form id="feed-composer-form" class="space-y-2.5">
-                <div class="flex items-start gap-2.5">
+                <div class="flex items-start gap-2.5 relative">
                   <img src="/uploads/avatar_hieu.jpg" 
-                       onerror="this.onerror=null; this.src='/uploads/avatar_hieu.jpg';"
+                       onerror="this.onerror=null; this.src=(window.HIEU_REAL_AVATAR || '/uploads/avatar_hieu.jpg');"
                        class="w-9 h-9 rounded-xl object-cover user-display-avatar shrink-0 border border-white/15 cursor-pointer shadow-sm hover:scale-105 transition-transform" 
                        onclick="window.app.switchTab('profile')" 
                        title="Bấm để vào Trang cá nhân" />
-                  <div class="flex-1 min-w-0">
-                    <textarea id="feed-post-content" rows="1" placeholder="Bạn đang nghĩ gì thế? Chia sẻ cảm xúc hôm nay..." class="glass-input w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-900/90 text-white placeholder-slate-500 border border-white/10 focus:border-indigo-500 custom-scrollbar resize-none transition-all"></textarea>
+                  <div class="flex-1 min-w-0 relative">
+                    <textarea id="feed-post-content" rows="2" placeholder="Bạn đang nghĩ gì thế? Gõ @ để nhắc tên bạn bè hoặc bất kỳ ai..." class="glass-input w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-900/90 text-white placeholder-slate-500 border border-white/10 focus:border-indigo-500 custom-scrollbar resize-none transition-all"></textarea>
+                    <!-- @Mention Autocomplete Dropdown -->
+                    <div id="feed-mention-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 z-50 glass rounded-xl border border-indigo-500/40 bg-slate-900/95 shadow-2xl max-h-48 overflow-y-auto divide-y divide-white/5"></div>
+                  </div>
+                </div>
+
+                <!-- Selected Music Preview Box -->
+                <div id="feed-music-preview-box" class="hidden flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500/15 via-indigo-500/15 to-purple-500/15 border border-cyan-400/30">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <button type="button" id="btn-preview-composer-music" onclick="window.feed.togglePreviewMusic('composer')" class="w-7 h-7 rounded-lg bg-cyan-500 text-slate-950 flex items-center justify-center shrink-0 shadow hover:brightness-110 transition-all">
+                      <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+                    </button>
+                    <div class="min-w-0">
+                      <p id="feed-music-preview-title" class="text-xs font-bold text-white truncate">Bài hát đính kèm</p>
+                      <p id="feed-music-preview-artist" class="text-[10px] text-cyan-300 truncate">Nhạc nền bài viết</p>
+                    </div>
+                  </div>
+                  <button type="button" onclick="window.feed.clearComposerMusic()" class="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/10 transition-colors" title="Gỡ nhạc">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+
+                <!-- Music Selector Drawer for Post Composer -->
+                <div id="feed-music-picker-drawer" class="hidden p-3 rounded-xl bg-slate-950/90 border border-cyan-500/30 space-y-2.5 animate-fade-in">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5">
+                      <i data-lucide="music" class="w-3.5 h-3.5"></i>
+                      <span>Chọn nhạc gắn vào bài viết (Vừa đăng vừa nghe)</span>
+                    </span>
+                    <button type="button" onclick="document.getElementById('feed-audio-upload-input').click()" class="px-2.5 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer">
+                      <i data-lucide="upload" class="w-3 h-3"></i>
+                      <span>Tải nhạc MP3 từ máy</span>
+                    </button>
+                    <input type="file" id="feed-audio-upload-input" accept="audio/*" class="hidden" onchange="window.feed.handleCustomMusicUpload(this, 'composer')" />
+                  </div>
+                  <div id="feed-music-tracks-list" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Populated by js/feed.js -->
                   </div>
                 </div>
 
@@ -954,30 +1004,42 @@
                 </div>
 
                 <!-- Compact Toolbar -->
-                <div class="flex items-center justify-between gap-2 pt-1 border-t border-white/5">
-                  <div class="flex items-center gap-1.5">
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/5">
+                  <div class="flex flex-wrap items-center gap-1.5">
                     <!-- Photo attach button -->
-                    <button type="button" onclick="document.getElementById('feed-image-input').click()" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition-all">
+                    <button type="button" onclick="document.getElementById('feed-image-input').click()" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer">
                       <i data-lucide="image" class="w-3.5 h-3.5 text-emerald-400"></i>
-                      <span class="text-[11px] sm:text-xs">Ảnh / Video</span>
+                      <span class="text-[11px] sm:text-xs">Ảnh</span>
                     </button>
                     <input type="file" id="feed-image-input" accept="image/*" class="hidden" />
+
+                    <!-- Music attach button -->
+                    <button type="button" onclick="window.feed.toggleComposerMusicPicker()" class="px-2.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-cyan-500/25 transition-all cursor-pointer">
+                      <i data-lucide="music" class="w-3.5 h-3.5 text-cyan-400"></i>
+                      <span class="text-[11px] sm:text-xs">Gắn nhạc</span>
+                    </button>
+
+                    <!-- Tag @mention button -->
+                    <button type="button" onclick="window.feed.triggerComposerMentionButton()" class="px-2.5 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-white text-xs font-semibold flex items-center gap-1 border border-indigo-500/25 transition-all cursor-pointer" title="Gắn thẻ bạn bè hoặc bất kỳ ai">
+                      <span class="font-bold text-indigo-400">@</span>
+                      <span class="text-[11px] sm:text-xs">Gắn thẻ</span>
+                    </button>
 
                     <!-- Mood Emoji Selector -->
                     <select id="feed-post-mood" class="glass-input px-2.5 py-1.5 rounded-xl text-[11px] sm:text-xs bg-slate-900 text-white border border-white/10 focus:border-indigo-500">
                       <option value="🌟 Vui vẻ">🌟 Vui vẻ</option>
+                      <option value="🎧 Chill nghe nhạc">🎧 Chill nhạc</option>
                       <option value="🚀 Tràn đầy năng lượng">🚀 Năng lượng</option>
                       <option value="☕ Thư giãn">☕ Thư giãn</option>
                       <option value="🔥 Hừng hực khí thế">🔥 Khí thế</option>
                       <option value="❤️ Đang hạnh phúc">❤️ Hạnh phúc</option>
                       <option value="🌧️ Lắng đọng tâm trạng">🌧️ Tâm trạng</option>
-                      <option value="🎧 Chill nghe nhạc">🎧 Chill nhạc</option>
                       <option value="💻 Say mê làm việc">💻 Làm việc</option>
                     </select>
                   </div>
 
                   <!-- Submit Post Button -->
-                  <button type="submit" id="btn-submit-post" class="btn-gradient px-4 py-1.5 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 shadow-md shadow-indigo-500/25 active:scale-95 transition-all shrink-0">
+                  <button type="submit" id="btn-submit-post" class="btn-gradient px-4 py-1.5 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 shadow-md shadow-indigo-500/25 active:scale-95 transition-all shrink-0 cursor-pointer">
                     <i data-lucide="send" class="w-3.5 h-3.5"></i>
                     <span>Đăng</span>
                   </button>
@@ -1090,12 +1152,18 @@
                   <!-- Avatar + Basic Info -->
                   <div class="flex items-end gap-3.5 sm:gap-4 min-w-0">
                     <div class="relative cursor-pointer group shrink-0" onclick="window.feed.openProfileAvatarLightbox()" title="Bấm để xem ảnh đại diện Full HD sắc nét">
-                      <!-- Floating Thought Note Bubble (Bong bóng ghi chú bồng bềnh trên Avatar) -->
-                      <div id="profile-thought-note-wrapper" class="absolute -top-9 sm:-top-10 left-1/2 -translate-x-1/2 z-20 pointer-events-auto select-none" onclick="event.stopPropagation(); window.feed.openNoteModal();" title="Bấm để cập nhật ghi chú suy nghĩ">
+                      <!-- Floating Thought Note Bubble (Bong bóng ghi chú bồng bềnh kèm Nhạc trên Avatar) -->
+                      <div id="profile-thought-note-wrapper" class="absolute -top-10 sm:-top-11 left-1/2 -translate-x-1/2 z-30 pointer-events-auto select-none" onclick="event.stopPropagation(); window.feed.openNoteModal();" title="Bấm để viết ghi chú & gắn nhạc">
                         <div class="animate-note-float flex flex-col items-center">
-                          <div id="profile-thought-note-bubble" class="px-2.5 py-0.5 rounded-full bg-[#0f172a]/95 backdrop-blur-md border border-cyan-400/50 text-white text-[10.5px] font-semibold flex items-center gap-1.5 shadow-xl shadow-cyan-500/20 hover:border-cyan-300 transition-all hover:scale-105 active:scale-95 cursor-pointer max-w-[150px] sm:max-w-[200px]">
-                            <span id="profile-thought-note-icon">💭</span>
-                            <span id="profile-thought-note-text" class="truncate font-medium">Ghi chú...</span>
+                          <div id="profile-thought-note-bubble" class="px-2.5 py-1 rounded-2xl bg-[#0f172a]/95 backdrop-blur-md border border-cyan-400/50 text-white text-[10.5px] font-semibold flex items-center gap-1.5 shadow-xl shadow-cyan-500/20 hover:border-cyan-300 transition-all hover:scale-105 active:scale-95 cursor-pointer max-w-[180px] sm:max-w-[230px]">
+                            <span id="profile-thought-note-icon" class="shrink-0">💭</span>
+                            <div class="min-w-0 flex flex-col leading-tight">
+                              <span id="profile-thought-note-text" class="truncate font-medium">Ghi chú...</span>
+                              <span id="profile-thought-note-music-label" class="hidden text-[9px] text-cyan-300 truncate flex items-center gap-1"></span>
+                            </div>
+                            <button type="button" id="profile-thought-note-music-btn" onclick="event.stopPropagation(); window.feed.toggleNoteMusicPlayback();" class="hidden w-5 h-5 rounded-full bg-cyan-500 text-slate-950 items-center justify-center shrink-0 hover:scale-110 transition-transform shadow" title="Phát / Tạm dừng nhạc ghi chú">
+                              <i data-lucide="play" class="w-2.5 h-2.5 fill-current"></i>
+                            </button>
                           </div>
                           <!-- Little thought dots connecting down to avatar -->
                           <div class="flex flex-col items-center -space-y-0.5 mt-0.5 pointer-events-none">
@@ -1105,7 +1173,7 @@
                         </div>
                       </div>
 
-                      <img id="profile-card-avatar" src="/uploads/avatar_hieu.jpg" onerror="this.onerror=null; this.src='/uploads/avatar_hieu.jpg';" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900 group-hover:scale-105 transition-transform" />
+                      <img id="profile-card-avatar" src="/uploads/avatar_hieu.jpg" onerror="this.onerror=null; this.src=(window.HIEU_REAL_AVATAR || '/uploads/avatar_hieu.jpg');" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-2xl bg-slate-900 group-hover:scale-105 transition-transform" />
                       <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-900 shadow" title="Đang trực tuyến"></span>
                       <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <i data-lucide="maximize-2" class="w-5 h-5 text-white"></i>
@@ -1148,19 +1216,37 @@
                   </div>
                 </div>
 
-                <!-- Bio & Accurate Location & Posts count -->
+                <!-- Bio (Clickable for Unlimited Inline Editing) & Accurate Location & Posts count -->
                 <div class="mt-2.5 max-w-2xl">
-                  <p id="profile-card-bio" class="text-xs sm:text-sm text-slate-200 leading-relaxed italic border-l-2 border-cyan-400/40 pl-3 py-0.5">
-                    Thành viên kết nối chính thức qua Facebook 🌟
-                  </p>
+                  <div id="profile-bio-display-wrap" onclick="window.feed.startInlineBioEdit()" class="group/bio inline-flex items-center gap-2 cursor-pointer rounded-xl hover:bg-white/5 px-2.5 py-1 -ml-2.5 transition-all" title="Bấm vào để chỉnh sửa tiểu sử (không giới hạn số lần)">
+                    <p id="profile-card-bio" class="text-xs sm:text-sm text-slate-200 leading-relaxed italic border-l-2 border-cyan-400/50 pl-3 py-0.5">
+                      Thành viên kết nối chính thức qua Facebook 🌟
+                    </p>
+                    <i data-lucide="pencil" class="w-3.5 h-3.5 text-cyan-400 opacity-60 group-hover/bio:opacity-100 shrink-0 transition-opacity"></i>
+                  </div>
+
+                  <!-- Inline Bio Editor (Hidden until bio is clicked) -->
+                  <div id="profile-bio-inline-editor" class="hidden mt-1 space-y-2 bg-slate-900/90 p-3 rounded-2xl border border-cyan-500/40 shadow-xl">
+                    <textarea id="profile-bio-inline-input" rows="2" placeholder="Nhập tiểu sử của bạn (không giới hạn số lần chỉnh sửa)..." class="glass-input w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-950 text-white border border-white/15 focus:border-cyan-400 resize-none"></textarea>
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-[10px] text-cyan-300">✨ Chỉnh sửa tiểu sử không giới hạn số lần</span>
+                      <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="window.feed.cancelInlineBioEdit()" class="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-semibold cursor-pointer">Hủy</button>
+                        <button type="button" onclick="window.feed.saveInlineBioEdit()" class="px-3.5 py-1 rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-600 text-white text-xs font-bold shadow cursor-pointer flex items-center gap-1">
+                          <i data-lucide="check" class="w-3 h-3"></i>
+                          <span>Lưu tiểu sử</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2.5 mt-3 text-xs">
                   <!-- Accurate GPS Location -->
-                  <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 text-slate-300">
+                  <span onclick="window.feed.detectRealLocation(true)" class="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 text-slate-300 cursor-pointer transition-colors" title="Bấm để làm mới vị trí GPS thực tế hiện tại">
                     <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
                     <span id="profile-card-location" class="font-medium text-white">Đang xác định vị trí...</span>
-                    <button type="button" onclick="window.feed.detectRealLocation(true)" title="Cập nhật vị trí GPS chính xác" class="text-cyan-400 hover:text-cyan-300 ml-1 p-0.5 hover:bg-white/10 rounded">
+                    <button type="button" onclick="event.stopPropagation(); window.feed.detectRealLocation(true);" title="Cập nhật vị trí GPS chính xác hiện tại" class="text-cyan-400 hover:text-cyan-300 ml-1 p-0.5 hover:bg-white/10 rounded">
                       <i data-lucide="locate-fixed" class="w-3 h-3"></i>
                     </button>
                   </span>
@@ -1202,60 +1288,60 @@
         <!-- ===================================================================
              TAB: CHUỖI TƯƠNG TÁC 🔥 (2-WAY DAILY STREAK & ANIMATED FLAME)
              =================================================================== -->
-        <section id="tab-view-streak" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
-          <div class="max-w-5xl mx-auto space-y-6 pb-12">
+        <section id="tab-view-streak" class="hidden flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 custom-scrollbar">
+          <div class="max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-28 sm:pb-16">
             <!-- Hero Banner -->
-            <div class="relative overflow-hidden rounded-3xl p-5 sm:p-7 bg-gradient-to-r from-orange-600/25 via-rose-600/20 to-indigo-600/25 border border-orange-500/30 shadow-2xl">
+            <div class="relative overflow-hidden rounded-3xl p-4 sm:p-7 bg-gradient-to-r from-orange-600/25 via-rose-600/20 to-indigo-600/25 border border-orange-500/30 shadow-2xl">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
                 <div>
-                  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-300 text-xs font-extrabold mb-2.5">
+                  <div class="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-300 text-[10.5px] sm:text-xs font-extrabold mb-2">
                     <span>🔥 CHUỖI LỬA TƯƠNG TÁC 2 CHIỀU</span>
                     <span>•</span>
-                    <span>5 CẤP ĐỘ NGỌN LỬA SỐNG ĐỘNG</span>
+                    <span>5 CẤP ĐỘ LỬA SỐNG ĐỘNG</span>
                   </div>
-                  <h2 class="font-heading font-extrabold text-xl sm:text-3xl text-white tracking-tight">
+                  <h2 class="font-heading font-extrabold text-lg sm:text-3xl text-white tracking-tight">
                     Bảng Xếp Hạng Giữ Chuỗi Lâu Nhất
                   </h2>
-                  <p class="text-xs sm:text-sm text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
+                  <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
                     Chuỗi chỉ được tính khi <strong>bạn và người đó cùng nhắn tin qua lại cho nhau trong ngày</strong> (mỗi ngày cộng đúng +1 chuỗi). Giữ vững tương tác đều đặn để nâng cấp ngọn lửa từ <strong>Cam Khởi Đầu</strong> lên đến <strong>Hoàng Kim Cực Quang</strong>!
                   </p>
                 </div>
               </div>
 
               <!-- Stats Summary Row -->
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 relative z-10">
-                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-orange-500/25 flex items-center gap-3">
-                  <div class="w-11 h-11 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-xl shrink-0">🔥</div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mt-4 sm:mt-5 relative z-10">
+                <div class="p-3 sm:p-3.5 rounded-2xl bg-slate-950/60 border border-orange-500/25 flex items-center gap-3">
+                  <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-lg sm:text-xl shrink-0">🔥</div>
                   <div>
-                    <p class="text-[11px] text-slate-400 font-semibold">Tổng điểm chuỗi đang cháy</p>
-                    <p id="streak-stat-total" class="text-lg sm:text-xl font-extrabold text-orange-400 font-mono">0 🔥</p>
+                    <p class="text-[10.5px] sm:text-[11px] text-slate-400 font-semibold">Tổng điểm chuỗi đang cháy</p>
+                    <p id="streak-stat-total" class="text-base sm:text-xl font-extrabold text-orange-400 font-mono">0 🔥</p>
                   </div>
                 </div>
-                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-indigo-500/25 flex items-center gap-3">
-                  <div class="w-11 h-11 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-xl shrink-0">👑</div>
+                <div class="p-3 sm:p-3.5 rounded-2xl bg-slate-950/60 border border-indigo-500/25 flex items-center gap-3">
+                  <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-lg sm:text-xl shrink-0">👑</div>
                   <div class="min-w-0">
-                    <p class="text-[11px] text-slate-400 font-semibold">Top 1 Nhắn tin & Cày chuỗi</p>
-                    <p id="streak-stat-top-friend" class="text-sm sm:text-base font-extrabold text-white truncate">Chưa có</p>
+                    <p class="text-[10.5px] sm:text-[11px] text-slate-400 font-semibold">Top 1 Nhắn tin & Cày chuỗi</p>
+                    <p id="streak-stat-top-friend" class="text-xs sm:text-base font-extrabold text-white truncate">Chưa có</p>
                   </div>
                 </div>
-                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-3">
-                  <div class="w-11 h-11 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-xl shrink-0">♻️</div>
+                <div class="p-3 sm:p-3.5 rounded-2xl bg-slate-950/60 border border-cyan-500/25 flex items-center gap-3">
+                  <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-lg sm:text-xl shrink-0">♻️</div>
                   <div>
-                    <p class="text-[11px] text-slate-400 font-semibold">Chuỗi chờ khôi phục (Quá 48h)</p>
-                    <p id="streak-stat-lost-count" class="text-sm sm:text-base font-extrabold text-cyan-400">0 người</p>
+                    <p class="text-[10.5px] sm:text-[11px] text-slate-400 font-semibold">Chuỗi chờ khôi phục (Quá 48h)</p>
+                    <p id="streak-stat-lost-count" class="text-xs sm:text-base font-extrabold text-cyan-400">0 người</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- KHU VỰC 1: KHÔI PHỤC CHUỖI VỚI [TÊN NGƯỜI ĐÓ] -->
-            <div class="glass rounded-3xl p-4 sm:p-6 border border-rose-500/25 shadow-xl">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div class="glass rounded-3xl p-3.5 sm:p-6 border border-rose-500/25 shadow-xl">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
                 <div class="flex items-center gap-2.5">
-                  <span class="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-base">❄️</span>
+                  <span class="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-base shrink-0">❄️</span>
                   <div>
-                    <h3 class="font-heading font-extrabold text-base sm:text-lg text-white">Khôi Phục Chuỗi Đã Mất (Sau 48 Tiếng)</h3>
-                    <p class="text-xs text-slate-400">Hiển thị danh sách bạn bè bị đứt chuỗi quá 48h — Bấm để <strong class="text-rose-300">Khôi phục chuỗi với [Tên người đó]</strong> ngay lập tức</p>
+                    <h3 class="font-heading font-extrabold text-sm sm:text-lg text-white">Khôi Phục Chuỗi Đã Mất (Sau 48 Tiếng)</h3>
+                    <p class="text-[11px] sm:text-xs text-slate-400">Hiển thị danh sách bạn bè bị đứt chuỗi quá 48h — Bấm để <strong class="text-rose-300">Khôi phục chuỗi</strong> ngay lập tức</p>
                   </div>
                 </div>
               </div>
@@ -1265,7 +1351,7 @@
             </div>
 
             <!-- KHU VỰC 2: BẢNG XẾP HẠNG NGƯỜI GIỮ CHUỖI LÂU NHẤT -->
-            <div class="glass rounded-3xl p-4 sm:p-6 border border-orange-500/25 shadow-xl">
+            <div class="glass rounded-3xl p-3.5 sm:p-6 border border-orange-500/25 shadow-xl">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                 <div class="flex items-center gap-2.5">
                   <span class="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-base">🏆</span>
@@ -1314,9 +1400,15 @@
 
           <!-- Radar Friends List Sidebar -->
           <div class="w-full md:w-80 lg:w-96 max-h-[42vh] md:max-h-full glass border-t md:border-t-0 md:border-l border-[var(--border-color)] p-4 sm:p-5 flex flex-col shrink-0 overflow-y-auto">
-            <div class="mb-3 sm:mb-4">
-              <h3 class="font-heading font-extrabold text-lg sm:text-xl text-white">Bản đồ bạn bè toàn cầu</h3>
-              <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">Google Maps trực tuyến • Xem vị trí GPS và thời gian hoạt động cuối cùng</p>
+            <div class="mb-3 sm:mb-4 flex items-start justify-between gap-2">
+              <div>
+                <h3 class="font-heading font-extrabold text-base sm:text-lg text-white flex items-center gap-2">
+                  <i data-lucide="globe-2" class="w-4 h-4 text-sky-400 shrink-0"></i>
+                  <span>Vị trí Bạn bè Toàn cầu</span>
+                </h3>
+                <p class="text-[11px] text-slate-400 mt-0.5">Chỉ hiển thị những người bạn đã kết bạn • Định vị GPS chính xác theo thời gian thực</p>
+              </div>
+              <span id="radar-friends-count-badge" class="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold shrink-0">0 bạn bè</span>
             </div>
 
             <div id="radar-friends-list" class="space-y-2.5 flex-1">
@@ -1615,49 +1707,47 @@
 
             <!-- QR Preview Card (Right 5 cols on Desktop) -->
             <div class="xl:col-span-5 flex flex-col items-center xl:sticky xl:top-4">
-              <div id="qr-vip-card-preview" class="relative overflow-hidden glass p-5 sm:p-7 rounded-[32px] border border-white/15 shadow-2xl flex flex-col items-center text-center w-full max-w-[360px] bg-gradient-to-b from-[#11172a] via-[#0b1020] to-[#070a14]">
+              <div id="qr-vip-card-preview" class="relative overflow-hidden p-3 sm:p-3.5 rounded-[28px] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center text-center w-fit bg-gradient-to-b from-slate-800/90 via-slate-900/95 to-slate-950 backdrop-blur-xl">
                 <!-- Ambient Decorative Glow -->
-                <div id="qr-card-ambient-glow" class="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-60 rounded-full bg-indigo-500/25 blur-3xl pointer-events-none"></div>
+                <div id="qr-card-ambient-glow" class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none"></div>
 
-                <!-- Card Top Header -->
-                <div class="relative z-10 w-full flex items-center justify-between mb-4 px-1">
-                  <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-400 to-indigo-600 flex items-center justify-center shadow-sm">
-                      <i data-lucide="zap" class="w-3.5 h-3.5 text-white"></i>
+                <!-- Card Top Header (Slim & Refined) -->
+                <div class="relative z-10 w-full flex items-center justify-between mb-2.5 px-1.5">
+                  <div class="flex items-center gap-1.5">
+                    <div class="w-5 h-5 rounded-md bg-slate-900 border border-white/20 flex items-center justify-center shadow-sm">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                        <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="#38bdf8" stroke-width="2"/>
+                        <path d="M8.5 9.25C8.5 8.007 9.507 7 10.75 7H14.5C15.328 7 16 7.672 16 8.5C16 9.328 15.328 10 14.5 10H10.5C9.395 10 8.5 10.895 8.5 12C8.5 13.105 9.395 14 10.5 14H13.25C14.493 14 15.5 15.007 15.5 16.25C15.5 16.664 15.164 17 14.75 17H9.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+                      </svg>
                     </div>
-                    <span class="font-heading font-extrabold text-xs tracking-wider text-white">SEE <span class="text-cyan-400">LAD</span> ID</span>
+                    <span class="font-heading font-extrabold text-[11px] tracking-wider text-white">SEE<span class="text-sky-400">LAD</span> QR</span>
                   </div>
-                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold flex items-center gap-1">
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[9.5px] font-bold flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>QUÉT NHẠY 100%</span>
+                    <span>QUÉT TỨC THÌ</span>
                   </span>
                 </div>
 
-                <!-- Pure White Optical Quiet-Zone Container for Instant Camera Scanning -->
-                <div class="relative z-10 bg-white p-3.5 sm:p-4 rounded-[26px] shadow-[0_16px_40px_rgba(0,0,0,0.55)] ring-4 ring-white/10 mb-5">
-                  <!-- Subtle Corner Viewfinder Accents -->
-                  <span class="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-slate-300 rounded-tl"></span>
-                  <span class="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-slate-300 rounded-tr"></span>
-                  <span class="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-slate-300 rounded-bl"></span>
-                  <span class="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-slate-300 rounded-br"></span>
-
-                  <canvas id="qr-preview-canvas" width="600" height="600" class="w-[210px] h-[210px] sm:w-[240px] sm:h-[240px] lg:w-[250px] lg:h-[250px] block rounded-xl"></canvas>
+                <!-- Pure White Edge-to-Edge Optical Quiet-Zone Container -->
+                <div class="relative z-10 bg-white p-2 sm:p-2.5 rounded-[22px] shadow-lg ring-1 ring-slate-200/80">
+                  <canvas id="qr-preview-canvas" width="600" height="600" class="w-[250px] h-[250px] sm:w-[272px] sm:h-[272px] block rounded-2xl"></canvas>
                 </div>
 
-                <!-- User Info Footer -->
-                <div class="relative z-10 w-full">
-                  <h4 class="font-heading font-extrabold text-lg text-white user-display-name tracking-tight">Người dùng SEE LAD</h4>
-                  <p class="text-xs font-mono text-cyan-400 font-semibold user-display-username mt-0.5">@seelad_user</p>
-                  
-                  <div class="mt-3 pt-3 border-t border-white/10 flex items-center justify-center gap-2 text-[11px] text-slate-300">
-                    <i data-lucide="camera" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
-                    <span>Quét bằng Camera hoặc Zalo để mở trang cá nhân</span>
+                <!-- Compact User Info Footer -->
+                <div class="relative z-10 w-full pt-2.5 pb-0.5 px-2 flex items-center justify-between gap-2">
+                  <div class="text-left min-w-0">
+                    <h4 class="font-heading font-extrabold text-sm sm:text-base text-white user-display-name tracking-tight truncate">Người dùng SEE LAD</h4>
+                    <p class="text-[11px] font-mono text-sky-400 font-semibold user-display-username truncate">@seelad_user</p>
+                  </div>
+                  <div class="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/10 text-[10px] text-slate-300 font-medium flex items-center gap-1 shrink-0">
+                    <i data-lucide="scan-line" class="w-3.5 h-3.5 text-sky-400"></i>
+                    <span>Camera / Zalo</span>
                   </div>
                 </div>
               </div>
 
               <!-- Quick Preview Trigger Button below Card -->
-              <button type="button" onclick="window.qrStudio && window.qrStudio.openSharedProfileModal()" class="mt-4 px-4 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-cyan-300 hover:text-white flex items-center gap-2 transition-all">
+              <button type="button" onclick="window.qrStudio && window.qrStudio.openSharedProfileModal()" class="mt-3.5 px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-sky-300 hover:text-white flex items-center gap-2 transition-all cursor-pointer">
                 <i data-lucide="eye" class="w-4 h-4"></i>
                 <span>Xem trước Trang Cá Nhân khi người khác quét mã</span>
               </button>
@@ -2397,33 +2487,67 @@
     </div>
   </div>
 
-  <!-- Modal: Tạo & Cập nhật Ghi chú trạng thái suy nghĩ (Instagram Note Style) -->
-  <div id="modal-profile-note" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fade-in select-none">
-    <div class="glass w-full max-w-sm rounded-3xl p-5 sm:p-6 border border-white/15 shadow-2xl space-y-4 bg-slate-900/95">
+  <!-- Modal: Tạo & Cập nhật Ghi chú trạng thái suy nghĩ + Gắn Nhạc (Instagram Note Style) -->
+  <div id="modal-profile-note" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in select-none">
+    <form onsubmit="event.preventDefault(); window.feed.saveNote();" class="glass w-full max-w-md rounded-3xl p-5 sm:p-6 border border-white/15 shadow-2xl space-y-3.5 bg-slate-900/95">
       <div class="flex items-center justify-between pb-1 border-b border-white/10">
         <h3 class="font-heading font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
           <span class="text-base sm:text-lg">💭</span>
-          <span>Ghi Chú Trạng Thái Suy Nghĩ</span>
+          <span>Ghi Chú & Gắn Nhạc Trạng Thái</span>
         </h3>
-        <button type="button" onclick="window.feed.closeNoteModal()" class="text-slate-400 hover:text-white p-1">
+        <button type="button" onclick="window.feed.closeNoteModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
       <p class="text-xs text-slate-300 leading-relaxed">
-        Ghi chú ngắn xuất hiện bồng bềnh ngay phía trên ảnh đại diện để bạn bè cùng thấy khi vào trang của bạn.
+        Ghi chú ngắn kèm bài nhạc yêu thích sẽ nổi bồng bềnh trên ảnh đại diện để mọi người vừa đọc vừa bấm nghe.
       </p>
 
       <div class="space-y-1.5">
         <div class="relative">
-          <input type="text" id="input-profile-note" maxlength="60" placeholder="Bạn đang nghĩ gì thế? (Tối đa 60 ký tự)" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-xs bg-slate-800 text-white pr-14 focus:border-cyan-400 focus:outline-none" />
+          <input type="text" id="input-profile-note" maxlength="60" placeholder="Nhập ghi chú của bạn... (Tối đa 60 ký tự)" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-slate-800 text-white pr-14 border border-white/15 focus:border-cyan-400 focus:outline-none" />
           <span id="note-char-counter" class="absolute right-3 top-2.5 text-[10px] text-slate-400 font-mono">0/60</span>
+        </div>
+      </div>
+
+      <!-- Selected Music in Note Modal -->
+      <div id="note-music-selected-box" class="hidden flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 border border-cyan-400/40">
+        <div class="flex items-center gap-2 min-w-0">
+          <button type="button" id="btn-preview-note-music" onclick="window.feed.togglePreviewMusic('note')" class="w-7 h-7 rounded-lg bg-cyan-400 text-slate-950 flex items-center justify-center shrink-0 shadow cursor-pointer">
+            <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+          </button>
+          <div class="min-w-0">
+            <p id="note-music-selected-title" class="text-xs font-bold text-white truncate">Chưa chọn bài hát</p>
+            <p id="note-music-selected-artist" class="text-[10px] text-cyan-300 truncate">Nhạc đính kèm ghi chú</p>
+          </div>
+        </div>
+        <button type="button" onclick="window.feed.clearNoteMusic()" class="p-1 text-slate-400 hover:text-rose-400 cursor-pointer" title="Gỡ nhạc">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <!-- Music Picker inside Note Modal -->
+      <div class="p-3 rounded-2xl bg-slate-950/80 border border-white/10 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5">
+            <i data-lucide="music" class="w-3.5 h-3.5"></i>
+            <span>🎵 Gắn nhạc vào ghi chú:</span>
+          </span>
+          <button type="button" onclick="document.getElementById('note-audio-upload-input').click()" class="px-2 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold flex items-center gap-1 cursor-pointer">
+            <i data-lucide="upload" class="w-3 h-3"></i>
+            <span>Tải nhạc từ máy</span>
+          </button>
+          <input type="file" id="note-audio-upload-input" accept="audio/*" class="hidden" onchange="window.feed.handleCustomMusicUpload(this, 'note')" />
+        </div>
+        <div id="note-music-tracks-list" class="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto custom-scrollbar pr-1">
+          <!-- Populated by js/feed.js -->
         </div>
       </div>
 
       <!-- Quick Mood Suggestions -->
       <div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Gợi ý suy nghĩ nhanh:</p>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Gợi ý suy nghĩ nhanh:</p>
         <div class="flex flex-wrap gap-1.5">
           <button type="button" onclick="window.feed.pickQuickNote(this.innerText)" class="text-[11px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/10 transition-colors cursor-pointer">🎧 Đang nghe nhạc chill</button>
           <button type="button" onclick="window.feed.pickQuickNote(this.innerText)" class="text-[11px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/10 transition-colors cursor-pointer">✨ Tâm trạng vui vẻ</button>
@@ -2436,14 +2560,14 @@
 
       <div class="flex items-center gap-2 pt-2 border-t border-white/10">
         <button type="button" onclick="window.feed.deleteNote()" class="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 text-xs font-bold transition-all border border-rose-500/20 cursor-pointer">
-          Xóa
+          Xóa ghi chú
         </button>
-        <button type="button" onclick="window.feed.saveNote()" class="flex-1 py-2 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:brightness-110 text-white text-xs font-bold shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+        <button type="submit" id="btn-save-profile-note" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:brightness-110 text-white text-xs font-bold shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
           <i data-lucide="check" class="w-3.5 h-3.5"></i>
           <span>Chia sẻ ghi chú</span>
         </button>
       </div>
-    </div>
+    </form>
   </div>
 
   <!-- Modal: Tùy chỉnh vị trí & Cắt ảnh đại diện -->
@@ -2616,10 +2740,44 @@
     </div>
   </div>
 
+  <!-- Modal: Kho Tin Nhắn Cũ Đã Lưu (Khi xóa đoạn chat) -->
+  <div id="modal-archived-messages" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
+    <div class="glass w-full max-w-lg rounded-3xl p-5 sm:p-6 border border-white/15 shadow-2xl space-y-4 bg-slate-900/95 flex flex-col max-h-[82vh]">
+      <div class="flex items-center justify-between pb-2 border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+            <i data-lucide="archive" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-heading font-extrabold text-sm sm:text-base text-white">Kho Tin Nhắn Cũ Đã Lưu</h3>
+            <p id="archived-chat-target-name" class="text-[11px] text-cyan-300 font-medium">Lịch sử tin nhắn được bảo toàn khi xóa đoạn chat</p>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-archived-messages').classList.add('hidden')" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition-colors cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div id="archived-messages-list" class="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar min-h-[180px]">
+        <!-- Populated by js/chat.js -->
+      </div>
+
+      <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/10 shrink-0">
+        <button type="button" onclick="window.chat && window.chat.restoreArchivedMessagesToChat()" class="px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          <span>Khôi phục lại vào khung chat</span>
+        </button>
+        <button type="button" onclick="document.getElementById('modal-archived-messages').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold cursor-pointer">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- =========================================================================
        6. GLOBAL TOAST NOTIFICATIONS PILL (COMPACT & SLEEK)
        ========================================================================= -->
-  <div id="global-toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] glass px-4 py-2 rounded-2xl border border-white/15 bg-slate-900/90 backdrop-blur-md shadow-2xl flex items-center gap-2.5 transition-all duration-300 -translate-y-16 opacity-0 pointer-events-none max-w-[90vw]">
+  <div id="global-toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-[110] glass px-4 py-2 rounded-2xl border border-white/15 bg-slate-900/90 backdrop-blur-md shadow-2xl flex items-center gap-2.5 transition-all duration-300 -translate-y-16 opacity-0 pointer-events-none max-w-[90vw]">
     <span id="global-toast-icon-wrap" class="flex items-center justify-center shrink-0">
       <i id="global-toast-icon" data-lucide="sparkles" class="w-4 h-4 text-indigo-400 shrink-0"></i>
     </span>
@@ -2635,22 +2793,22 @@
   <!-- Real ISO/IEC 18004 QRCode Matrix Generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
-  <!-- Application Scripts (Versioned v5.1 for instant cross-device cache-busting) -->
-  <script src="js/config.js?v=5.1"></script>
-  <script src="js/sounds.js?v=5.1"></script>
-  <script src="js/intro.js?v=5.1"></script>
-  <script src="js/auth.js?v=5.1"></script>
-  <script src="js/chat.js?v=5.1"></script>
-  <script src="js/call.js?v=5.1"></script>
-  <script src="js/recorder.js?v=5.1"></script>
-  <script src="js/feed.js?v=5.1"></script>
-  <script src="js/streak.js?v=5.1"></script>
-  <script src="js/radar.js?v=5.1"></script>
-  <script src="js/qr-studio.js?v=5.1"></script>
-  <script src="js/file-hub.js?v=5.1"></script>
-  <script src="js/bubble.js?v=5.1"></script>
-  <script src="js/scheduler.js?v=5.1"></script>
-  <script src="js/app.js?v=5.1"></script>
+  <!-- Application Scripts (Versioned v5.2 for instant cross-device cache-busting) -->
+  <script src="js/config.js?v=5.2"></script>
+  <script src="js/sounds.js?v=5.2"></script>
+  <script src="js/intro.js?v=5.2"></script>
+  <script src="js/auth.js?v=5.2"></script>
+  <script src="js/chat.js?v=5.2"></script>
+  <script src="js/call.js?v=5.2"></script>
+  <script src="js/recorder.js?v=5.2"></script>
+  <script src="js/feed.js?v=5.2"></script>
+  <script src="js/streak.js?v=5.2"></script>
+  <script src="js/radar.js?v=5.2"></script>
+  <script src="js/qr-studio.js?v=5.2"></script>
+  <script src="js/file-hub.js?v=5.2"></script>
+  <script src="js/bubble.js?v=5.2"></script>
+  <script src="js/scheduler.js?v=5.2"></script>
+  <script src="js/app.js?v=5.2"></script>
   <!-- Service Worker & PWA Install Manager -->
   <script>
     let deferredPrompt = null;
@@ -2686,10 +2844,10 @@
     // Force register & update latest Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?v=5.1')
+        navigator.serviceWorker.register('/sw.js?v=5.2')
           .then(reg => {
             reg.update();
-            console.log('SEE LAD PWA Service Worker Registered & Updated v5.1:', reg.scope);
+            console.log('SEE LAD PWA Service Worker Registered & Updated v5.2:', reg.scope);
           })
           .catch(err => console.log('Service Worker registration failed:', err));
       });
