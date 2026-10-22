@@ -2842,15 +2842,23 @@
       });
     }
 
-    // Force register & update latest Service Worker
+    // Force register & update latest Service Worker (v6.0)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?v=5.2')
+        navigator.serviceWorker.register('/sw.js?v=6.0')
           .then(reg => {
             reg.update();
-            console.log('SEE LAD PWA Service Worker Registered & Updated v5.2:', reg.scope);
+            console.log('SEE LAD PWA Service Worker Registered & Updated v6.0:', reg.scope);
           })
           .catch(err => console.log('Service Worker registration failed:', err));
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
       });
     }
   </script>

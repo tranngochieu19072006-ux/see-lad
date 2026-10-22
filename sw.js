@@ -1,5 +1,5 @@
 // SEE LAD - Modern Service Worker (PWA) with Instant Live Updates
-const CACHE_NAME = 'seelad-v5.0.0';
+const CACHE_NAME = 'seelad-v6.0.0';
 
 self.addEventListener('install', (event) => {
   console.log('[SEE LAD SW] Installed version:', CACHE_NAME);
@@ -22,14 +22,18 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Never cache API calls, OAuth redirects, uploads, or dynamic JS/CSS
+  // Never cache API calls, OAuth redirects, uploads, dynamic JS/CSS, or updated branding logos
   if (
     url.pathname.startsWith('/api/') ||
     url.pathname.startsWith('/uploads/') ||
     url.pathname.endsWith('.js') ||
     url.pathname.endsWith('.css') ||
     url.pathname === '/' ||
-    url.pathname === '/index.html'
+    url.pathname === '/index.html' ||
+    url.pathname === '/manifest.json' ||
+    url.pathname.includes('logo') ||
+    url.pathname.includes('icon') ||
+    url.pathname.includes('favicon')
   ) {
     return; // Pass through straight to network
   }

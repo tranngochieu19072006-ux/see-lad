@@ -1,14 +1,14 @@
 {
   "id": "/",
-  "name": "SEE LAD - Kết Nối & Trò Chuyện Siêu Tốc",
+  "name": "SEE LAD - Design Studio & Mạng Xã Hội",
   "short_name": "SEE LAD",
-  "description": "Ứng dụng nhắn tin real-time, gọi video HD, chia sẻ vị trí radar và studio mã QR",
+  "description": "Nền tảng nhắn tin real-time, gọi thoại HD, chia sẻ vị trí radar và cày chuỗi lửa tương tác",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#090d16",
-  "theme_color": "#6366f1",
+  "theme_color": "#090d16",
   "categories": [
     "social",
     "communication",
@@ -16,25 +16,31 @@
   ],
   "icons": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
+      "src": "/logo.png?v=2",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-maskable-192.png",
+      "src": "/icon-192.png?v=2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png?v=2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png?v=2",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icon-maskable-512.png",
+      "src": "/icon-maskable-512.png?v=2",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
